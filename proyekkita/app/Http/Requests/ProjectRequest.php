@@ -23,8 +23,8 @@ class ProjectRequest extends FormRequest
             'expected_output' => ['required', 'string'],
             'application_deadline' => ['required', 'date', 'after:today'],
             'target_completion_date' => ['required', 'date', 'after:application_deadline'],
-            'quota' => ['required', 'integer', 'min:1'],
-            'total_compensation' => ['required', 'numeric', 'min:1'],
+            'quota' => ['required', 'integer', 'min:1', 'max:1000'],
+            'total_compensation' => ['required', 'numeric', 'min:1', 'max:9999999999'],
         ];
     }
 
@@ -41,6 +41,8 @@ class ProjectRequest extends FormRequest
             'skills.min' => 'Pilih minimal satu keterampilan.',
             'application_deadline.after' => 'Tenggat lamaran paling cepat besok.',
             'target_completion_date.after' => 'Target penyelesaian harus setelah tenggat lamaran.',
+            'quota.max' => 'Kuota kandidat maksimal :max orang.',
+            'total_compensation.max' => 'Total kompensasi maksimal Rp9.999.999.999.',
         ];
     }
 
