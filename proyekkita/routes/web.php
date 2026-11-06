@@ -19,3 +19,11 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
 if (app()->isLocal() && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
 }
+use App\Http\Controllers\MasterDataController;
+
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('data-master', [MasterDataController::class, 'index'])->name('master.index');
+    Route::post('data-master/kategori', [MasterDataController::class, 'storeCategory'])->name('master.categories.store');
+    Route::put('data-master/kategori/{category}', [MasterDataController::class, 'updateCategory'])->name('master.categories.update');
+    Route::patch('data-master/kategori/{category}/status', [MasterDataController::class, 'toggleCategory'])->name('master.categories.toggle');
+});
