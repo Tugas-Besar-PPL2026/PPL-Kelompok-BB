@@ -66,7 +66,11 @@ class DemoSeeder extends Seeder
         $kandidat->skills()->sync(Skill::whereIn('name', ['Figma', 'Desain Grafis', 'Desain Kemasan', 'Ilustrasi', 'Canva'])->pluck('id'));
         $kandidat->experiences()->firstOrCreate(['work_type' => 'Desain kemasan produk UMKM (freelance)'], [
             'duration' => '8 bulan',
-            'description' => 'Merancang label dan kemasan untuk 4 UMKM makanan ringan di Bandung.',
+            'description' => 'Merancang label dan kemasan untuk 4 UMKM makanan ringan di Bandung, termasuk penyiapan file siap cetak untuk percetakan.',
+        ]);
+        $kandidat->experiences()->firstOrCreate(['work_type' => 'Desainer grafis Himpunan Mahasiswa DKV'], [
+            'duration' => '6 bulan',
+            'description' => 'Membuat materi publikasi acara dan konten Instagram himpunan.',
         ]);
         $kandidat->portfolios()->firstOrCreate(['title' => 'Label Kemasan Sambal Bu Iyah'], [
             'description' => 'Redesain label 3 varian sambal kemasan botol, siap cetak.',
