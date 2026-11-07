@@ -1,6 +1,7 @@
 <?php
 
 //Import semua controller yang dibutuhkan disini
+use App\Http\Controllers\CandidateExperienceController;
 use App\Http\Controllers\CandidateSkillController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidateSelectionController;
@@ -22,6 +23,12 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
     Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
     Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
+
+    // PBI-04: kandidat mengelola pengalaman kerja pada profil
+    Route::get('profil/pengalaman', [CandidateExperienceController::class, 'edit'])->name('profil.pengalaman.edit');
+    Route::post('profil/pengalaman', [CandidateExperienceController::class, 'store'])->name('profil.pengalaman.store');
+    Route::put('profil/pengalaman/{experience}', [CandidateExperienceController::class, 'update'])->name('profil.pengalaman.update');
+    Route::delete('profil/pengalaman/{experience}', [CandidateExperienceController::class, 'destroy'])->name('profil.pengalaman.destroy');
 
     // PBI-14: daftar proyek terbuka dan halaman detail proyek
     //kerjakan disini untuk PBI 14
