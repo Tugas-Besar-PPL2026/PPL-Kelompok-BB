@@ -1,5 +1,6 @@
 <?php
 
+//Import semua controller yang dibutuhkan disini
 use App\Http\Controllers\CandidateSkillController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidateSelectionController;
@@ -14,6 +15,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+//Middleware untuk kandidat
 Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
     Route::get('profil', [CandidateSkillController::class, 'edit'])->name('profil.edit');
     Route::get('profil/keterampilan', [CandidateSkillController::class, 'edit'])->name('profil.keterampilan.edit');
@@ -29,6 +31,7 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
         ->name('proyek.lamaran.store');
 });
 
+//Middleware untuk UMKM
 Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
@@ -42,6 +45,7 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
         ->whereNumber(['application', 'portfolio'])->name('seleksi.portofolio');
 });
 
+//Middleware untuk admin
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('data-master', [MasterDataController::class, 'index'])->name('master.index');
     Route::post('data-master/kategori', [MasterDataController::class, 'storeCategory'])->name('master.categories.store');
