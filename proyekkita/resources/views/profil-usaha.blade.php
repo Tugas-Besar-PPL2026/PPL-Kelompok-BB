@@ -60,6 +60,10 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
 .bar .l{width:20px}.bar .n{width:12px;text-align:right}
 .bar .track{flex:1;height:7px;border-radius:4px;background:#E5E7EB;overflow:hidden}
 .bar .fill{height:100%;background:#F59E0B}
+.alert{border-radius:10px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;line-height:1.5}
+.alert-success{background:#F0FDF4;border:1px solid #BBF7D0;color:#166534}
+.alert-error{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+.alert ul{margin:0;padding-left:18px}
 @media(max-width:860px){.sidebar{display:none}.main{padding:20px 16px}}
 </style>
 </head>
@@ -96,6 +100,20 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
   <main class="main">
     <h1>Profil Usaha</h1>
     <p class="lead">Kelola identitas dan legalitas usaha yang menjadi bahan verifikasi admin dan informasi bagi kandidat.</p>
+
+    @if (session('success'))
+      <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
+
+    @if ($errors->any())
+      <div class="alert alert-error">
+        <ul>
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
 
     <form method="POST" action="{{ route('profil-usaha.update') }}" class="grid">
       @csrf
