@@ -1,6 +1,7 @@
 <?php
 
 //Import semua controller yang dibutuhkan disini
+use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateSkillController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidateSelectionController;
@@ -22,6 +23,13 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
     Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
     Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
+
+    // PBI-05: kandidat mengelola portofolio pada profil
+    Route::get('profil/portofolio', [CandidatePortfolioController::class, 'edit'])->name('profil.portofolio');
+    Route::post('profil/portofolio', [CandidatePortfolioController::class, 'store'])->name('profil.portofolio.store');
+    Route::put('profil/portofolio/{portfolio}', [CandidatePortfolioController::class, 'update'])->name('profil.portofolio.update');
+    Route::delete('profil/portofolio/{portfolio}', [CandidatePortfolioController::class, 'destroy'])->name('profil.portofolio.destroy');
+    Route::get('profil/portofolio/{portfolio}/berkas', [CandidatePortfolioController::class, 'file'])->name('profil.portofolio.file');
 
     // PBI-14: daftar proyek terbuka dan halaman detail proyek
     //kerjakan disini untuk PBI 14
