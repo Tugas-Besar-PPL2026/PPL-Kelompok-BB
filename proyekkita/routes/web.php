@@ -4,6 +4,8 @@ use App\Http\Controllers\CandidateSkillController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidateSelectionController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ApplicationController;
+//tambahin ProjectDiscoveryController untuk PBI-14 disini
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 
@@ -31,6 +33,18 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::get('seleksi/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolio'])
         ->whereNumber(['application', 'portfolio'])->name('seleksi.portofolio');
 });
+
+Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
+
+    // PBI-14: daftar proyek terbuka dan halaman detail proyek
+    //kerjakan disini untuk PBI 14
+
+    // PBI-16: kandidat mengajukan lamaran
+    Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])
+        ->name('proyek.lamaran.store');
+
+});
+
 
 if (app()->isLocal() && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
