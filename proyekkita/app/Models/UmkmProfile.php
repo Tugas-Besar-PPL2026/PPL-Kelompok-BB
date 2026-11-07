@@ -25,6 +25,7 @@ class UmkmProfile extends Model
         'business_name',
         'description',
         'business_field',
+        'description',
         'contact_phone',
         'city',
         'address',
