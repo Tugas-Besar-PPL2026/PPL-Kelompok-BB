@@ -20,7 +20,7 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
     Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
     Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
-    
+
     // PBI-14: daftar proyek terbuka dan halaman detail proyek
     //kerjakan disini untuk PBI 14
 
@@ -42,16 +42,16 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
         ->whereNumber(['application', 'portfolio'])->name('seleksi.portofolio');
 });
 
-
-
-
-if (app()->isLocal() && file_exists(base_path('routes/dev.php'))) {
-    require base_path('routes/dev.php');
-}
-
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('data-master', [MasterDataController::class, 'index'])->name('master.index');
     Route::post('data-master/kategori', [MasterDataController::class, 'storeCategory'])->name('master.categories.store');
     Route::put('data-master/kategori/{category}', [MasterDataController::class, 'updateCategory'])->name('master.categories.update');
     Route::patch('data-master/kategori/{category}/status', [MasterDataController::class, 'toggleCategory'])->name('master.categories.toggle');
 });
+
+
+
+
+if (app()->isLocal() && file_exists(base_path('routes/dev.php'))) {
+    require base_path('routes/dev.php');
+}
