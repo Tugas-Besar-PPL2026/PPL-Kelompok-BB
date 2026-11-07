@@ -1,148 +1,51 @@
-
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Gate;
-
-use App\Http\Controllers\CandidateSkillController;
-use App\Http\Controllers\Umkm\CandidateSelectionController;
+use App\Http\Controllers\CandidateSelectionController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\MasterDataController;
-use App\Http\Controllers\UMKM\ProjectMonitoringController;
+use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
-
-use App\Models\Project;
+use App\Http\Controllers\CandidateSkillController;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
+Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
+    Route::get('profil', [CandidateSkillController::class, 'edit'])->name('profil.edit');
+    Route::get('profil/keterampilan', [CandidateSkillController::class, 'edit'])->name('profil.keterampilan.edit');
+    Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
+    Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
+    Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
+});
 
-// ==========================================
-// ROUTE KHUSUS UMKM (PBI-19)
-// ==========================================
+Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
+    Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
+    Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
+    Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
+    Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
 
-Route::middleware(['auth', 'role:umkm'])
-    ->prefix('umkm')
-    ->name('umkm.')
-    ->group(function () {
+    Route::get('seleksi', [CandidateSelectionController::class, 'index'])->name('seleksi.index');
+    Route::get('seleksi/{application}', [CandidateSelectionController::class, 'show'])
+        ->whereNumber('application')->name('seleksi.show');
+    Route::get('seleksi/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolio'])
+        ->whereNumber(['application', 'portfolio'])->name('seleksi.portofolio');
+});
 
-        // Halaman Daftar Pelamar & Kuota
-        Route::get('/seleksi', [CandidateSelectionController::class, 'index'])
-            ->name('seleksi.index');
+Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
 
-        // Halaman Detail Pelamar
-        Route::get('/seleksi/{projectId}/pelamar/{applicationId}', [CandidateSelectionController::class, 'show'])
-            ->name('seleksi.show');
-    });
+    // PBI-14: daftar proyek terbuka dan halaman detail proyek
+    Route::get('proyek', [ProjectDiscoveryController::class, 'index'])
+        ->name('proyek.index');
 
+    Route::get('proyek/{project}', [ProjectDiscoveryController::class, 'show'])
+        ->name('proyek.show');
 
-// ==========================================
-// ROUTE KANDIDAT (PROFIL KETERAMPILAN & PBI-14)
-// ==========================================
+    // PBI-16: kandidat mengajukan lamaran
+    Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])
+        ->name('proyek.lamaran.store');
 
-Route::middleware('auth')
-    ->prefix('kandidat')
-    ->name('kandidat.')
-    ->group(function () {
-
-        // Profil Keterampilan
-        Route::get('profil', [CandidateSkillController::class, 'edit'])
-            ->name('profil.edit');
-
-        Route::get('profil/keterampilan', [CandidateSkillController::class, 'edit'])
-            ->name('profil.keterampilan.edit');
-
-        Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])
-            ->name('profil.keterampilan.store');
-
-        Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])
-            ->name('profil.keterampilan.update');
-
-        Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])
-            ->name('profil.keterampilan.destroy');
-
-
-        // ==========================================
-        // PBI-14: DAFTAR DAN DETAIL PROYEK
-        // ==========================================
-
-        // Melihat Daftar Proyek
-        Route::get('proyek', [ProjectDiscoveryController::class, 'index'])
-            ->name('proyek.index');
-
-        // Melihat Detail Proyek
-        Route::get('proyek/{project}', [ProjectDiscoveryController::class, 'show'])
-            ->name('proyek.show');
-    });
-
-
-// ==========================================
-// ROUTE UMKM (KELOLA PROYEK)
-// ==========================================
-
-Route::middleware('auth')
-    ->prefix('umkm')
-    ->name('umkm.')
-    ->group(function () {
-
-        Route::get('proyek/buat', [ProjectController::class, 'create'])
-            ->name('proyek.create');
-
-        Route::post('proyek', [ProjectController::class, 'store'])
-            ->name('proyek.store');
-
-        Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])
-            ->name('proyek.edit');
-
-        Route::put('proyek/{project}', [ProjectController::class, 'update'])
-            ->name('proyek.update');
-    });
-
-
-// ==========================================
-// ROUTE MONITORING PROYEK UMKM (PBI-13)
-// ==========================================
-
-Route::middleware('auth')
-    ->prefix('umkm')
-    ->name('umkm.')
-    ->group(function () {
-
-        Route::get('/projects/monitoring', [ProjectMonitoringController::class, 'index'])
-            ->name('projects.monitoring');
-
-        Route::get('/projects/monitoring/{id}', [ProjectMonitoringController::class, 'show'])
-            ->name('projects.monitoring.detail');
-    });
-
-
-// ==========================================
-// ROUTE ADMIN (DATA MASTER)
-// ==========================================
-
-Route::middleware(['auth'])
-    ->prefix('admin')
-    ->name('admin.')
-    ->group(function () {
-
-        Route::get('data-master', [MasterDataController::class, 'index'])
-            ->name('master.index');
-
-        Route::post('data-master/kategori', [MasterDataController::class, 'storeCategory'])
-            ->name('master.categories.store');
-
-        Route::put('data-master/kategori/{category}', [MasterDataController::class, 'updateCategory'])
-            ->name('master.categories.update');
-
-        Route::patch('data-master/kategori/{category}/status', [MasterDataController::class, 'toggleCategory'])
-            ->name('master.categories.toggle');
-    });
-
-
-// ==========================================
-// ROUTE DEVELOPMENT
-// ==========================================
+});
 
 if (app()->isLocal() && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
