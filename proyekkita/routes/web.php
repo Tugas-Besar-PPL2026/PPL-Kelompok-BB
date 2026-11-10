@@ -23,6 +23,8 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
     Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
     Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
+});
+
 
     // PBI-05: kandidat mengelola portofolio pada profil
     Route::get('profil/portofolio', [CandidatePortfolioController::class, 'edit'])->name('profil.portofolio');
