@@ -1,13 +1,12 @@
 <?php
-
 //Import semua controller yang dibutuhkan disini
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateSkillController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidateSelectionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ApplicationController;
-//tambahin ProjectDiscoveryController untuk PBI-14 disini
+use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
@@ -23,8 +22,6 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
     Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
     Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
-});
-
 
     // PBI-05: kandidat mengelola portofolio pada profil
     Route::get('profil/portofolio', [CandidatePortfolioController::class, 'edit'])->name('profil.portofolio');
@@ -34,7 +31,11 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::get('profil/portofolio/{portfolio}/berkas', [CandidatePortfolioController::class, 'file'])->name('profil.portofolio.file');
 
     // PBI-14: daftar proyek terbuka dan halaman detail proyek
-    //kerjakan disini untuk PBI 14
+    Route::get('proyek', [ProjectDiscoveryController::class, 'index'])
+        ->name('proyek.index');
+
+    Route::get('proyek/{project}', [ProjectDiscoveryController::class, 'show'])
+        ->name('proyek.show');
 
     // PBI-16: kandidat mengajukan lamaran
     Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])
