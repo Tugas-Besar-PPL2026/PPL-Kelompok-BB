@@ -5,6 +5,10 @@ namespace App\Policies;
 use App\Models\Application;
 use App\Models\User;
 
+/**
+ * Hak akses lamaran untuk Seleksi Kandidat (PBI-19).
+ * Hanya UMKM pemilik proyek yang boleh melihat pelamar dan detail lamaran pada proyeknya.
+ */
 class ApplicationPolicy
 {
     /** Membuka halaman Seleksi Kandidat: hanya akun UMKM. */

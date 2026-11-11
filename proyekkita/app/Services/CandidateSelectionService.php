@@ -18,6 +18,10 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Service Candidate Selection (FR-11), bagian PBI-19: membaca daftar pelamar dan detail kandidat untuk UMKM.
+ * Hanya membaca data. Perubahan status lamaran (PBI-20 dan PBI-21) tidak ditangani di sini.
+ */
 class CandidateSelectionService
 {
     /**

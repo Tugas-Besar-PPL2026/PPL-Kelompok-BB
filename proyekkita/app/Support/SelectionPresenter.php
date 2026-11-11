@@ -5,6 +5,11 @@ namespace App\Support;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Collection;
 
+/**
+ * Fungsi bantu tampilan untuk halaman Seleksi Kandidat (PBI-19): format tanggal Indonesia, angka desimal,
+ * inisial nama, ringkasan durasi pengalaman, ukuran berkas, serta normalisasi tautan portofolio yang aman.
+ * Semuanya murni fungsi tanpa akses database sehingga mudah diuji.
+ */
 class SelectionPresenter
 {
     /** Huruf awal dari maksimal dua kata pertama pada nama, mis. "Nadia Putri Rahma" -> "NP". */

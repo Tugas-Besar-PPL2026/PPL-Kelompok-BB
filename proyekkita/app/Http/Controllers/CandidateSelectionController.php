@@ -12,10 +12,15 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Seleksi Kandidat (FR-11), bagian PBI-19: daftar pelamar per proyek dan detail pelamar untuk UMKM.
+ * Controller ini hanya membaca data. Keputusan seleksi (PBI-20 dan PBI-21) belum termasuk di sini.
+ */
 class CandidateSelectionController extends Controller
 {
     public function __construct(private CandidateSelectionService $selection) {}
 
+    /** Daftar pelamar satu proyek milik UMKM yang sedang login, dengan statistik, kuota, dan filter status. */
     public function index(Request $request)
     {
         Gate::authorize('viewAny', Application::class);
@@ -46,6 +51,7 @@ class CandidateSelectionController extends Controller
         ]);
     }
 
+    /** Detail satu pelamar: profil, pesan lamaran, keterampilan, pengalaman, portofolio, penilaian, dan riwayat status. */
     public function show(Request $request, Application $application)
     {
         Gate::authorize('view', $application);
@@ -66,6 +72,10 @@ class CandidateSelectionController extends Controller
         ]);
     }
 
+    /**
+     * Membuka dokumen portofolio pelamar. Dokumen tidak ditautkan langsung dari storage: akses diperiksa dulu,
+     * dan dokumen harus milik kandidat pada lamaran tersebut.
+     */
     public function portfolio(Application $application, Portfolio $portfolio): Response
     {
         Gate::authorize('view', $application);
@@ -79,6 +89,7 @@ class CandidateSelectionController extends Controller
         $disk = Storage::disk($file['disk']);
         $mime = $disk->mimeType($file['path']) ?: '';
 
+        // PDF dan gambar boleh tampil langsung di tab baru; jenis berkas lain selalu diunduh.
         if ($mime === 'application/pdf' || in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true)) {
             return $disk->response($file['path'], $name, $headers);
         }
@@ -86,6 +97,7 @@ class CandidateSelectionController extends Controller
         return $disk->download($file['path'], $name, $headers);
     }
 
+    /** Proyek dari ?proyek=, harus milik UMKM yang login dan ada di daftar dropdown; bila kosong, proyek terbaru. */
     private function requestedProject(Request $request, Collection $projects): Project
     {
         $id = $request->query('proyek');
