@@ -1,3 +1,13 @@
+{{--
+    Layout utama untuk semua halaman setelah login (admin, UMKM, kandidat).
+    Navbar dan sidebar sudah ada di sini, jadi halaman lain cukup:
+
+        @extends('layouts.app')
+        @section('title', 'Judul Halaman')
+        @section('content') ...isi halaman... @endsection
+
+    Pesan session('success') dan session('error') juga ditampilkan otomatis di sini.
+--}}
 @php
     $authUser = auth()->user();
 
@@ -9,31 +19,25 @@
 
     $navRole = match (true) {
         $authUser->isAdmin() => 'Administrator',
-        $authUser->isKandidat() && $authUser->candidateProfile?->university
-            => 'Kandidat · ' . $authUser->candidateProfile->university,
+        $authUser->isKandidat() && $authUser->candidateProfile?->university => 'Kandidat · ' . $authUser->candidateProfile->university,
         default => $authUser->role->label(),
     };
 
-    // Mengambil maksimal dua inisial dari nama pengguna.
     $navInitials = collect(preg_split('/\s+/', trim($navName)))
         ->filter()
         ->take(2)
         ->map(fn ($word) => mb_strtoupper(mb_substr($word, 0, 1)))
-        ->implode('');
+        ->join('');
 
-    // Menggunakan relasi notifications()->unread() yang sesuai dengan model kelompokmu
     $navUnread = $authUser->notifications()->unread()->count();
 @endphp
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-
     <title>@yield('title', 'Beranda') · ProyekKita</title>
-
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -302,78 +306,28 @@
 
     @stack('styles')
 </head>
-
 <body>
+    @include('layouts.partials.navbar')
 
-    {{-- NAVBAR --}}
-    <header class="topbar">
-        <a href="{{ url('/') }}" class="brand">
-            <i data-lucide="network" width="19" height="19"></i>
-            <span>ProyekKita</span>
-        </a>
-
-        <div class="topbar-right">
-            <a href="{{ Route::has('notifikasi.index') ? route('notifikasi.index') : '#' }}"
-               class="topbar-notif">
-                <i data-lucide="bell" width="17" height="17"></i>
-
-                @if ($navUnread > 0)
-                    <span class="cnt">{{ $navUnread }}</span>
-                @endif
-            </a>
-
-            <div class="topbar-user">
-                <div class="av">{{ $navInitials }}</div>
-
-                <div>
-                    <div class="n">{{ $navName }}</div>
-                    <div class="sub">{{ $navRole }}</div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    {{-- LAYOUT UTAMA --}}
     <div class="wrap">
-
         @include('layouts.partials.sidebar')
 
         <main class="main">
-
             @if (session('success'))
-                <div class="al ok mb16"
-                     style="margin-bottom:16px; padding:12px; border-radius:8px; background:#ecfdf5; border:1px solid #a7f3d0; color:#047857; font-size:13px;">
-                    <i data-lucide="circle-check" width="19" height="19"></i>
-                    <div>{{ session('success') }}</div>
-                </div>
+                <div class="al ok mb16"><i data-lucide="circle-check" class="ic" width="19" height="19"></i><div>{{ session('success') }}</div></div>
             @endif
-
             @if (session('error'))
-                <div class="al bad mb16"
-                     style="margin-bottom:16px; padding:12px; border-radius:8px; background:#fef2f2; border:1px solid #fecaca; color:#b91c1c; font-size:13px;">
-                    <i data-lucide="circle-alert" width="19" height="19"></i>
-                    <div>{{ session('error') }}</div>
-                </div>
+                <div class="al bad mb16"><i data-lucide="circle-alert" class="ic" width="19" height="19"></i><div>{{ session('error') }}</div></div>
             @endif
 
             @yield('content')
-
         </main>
     </div>
 
     @stack('modals')
 
     <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.lucide) {
-                lucide.createIcons();
-            }
-        });
-    </script>
-
+    <script>lucide.createIcons();</script>
     @stack('scripts')
-
 </body>
 </html>

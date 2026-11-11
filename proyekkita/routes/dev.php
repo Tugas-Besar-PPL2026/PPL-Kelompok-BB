@@ -1,23 +1,37 @@
-<<<<<<< Updated upstream
 <?php
 
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/dev/login/{email}', function (string $email) {
-    Auth::login(User::where('email', $email)->firstOrFail());
-    return redirect('/umkm/seleksi');
+// Login development berdasarkan role
+$devLogin = function (string $email, string $redirectUrl) {
+    $user = User::where('email', $email)->first();
+
+    if (!$user) {
+        return response(
+            'User tidak ditemukan. Jalankan php artisan migrate:fresh --seed terlebih dahulu.',
+            404
+        );
+    }
+
+    Auth::login($user);
+
+    return redirect($redirectUrl);
+};
+
+// Login sebagai Kandidat
+Route::get('/dev/login/kandidat', function () use ($devLogin) {
+    return $devLogin(
+        'kandidat@proyekkita.test',
+        route('kandidat.profil.edit')
+    );
 });
-=======
-   <?php
 
-   use App\Models\User;
-   use Illuminate\Support\Facades\Auth;
-   use Illuminate\Support\Facades\Route;
-
-   Route::get('/dev/login/{email}', function (string $email) {
-       Auth::login(User::where('email', $email)->firstOrFail());
-       return redirect('/umkm/seleksi');
-   });
->>>>>>> Stashed changes
+// Login sebagai UMKM
+Route::get('/dev/login/umkm', function () use ($devLogin) {
+    return $devLogin(
+        'umkm@proyekkita.test',
+        '/umkm/seleksi'
+    );
+});
