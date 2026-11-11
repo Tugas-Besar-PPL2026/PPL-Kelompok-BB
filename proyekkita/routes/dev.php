@@ -37,3 +37,9 @@ Route::get('/dev/login/{role?}', function (string $role = 'kandidat') {
 
     return redirect()->route('kandidat.profil.edit');
 });
+
+
+Route::get('/dev/login/{email}', function (string $email) {
+    auth()->login(User::where('email', $email)->firstOrFail());
+    return redirect()->route('kandidat.proyek.index');
+});
