@@ -21,6 +21,16 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
+/**
+ * OPSIONAL, tidak dipanggil oleh DatabaseSeeder. Mengisi data uji untuk halaman Seleksi Kandidat (PBI-19)
+ * agar sama dengan mockup 4.5.19 dan 4.5.20: lima pelamar pada proyek "Redesain Katalog Digital & Label Kemasan"
+ * milik Kopi Nusantara, kuota 2 dengan 1 diterima, lengkap dengan pengalaman, portofolio, riwayat status,
+ * serta proyek selesai dan evaluasi sebelumnya untuk rating.
+ *
+ *     php artisan db:seed --class=SelectionDemoSeeder
+ *
+ * Aman dijalankan berulang kali. Tidak berjalan di environment production. Semua akun memakai kata sandi: password
+ */
 class SelectionDemoSeeder extends Seeder
 {
     public function run(): void
