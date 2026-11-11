@@ -35,3 +35,11 @@ Route::get('/dev/login/umkm', function () use ($devLogin) {
         '/umkm/seleksi'
     );
 });
+
+// Halaman login sementara langsung masuk sebagai Kandidat
+Route::get('/login', function () use ($devLogin) {
+    return $devLogin(
+        'kandidat@proyekkita.test',
+        route('kandidat.profil.edit')
+    );
+})->name('login');
