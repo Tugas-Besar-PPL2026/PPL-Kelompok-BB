@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\CandidateApplicationController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 
@@ -40,6 +41,9 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     // PBI-16: kandidat mengajukan lamaran
     Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])
         ->name('proyek.lamaran.store');
+
+    // PBI-17: kandidat memantau status dan riwayat lamaran
+    Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
 });
 
 //Middleware untuk UMKM
@@ -67,6 +71,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
 
 
-if (app()->isLocal() && file_exists(base_path('routes/dev.php'))) {
+if (app()->environment(['local', 'dusk.local']) && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
 }
