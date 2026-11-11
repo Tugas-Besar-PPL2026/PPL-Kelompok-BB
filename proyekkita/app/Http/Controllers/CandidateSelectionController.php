@@ -2,114 +2,93 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ApplicationStatus;
 use App\Models\Application;
-use App\Models\Portfolio;
 use App\Models\Project;
 use App\Services\CandidateSelectionService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Seleksi Kandidat (FR-11), bagian PBI-19: daftar pelamar per proyek dan detail pelamar untuk UMKM.
- * Controller ini hanya membaca data. Keputusan seleksi (PBI-20 dan PBI-21) belum termasuk di sini.
+ * Seleksi Kandidat sisi UMKM (FR-11, PBI-19): daftar pelamar per proyek dan detail pelamar.
+ * Halaman ini hanya menampilkan data. Keputusan seleksi (PBI-20 dan PBI-21) belum dikerjakan di sini.
  */
 class CandidateSelectionController extends Controller
 {
     public function __construct(private CandidateSelectionService $selection) {}
 
-    /** Daftar pelamar satu proyek milik UMKM yang sedang login, dengan statistik, kuota, dan filter status. */
+    /** Daftar pelamar untuk satu proyek, dengan statistik, kuota, dan filter status. */
     public function index(Request $request)
     {
-        Gate::authorize('viewAny', Application::class);
+        abort_unless($request->user()->isUmkm(), 403, 'Halaman ini khusus UMKM.');
 
-        $umkm = $request->user()->umkmProfile;
-        abort_if(! $umkm, 403, 'Lengkapi profil usaha terlebih dahulu.');
-
-        $projects = $this->selection->projectsFor($umkm);
+        // Hanya proyek milik UMKM yang sedang login yang pernah masuk ke daftar ini.
+        $projects = $this->selection->projectsFor($request->user());
 
         if ($projects->isEmpty()) {
             return view('umkm.seleksi.index', ['projects' => $projects, 'project' => null]);
         }
 
-        $project = $this->requestedProject($request, $projects);
-        $status = $this->selection->statusFromQuery($request->query('status'));
+        $requestedId = $request->integer('proyek');
+        if ($requestedId > 0) {
+            $project = Project::findOrFail($requestedId);
+            Gate::authorize('viewApplicants', $project);
+            abort_unless($projects->contains('id', $project->id), 404);
+        } else {
+            $project = $projects->first();
+        }
 
-        $counts = $this->selection->counts($project);
+        $status = $this->statusFromRequest($request);
+        $counts = $this->selection->statusCounts($project);
+        $applicants = $this->selection->applicants($project, $status)->withQueryString();
+        $reputation = $this->selection->reputation($applicants->getCollection()->pluck('candidateProfile'));
 
         return view('umkm.seleksi.index', [
             'projects' => $projects,
             'project' => $project,
             'status' => $status,
             'counts' => $counts,
-            'tabs' => $this->selection->tabs($counts),
-            'quota' => $this->selection->quota($project, $counts['accepted']),
-            'since' => $this->selection->listedSince($project, $counts['all']),
-            'applicants' => $this->selection->applicants($project, $status),
+            'quota' => $this->selection->quota($project, $counts[ApplicationStatus::Accepted->value]),
+            'applicants' => $applicants,
+            'reputation' => $reputation,
+            'tabs' => CandidateSelectionService::TABS,
         ]);
     }
 
-    /** Detail satu pelamar: profil, pesan lamaran, keterampilan, pengalaman, portofolio, penilaian, dan riwayat status. */
+    /** Detail satu pelamar: profil, pesan lamaran, keterampilan, pengalaman, portofolio, dan riwayat status. */
     public function show(Request $request, Application $application)
     {
         Gate::authorize('view', $application);
 
-        $this->selection->loadDetail($application);
+        $application->load([
+            'project.skills',
+            'candidateProfile.skills' => fn ($query) => $query->orderBy('skills.name'),
+            'candidateProfile.experiences',
+            'candidateProfile.portfolios',
+            'statusHistories',
+        ]);
+
+        $project = $application->project;
         $profile = $application->candidateProfile;
+        $counts = $this->selection->statusCounts($project);
+        $status = $this->statusFromRequest($request);
 
         return view('umkm.seleksi.show', [
             'application' => $application,
-            'project' => $application->project,
+            'project' => $project,
             'profile' => $profile,
-            'stats' => $this->selection->candidateStats(collect([$profile]))[$profile->id],
-            'quota' => $this->selection->quota($application->project),
-            'skills' => $this->selection->skillBadges($application),
-            'portfolios' => $this->selection->portfolioItems($application),
-            'histories' => $application->statusHistories,
-            'backStatus' => $this->selection->statusFromQuery($request->query('status')),
+            'reputation' => $this->selection->reputation(collect([$profile]))[$profile->id] ?? ['rating' => null, 'evaluations' => 0, 'completed' => 0],
+            'quota' => $this->selection->quota($project, $counts[ApplicationStatus::Accepted->value]),
+            'requiredSkillIds' => $project->skills->pluck('id')->all(),
+            'listStatus' => $status,
         ]);
     }
 
-    /**
-     * Membuka dokumen portofolio pelamar. Dokumen tidak ditautkan langsung dari storage: akses diperiksa dulu,
-     * dan dokumen harus milik kandidat pada lamaran tersebut.
-     */
-    public function portfolio(Application $application, Portfolio $portfolio): Response
+    /** Nilai ?status= yang tidak dikenal diperlakukan sebagai "Semua"; status Dibatalkan bukan tab. */
+    private function statusFromRequest(Request $request): ?ApplicationStatus
     {
-        Gate::authorize('view', $application);
-        abort_unless($portfolio->candidate_profile_id === $application->candidate_profile_id, 404);
+        $status = ApplicationStatus::tryFrom((string) $request->query('status'));
 
-        $file = $this->selection->locateFile($portfolio);
-        abort_if($file === null, 404, 'Dokumen portofolio tidak ditemukan.');
-
-        $name = basename($file['path']);
-        $headers = ['X-Content-Type-Options' => 'nosniff'];
-        $disk = Storage::disk($file['disk']);
-        $mime = $disk->mimeType($file['path']) ?: '';
-
-        // PDF dan gambar boleh tampil langsung di tab baru; jenis berkas lain selalu diunduh.
-        if ($mime === 'application/pdf' || in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true)) {
-            return $disk->response($file['path'], $name, $headers);
-        }
-
-        return $disk->download($file['path'], $name, $headers);
-    }
-
-    /** Proyek dari ?proyek=, harus milik UMKM yang login dan ada di daftar dropdown; bila kosong, proyek terbaru. */
-    private function requestedProject(Request $request, Collection $projects): Project
-    {
-        $id = $request->query('proyek');
-        if ($id === null || $id === '') {
-            return $projects->first();
-        }
-
-        abort_unless(is_string($id) && ctype_digit($id), 404);
-
-        $project = Project::findOrFail((int) $id);
-        Gate::authorize('viewApplicants', $project);
-
-        return $projects->firstWhere('id', $project->id) ?? abort(404);
+        return in_array($status, CandidateSelectionService::TABS, true) ? $status : null;
     }
 }
