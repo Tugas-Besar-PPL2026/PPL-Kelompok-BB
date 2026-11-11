@@ -35,8 +35,11 @@
         ],
     ];
 
-    // Pilihan yang sama dengan status saat ini tampil redup; pilihan pertama yang lain ditandai sebagai sorotan.
-    $highlighted = collect($options)->first(fn ($option) => $option['status'] !== $current)['status'] ?? null;
+    // Pilihan yang sama dengan status saat ini tampil redup. "Terima pelamar" disorot hanya untuk pelamar yang
+    // belum diputuskan (Menunggu / Terpilih Sementara), seperti pada mockup.
+    $highlighted = in_array($current, [ApplicationStatus::Pending, ApplicationStatus::Shortlisted], true)
+        ? ApplicationStatus::Accepted
+        : null;
 @endphp
 
 <section class="card" aria-labelledby="judul-keputusan">
