@@ -4,6 +4,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+
+
 // Login development berdasarkan role
 $devLogin = function (string $email, string $redirectUrl) {
     $user = User::where('email', $email)->first();
@@ -35,3 +37,20 @@ Route::get('/dev/login/umkm', function () use ($devLogin) {
         '/umkm/seleksi'
     );
 });
+
+// Halaman utama sementara langsung masuk sebagai Kandidat
+Route::get('/', function () use ($devLogin) {
+    return $devLogin(
+        'kandidat@proyekkita.test',
+        route('kandidat.profil.edit')
+    );
+});
+
+// Halaman login sementara langsung masuk sebagai Kandidat
+Route::get('/login', function () use ($devLogin) {
+    return $devLogin(
+        'kandidat@proyekkita.test',
+        route('kandidat.profil.edit')
+    );
+})->name('login');
+
