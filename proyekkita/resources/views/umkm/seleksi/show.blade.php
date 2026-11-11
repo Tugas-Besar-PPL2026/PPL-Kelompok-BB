@@ -6,6 +6,12 @@
 @extends('layouts.app')
 @section('title', 'Detail Pelamar')
 
+{{-- Gaya khusus halaman ini (hanya berlaku di dalam <main>); tidak mengubah navbar/sidebar. --}}
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/seleksi.css') }}">
+@endpush
+
+
 @use('App\Support\SelectionPresenter', 'P')
 @use('App\Enums\ApplicationStatus')
 

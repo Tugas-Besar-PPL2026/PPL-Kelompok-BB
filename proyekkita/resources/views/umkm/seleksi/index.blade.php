@@ -5,6 +5,12 @@
 @extends('layouts.app')
 @section('title', 'Seleksi Kandidat')
 
+{{-- Gaya khusus halaman ini (hanya berlaku di dalam <main>); tidak mengubah navbar/sidebar. --}}
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/seleksi.css') }}">
+@endpush
+
+
 @use('App\Support\SelectionPresenter', 'P')
 
 @section('content')
@@ -112,7 +118,7 @@
                                 <th class="c-rate">Penilaian</th>
                                 <th class="c-date">Dilamar</th>
                                 <th class="c-status">Status</th>
-                                <th class="r c-act">Aksi</th>
+                                <th class="r c-act" aria-label="Aksi"></th>
                             </tr>
                         </thead>
                         <tbody>
