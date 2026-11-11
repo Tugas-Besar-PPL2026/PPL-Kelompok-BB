@@ -53,11 +53,11 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
     Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
 
+    // Seleksi Kandidat (FR-11, PBI-19): daftar pelamar dan detail pelamar. Akses dibatasi policy ke pemilik proyek.
     Route::get('seleksi', [CandidateSelectionController::class, 'index'])->name('seleksi.index');
-    Route::get('seleksi/{application}', [CandidateSelectionController::class, 'show'])
-        ->whereNumber('application')->name('seleksi.show');
-    Route::get('seleksi/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolio'])
-        ->whereNumber(['application', 'portfolio'])->name('seleksi.portofolio');
+    Route::get('seleksi/pelamar/{application}', [CandidateSelectionController::class, 'show'])
+        ->whereNumber('application')
+        ->name('seleksi.show');
 });
 
 //Middleware untuk admin

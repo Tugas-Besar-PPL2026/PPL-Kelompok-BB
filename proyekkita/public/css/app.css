@@ -193,128 +193,105 @@ table.t tr:last-child td{border-bottom:none}
 }
 
 /* ==========================================================================
-   Seleksi Kandidat (PBI-19): daftar pelamar dan detail pelamar
-   Hanya menambah kelas baru; aturan di atas tidak diubah.
+   Seleksi Kandidat (PBI-19): daftar pelamar dan detail pelamar.
+   Hanya menambah kelas baru, tidak mengubah kelas yang sudah ada.
    ========================================================================== */
 
-/* ---------- Header & pemilih proyek ---------- */
-.ph .hd{max-width:640px}
-.projsel-form{align-items:center}
-.projsel{display:flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 14px;background:#fff;border:1px solid var(--line);border-radius:8px;position:relative;font-size:14px;color:var(--ink2)}
-.projsel:focus-within{border-color:var(--pri2);box-shadow:0 0 0 3px #E2E8FF}
-.projsel select{appearance:none;-webkit-appearance:none;border:0;outline:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);cursor:pointer;max-width:340px;text-overflow:ellipsis;padding-right:22px;field-sizing:content;height:38px}
-.projsel .ic{position:absolute;right:12px;pointer-events:none;color:var(--ink2)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nw{white-space:nowrap}
+.ar{text-align:right}
+.rowwrap{flex-wrap:wrap}
+.empty{text-align:center;padding:30px 16px;color:var(--mut)}
+.empty .ic{color:#B8BCCB}
+.empty .b{color:var(--ink)}
 
-/* ---------- Statistik & kuota ---------- */
-.stats{margin-bottom:18px}
-.stat .v small{font-size:inherit;font-weight:700;color:var(--ink)}
-.quota{padding:16px 22px 18px;margin-bottom:18px}
-.quota+.card{margin-top:0}
-.quota .between .t{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px}
-.quota .between .t .ic{color:var(--ink2)}
+/* Pilihan proyek pada header */
+.psel{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 38px 0 16px;min-height:42px;max-width:100%}
+.psel:focus-within{border-color:var(--pri2);box-shadow:0 0 0 3px #E2E8FF}
+.psel label{color:var(--mut);font-size:14px;white-space:nowrap}
+.psel select{appearance:none;-webkit-appearance:none;border:0;outline:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);padding:10px 0;cursor:pointer;min-width:0;max-width:360px;text-overflow:ellipsis}
+.psel .ic{position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink2)}
+
+/* Kartu kuota */
+.card.quota{padding:16px 22px}
+.quota .qt{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px}
+.quota .qt .ic{color:var(--ink)}
 .quota .prog{margin-top:12px}
+.card+.card.quota,.grid+.card.quota{margin-top:0}
 
-/* ---------- Kartu tabel pelamar ---------- */
-.tcard{padding:8px 8px 10px}
-.tcard .tabs{margin:18px 22px 20px}
-.tabs.scroll{overflow-x:auto;white-space:nowrap;scrollbar-width:thin}
-.tabs.scroll a{flex:none}
+/* Tabel pelamar */
+.card.tcard{margin-top:16px;padding:6px 12px 12px}
+.tcard .tabs{padding:0 12px;margin-bottom:10px;overflow-x:auto;white-space:nowrap}
 .tscroll{overflow-x:auto}
-.tscroll table.t{min-width:900px}
-table.t.pel td{padding:14px 12px}
-table.t.pel .c-skill{width:196px}
-table.t.pel .c-exp,table.t.pel .c-rate{width:122px}
-table.t.pel .c-date{width:96px;white-space:nowrap}
-table.t.pel .c-status{width:152px}
-table.t.pel .c-act{width:72px}
-table.t.pel th.r,table.t.pel td.r{text-align:right}
-.pl{display:flex;align-items:center;gap:12px;min-width:200px}
-.pl .n{font-weight:600;font-size:14px;line-height:1.3}
-.pl .s{font-size:13px;color:var(--mut);line-height:1.35}
-.pl .av{align-self:center}
-.pl .av,.pcard .av{position:relative;overflow:hidden}
-.pl .av img,.pcard .av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
-.av.xl{width:84px;height:84px;border-radius:14px;font-size:28px}
-.tag.sm{font-size:11.5px;padding:3px 8px}
-.tag.req{background:#DCE4FF;border-color:#B9C7F7;color:#0F2A82;font-weight:700}
-.tags.cell{gap:6px}
-.celltxt{font-size:13px;line-height:1.4;color:var(--ink2)}
-.rt{display:flex;align-items:center;gap:5px;font-weight:700;font-size:14px}
+table.t.pl{min-width:900px}
+table.t.pl td{vertical-align:middle}
+.pc{display:flex;align-items:center;gap:12px}
+.pc .nm{font-weight:600}
+.pc .sm{font-size:12.5px;color:var(--mut);line-height:1.35}
+.av img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+td.sk{min-width:200px;max-width:260px}
+.tags.tight{gap:6px}
+.tag.s{font-size:12px;padding:2px 8px}
 .star{color:#F5A524;fill:#F5A524}
-.star.off{color:#D3D6E2;fill:none}
-.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;padding:44px 20px;color:var(--mut)}
-.empty .ic{color:#9AA3C7}
-.empty b{color:var(--ink);font-size:15px}
-.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px 6px;font-size:13px;color:var(--mut);flex-wrap:wrap}
-.pager .row{gap:8px}
+.star.off{color:#D5D8E3;fill:none}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 12px 4px;font-size:13px;color:var(--mut);flex-wrap:wrap}
 
-/* ---------- Detail pelamar ---------- */
-.pcard{display:flex;gap:20px;align-items:flex-start}
-.pcard .info{flex:1;min-width:0}
-.pname{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pname h2{font-size:22px;font-weight:700;letter-spacing:-.3px;line-height:1.25}
-.headline{color:var(--ink2);margin-top:6px;font-size:14.5px}
-.pmeta{display:grid;grid-template-columns:1.2fr 1fr .8fr;gap:12px 16px;margin-top:14px;font-size:13px;color:var(--ink2);line-height:1.4}
-.pmeta>div{display:flex;gap:8px;align-items:flex-start}
-.pmeta .ic{color:var(--ink2);margin-top:1px}
-.rate{display:flex;align-items:center;gap:6px;margin-top:14px;font-size:13.5px;color:var(--mut);flex-wrap:wrap}
-.rate .stars{display:flex;gap:2px}
-.rate b{color:var(--ink);font-size:14.5px;margin-left:4px}
-.sechead{font-weight:600;font-size:14.5px;margin-bottom:8px}
+/* Detail pelamar */
+.grid.gtop{align-items:start}
+.av.lg{width:84px;height:84px;border-radius:18px;font-size:30px}
+.prof{display:flex;gap:20px;align-items:flex-start}
+.pbody{min-width:0;flex:1}
+.prof h2{font-size:23px;font-weight:700;letter-spacing:-.3px;line-height:1.25}
+.prof .hl{color:var(--ink2);margin-top:6px;font-size:14.5px}
+.meta3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+.meta3>div{display:flex;gap:8px;align-items:flex-start;color:var(--ink2);font-size:13px;line-height:1.35}
+.meta3 .ic{color:var(--mut);margin-top:1px}
+.rate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.stars{display:inline-flex;gap:2px}
+.sech{font-size:14.5px;font-weight:600;margin-bottom:8px}
 .msg{white-space:pre-line;color:var(--ink2);line-height:1.6;overflow-wrap:anywhere}
-.when{font-size:12.5px;color:var(--mut);margin-top:8px}
-.muted-empty{color:var(--mut);font-size:13.5px}
+.tag.req{font-weight:700;background:#DDE5FF;border-color:#BFCBFA;color:#12276B}
+.tag.oth{font-weight:400;background:#F4F5FB;border-color:var(--line);color:var(--ink2)}
+.ico{width:36px;height:36px;border-radius:8px;background:var(--pril);color:var(--pri);display:flex;align-items:center;justify-content:center;flex:none}
 .exp{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line2)}
-.exps .exp:first-child{border-top:0}
-.exp .ico{width:36px;height:36px;border-radius:8px;background:var(--pril);color:var(--pri);display:flex;align-items:center;justify-content:center;flex:none}
-.exp .tt{font-weight:600;font-size:14.5px}
-.exp .du{font-size:13px;color:var(--mut);margin-top:2px}
-.exp .ds{font-size:13.5px;color:var(--ink2);margin-top:6px;overflow-wrap:anywhere}
-.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.pf{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
-.pf .ico{width:38px;height:38px;border-radius:8px;background:var(--pril);color:var(--pri);display:flex;align-items:center;justify-content:center;flex:none}
-.pf .body{flex:1;min-width:0}
-.pf .tt{font-weight:600;font-size:13.5px;line-height:1.35;overflow-wrap:anywhere}
-.pf .ds{font-size:12.5px;color:var(--ink2);margin-top:4px;overflow-wrap:anywhere}
-.pf .lk{display:flex;align-items:center;gap:6px;font-size:12.5px;margin-top:4px;color:var(--mut);overflow-wrap:anywhere}
-.pf .lk a{color:var(--pri);overflow-wrap:anywhere}
-.pf .open{color:var(--ink2);flex:none;margin-top:2px}
+.explist .exp:first-child{border-top:0;padding-top:0}
+.exp .expd{font-size:13.5px;color:var(--ink2);margin-top:6px;overflow-wrap:anywhere}
+.pfg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pf{display:flex;gap:12px;border:1px solid var(--line);border-radius:10px;padding:14px;align-items:flex-start}
+.pfb{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pf .nm{font-weight:600;font-size:13.5px}
+.pf a.lk{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink2);overflow-wrap:anywhere}
+.pf a.lk:hover{color:var(--pri)}
 
-/* ---------- Panel keputusan seleksi (tampilan; logika di PBI-20 dan PBI-21) ---------- */
-.qbox{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:#fff;margin-bottom:14px}
-.qbox .between{font-size:13px}
-.qbox .prog{margin-top:8px;height:7px}
-.opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:10px}
-.opt .dot{width:18px;height:18px;border-radius:50%;border:1.5px solid #B8BCCB;flex:none;margin-top:2px;background:#fff;position:relative}
+/* Panel keputusan seleksi */
+.qbox{border:1px solid var(--line);background:#FAFAFD;border-radius:10px;padding:12px 14px;font-size:13px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:13px 14px;cursor:pointer;position:relative}
 .opt input{position:absolute;opacity:0;pointer-events:none}
-.opt .tt{font-weight:600;font-size:14px}
-.opt .ds{font-size:13px;color:var(--mut);margin-top:2px;line-height:1.4}
-.opt.sel{border-color:var(--pri2);background:#F3F6FF;box-shadow:0 0 0 2px #DCE5FF}
-.opt.sel .dot{border-color:var(--pri2)}
-.opt.sel .dot:after{content:"";position:absolute;inset:3px;border-radius:50%;background:var(--pri2)}
-.opt.dis{background:#FAFAFD;border-color:var(--line2)}
-.opt.dis .tt,.opt.dis .ds{color:#A3A8B8}
-.opt.dis .dot{border-color:#D6D9E4}
-.dlabel{font-size:13px;font-weight:600;color:var(--ink2);margin:16px 0 8px}
-.dnote{width:100%;min-height:92px;border:1px solid #D7D9E4;border-radius:8px;padding:11px 13px;font:inherit;font-size:14px;color:var(--ink);background:#fff;resize:none;line-height:1.5}
-.dnote:disabled{background:#fff;color:var(--ink2);cursor:not-allowed}
-.dnote::placeholder{color:#9AA3B8}
-.tl .t3.note{color:var(--ink2)}
+.opt .rd{width:18px;height:18px;border-radius:50%;border:1.5px solid #B8BCCB;flex:none;margin-top:2px;background:#fff;display:flex;align-items:center;justify-content:center}
+.opt b{display:block;font-size:14px}
+.opt .d{display:block;font-size:13px;color:var(--mut);margin-top:2px}
+.opt:has(input:checked){border-color:var(--pri2);box-shadow:0 0 0 2px #E2E8FF;background:#F7F9FF}
+.opt:has(input:checked) .rd{border-color:var(--pri2)}
+.opt:has(input:checked) .rd:after{content:"";width:8px;height:8px;border-radius:50%;background:var(--pri2)}
+.opt:has(input:focus-visible){outline:2px solid var(--pri2);outline-offset:2px}
+.opt:has(input:disabled){cursor:default}
+.opt:has(input:disabled:not(:checked)){opacity:.6;background:#FAFAFD}
+.in.ta textarea{min-height:84px}
+.in textarea[readonly]{cursor:default}
 
-/* ---------- Layar kecil ---------- */
+/* Layar kecil */
 @media (max-width:1000px){
-  .stats{grid-template-columns:repeat(2,1fr)}
-  .projsel-form{width:100%}
-  .projsel{width:100%}
-  .projsel select{max-width:none;width:100%;field-sizing:fixed}
+  .grid.stats{grid-template-columns:repeat(2,1fr)}
+  .psel{width:100%}
+  .psel select{flex:1;max-width:none}
+  .ph .act{width:100%}
 }
 @media (max-width:700px){
-  .pmeta{grid-template-columns:1fr}
-  .pf-grid{grid-template-columns:1fr}
-  .tcard .tabs{margin:12px 12px 16px}
+  .meta3,.pfg{grid-template-columns:1fr}
+  .prof{flex-direction:column;gap:14px}
+  .card.quota .between{flex-direction:column;align-items:flex-start;gap:4px}
 }
-@media (max-width:560px){
-  .pcard{flex-direction:column;gap:14px}
-  .av.xl{width:64px;height:64px;font-size:22px;border-radius:12px}
-  .pname h2{font-size:20px}
+@media (max-width:380px){
+  .grid.stats{grid-template-columns:1fr}
 }
