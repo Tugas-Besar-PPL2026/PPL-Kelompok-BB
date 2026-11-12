@@ -67,6 +67,12 @@ class CandidateSelectionService
         return $counts;
     }
 
+    /** Nama lain untuk statusCounts(); dipakai test PBI-18 (BatalkanLamaranTest). */
+    public function counts(Project $project): array
+    {
+        return $this->statusCounts($project);
+    }
+
     /**
      * Kuota proyek. Yang dihitung terisi hanya lamaran berstatus Diterima, bukan Terpilih Sementara.
      *
