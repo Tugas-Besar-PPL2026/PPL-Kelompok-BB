@@ -58,6 +58,13 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::get('seleksi/pelamar/{application}', [CandidateSelectionController::class, 'show'])
         ->whereNumber('application')
         ->name('seleksi.show');
+    // PBI-20/21: keputusan seleksi (terpilih sementara, tolak, terima) dan dokumen portofolio pelamar.
+    Route::post('seleksi/pelamar/{application}/keputusan', [CandidateSelectionController::class, 'decide'])
+        ->whereNumber('application')
+        ->name('seleksi.keputusan');
+    Route::get('seleksi/pelamar/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolioFile'])
+        ->whereNumber(['application', 'portfolio'])
+        ->name('seleksi.portofolio');
 });
 
 //Middleware untuk admin
