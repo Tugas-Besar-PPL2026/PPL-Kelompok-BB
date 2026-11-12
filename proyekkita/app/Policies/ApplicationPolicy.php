@@ -15,4 +15,10 @@ class ApplicationPolicy
         return $user->isUmkm()
             && (int) $application->project?->umkmProfile?->user_id === $user->id;
     }
+
+    /** Memproses keputusan seleksi (PBI-20/21): hanya UMKM pemilik proyek, sama dengan hak melihat. */
+    public function decide(User $user, Application $application): bool
+    {
+        return $this->view($user, $application);
+    }
 }
