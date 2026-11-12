@@ -8,13 +8,11 @@
 @section('title', 'Detail Pelamar')
 
 @use('App\Enums\ApplicationStatus')
-@use('App\Support\CandidatePresenter')
-@use('App\Support\IdFormat')
+@use('App\Support\SelectionPresenter')
 
 @section('content')
     @php
         $backUrl = route('umkm.seleksi.index', ['proyek' => $project->id, 'status' => $listStatus?->value]);
-        $photo = CandidatePresenter::photoUrl($profile);
 
         // Keterampilan yang dibutuhkan proyek ditampilkan lebih dulu dan lebih tebal.
         $matchedSkills = $profile->skills->filter(fn ($skill) => in_array($skill->id, $requiredSkillIds, true));
@@ -47,11 +45,7 @@
             <section class="card">
                 <div class="prof">
                     <div class="av lg">
-                        @if ($photo)
-                            <img src="{{ $photo }}" alt="Foto {{ $profile->full_name }}">
-                        @else
-                            {{ CandidatePresenter::initials($profile->full_name) }}
-                        @endif
+                        {{ SelectionPresenter::initials($profile->full_name) }}
                     </div>
                     <div class="pbody">
                         <div class="row rowwrap">
@@ -73,7 +67,7 @@
                                         <i data-lucide="star" class="ic star {{ $i <= round($rating) ? '' : 'off' }}" width="16" height="16"></i>
                                     @endfor
                                 </span>
-                                <b>{{ IdFormat::rating($rating) }}</b>
+                                <b>{{ SelectionPresenter::decimal($rating) }}</b>
                                 <span class="sub">rata-rata dari {{ $reputation['evaluations'] }} evaluasi UMKM · {{ $reputation['completed'] }} proyek selesai</span>
                             @else
                                 <span class="sub">Belum ada penilaian · {{ $reputation['completed'] }} proyek selesai</span>
@@ -99,7 +93,7 @@
                 @else
                     <p class="sub">Kandidat tidak menuliskan pesan lamaran.</p>
                 @endif
-                <div class="sub mt8">Dikirim {{ IdFormat::dateTime($application->created_at) }}</div>
+                <div class="sub mt8">Dikirim {{ SelectionPresenter::dateTime($application->created_at) }}</div>
             </section>
 
             {{-- Keterampilan & pengalaman --}}
@@ -154,11 +148,12 @@
                     <div class="pfg">
                         @foreach ($profile->portfolios as $portfolio)
                             @php
-                                $url = CandidatePresenter::externalUrl($portfolio->link);
-                                $file = CandidatePresenter::file($portfolio);
+                                $url = SelectionPresenter::safeUrl($portfolio->link);
+                                $hasFile = filled($portfolio->file_path);
+                                $fileInfo = $hasFile ? ($files[$portfolio->id] ?? null) : null;
                             @endphp
                             <div class="pf">
-                                <div class="ico"><i data-lucide="{{ $url ? 'link' : 'file-text' }}" class="ic" width="18" height="18"></i></div>
+                                <div class="ico"><i data-lucide="{{ $url || ! $hasFile ? 'link' : 'file-text' }}" class="ic" width="18" height="18"></i></div>
                                 <div class="pfb">
                                     <div class="nm">{{ $portfolio->title }}</div>
                                     @if (filled($portfolio->description))
@@ -167,21 +162,21 @@
                                     @if ($url)
                                         <a class="lk" href="{{ $url }}" target="_blank" rel="noopener noreferrer nofollow">
                                             <i data-lucide="external-link" class="ic" width="13" height="13"></i>
-                                            <span>{{ CandidatePresenter::linkLabel($portfolio->link) }}</span>
+                                            <span>{{ SelectionPresenter::displayUrl($url) }}</span>
                                         </a>
-                                    @elseif (filled($portfolio->link))
-                                        {{-- Tautan dengan skema selain http/https tidak dijadikan tautan yang bisa diklik --}}
-                                        <div class="sub">{{ $portfolio->link }}</div>
                                     @endif
-                                    @if ($file)
-                                        @if ($file['url'])
-                                            <a class="lk" href="{{ $file['url'] }}" target="_blank" rel="noopener noreferrer">
+                                    @if ($hasFile)
+                                        @if ($fileInfo)
+                                            <a class="lk" href="{{ route('umkm.seleksi.portofolio', ['application' => $application->id, 'portfolio' => $portfolio->id]) }}" target="_blank" rel="noopener noreferrer">
                                                 <i data-lucide="file-text" class="ic" width="13" height="13"></i>
-                                                <span>{{ $file['name'] }}{{ $file['size'] ? ' · '.$file['size'] : '' }}</span>
+                                                <span>{{ basename($portfolio->file_path) }} · {{ SelectionPresenter::fileSize($fileInfo['size']) }}</span>
                                             </a>
                                         @else
-                                            <div class="sub">{{ $file['name'] }} (berkas tidak ditemukan)</div>
+                                            <div class="sub">{{ basename($portfolio->file_path) }} (berkas tidak ditemukan)</div>
                                         @endif
+                                    @endif
+                                    @if (! $url && ! $hasFile)
+                                        <div class="sub">Tidak ada tautan atau dokumen.</div>
                                     @endif
                                 </div>
                             </div>
@@ -215,7 +210,7 @@
                             @endphp
                             <div class="it {{ $dot }}">
                                 <div class="t1">{{ $isInitial ? 'Lamaran diterima sistem' : \Illuminate\Support\Str::ucfirst(mb_strtolower($history->status->label())) }}</div>
-                                <div class="t2">{{ IdFormat::dateTime($history->changed_at) }}</div>
+                                <div class="t2">{{ SelectionPresenter::dateTime($history->changed_at) }}</div>
                                 @if ($isInitial)
                                     <div class="t3">Status awal: {{ $history->status->label() }}</div>
                                 @endif
