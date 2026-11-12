@@ -32,21 +32,21 @@
     $preselect = $oldChoice && collect($options)->contains(fn ($o) => $o['value'] === $oldChoice) ? $oldChoice : $firstSelectable;
 @endphp
 
-<section class="card">
+<section class="card" dusk="panel-keputusan">
     <div class="ch"><i data-lucide="gavel" class="ic" width="20" height="20"></i><h3>Keputusan Seleksi</h3></div>
 
     <div class="qbox">
         <div class="between">
             <b>Kuota kandidat</b>
-            <span class="small">{{ $quota['accepted'] }} dari {{ $quota['total'] }} terisi</span>
+            <span class="small" dusk="kuota-panel">{{ $quota['accepted'] }} dari {{ $quota['total'] }} terisi</span>
         </div>
-        <div class="prog mt8" role="progressbar" aria-label="Kuota kandidat terisi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $quota['percent'] }}">
+        <div class="prog mt8" dusk="progres-kuota-panel" role="progressbar" aria-label="Kuota kandidat terisi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $quota['percent'] }}">
             <i style="width:{{ $quota['percent'] }}%"></i>
         </div>
     </div>
 
     @if ($errors->any())
-        <div class="al bad mt12" role="alert">
+        <div class="al bad mt12" role="alert" dusk="galat-keputusan">
             <i data-lucide="circle-alert" class="ic" width="18" height="18"></i>
             <div>@foreach ($errors->all() as $message)<div>{{ $message }}</div>@endforeach</div>
         </div>
@@ -60,7 +60,7 @@
     @endif
 
     @if ($isFinal)
-        <div class="al info mt12">
+        <div class="al info mt12" dusk="status-final">
             <i data-lucide="lock" class="ic" width="18" height="18"></i>
             <div>
                 Status lamaran ini <b>{{ $current->label() }}</b> dan tidak dapat diubah lagi lewat halaman ini.
@@ -73,7 +73,7 @@
             <div class="opts mt12" role="radiogroup" aria-label="Keputusan seleksi">
                 @foreach ($options as $opt)
                     @php $ok = $selectable($opt); @endphp
-                    <label class="opt">
+                    <label class="opt" dusk="opsi-{{ $opt['value'] }}">
                         <input type="radio" name="keputusan" value="{{ $opt['value'] }}" @checked($ok && $preselect === $opt['value']) @disabled(! $ok)>
                         <span class="rd"></span>
                         <span>
@@ -87,13 +87,13 @@
             <div class="fl mt16">
                 <label for="catatan-seleksi">Catatan seleksi</label>
                 <div class="in ta">
-                    <textarea id="catatan-seleksi" name="catatan" rows="3" maxlength="1000">{{ old('catatan') }}</textarea>
+                    <textarea dusk="catatan-seleksi" id="catatan-seleksi" name="catatan" rows="3" maxlength="1000">{{ old('catatan') }}</textarea>
                 </div>
                 <div class="hint">Opsional saat menerima atau memasukkan ke terpilih sementara, wajib saat menolak.</div>
             </div>
 
             <div class="mt16">
-                <button type="submit" class="btn p" @disabled($firstSelectable === null)>
+                <button type="submit" dusk="simpan-keputusan" class="btn p" @disabled($firstSelectable === null)>
                     <i data-lucide="check" class="ic" width="16" height="16"></i>Simpan Keputusan
                 </button>
             </div>
