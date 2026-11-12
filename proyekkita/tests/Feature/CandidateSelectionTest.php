@@ -15,6 +15,7 @@ use App\Models\Project;
 use App\Models\Skill;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -192,6 +193,51 @@ class CandidateSelectionTest extends TestCase
         $this->actingAs($this->umkm)->get(route('umkm.seleksi.show', $application))
             ->assertOk()
             ->assertDontSee('href="javascript:', false);
+    }
+
+    public function test_umkm_can_open_applicant_portfolio_document_and_others_cannot(): void
+    {
+        Storage::fake('public');
+        $application = $this->apply($this->project, 'Nadia Putri', ApplicationStatus::Pending);
+        Storage::disk('public')->put('portfolios/1/cv.pdf', '%PDF-1.4 demo');
+        $portfolio = $application->candidateProfile->portfolios()->create(['title' => 'CV', 'description' => 'x', 'file_path' => 'portfolios/1/cv.pdf']);
+
+        $this->actingAs($this->umkm)->get(route('umkm.seleksi.show', $application))
+            ->assertOk()
+            ->assertSee(route('umkm.seleksi.portofolio', [$application, $portfolio]), false)
+            ->assertSee('cv.pdf');
+
+        $this->actingAs($this->umkm)->get(route('umkm.seleksi.portofolio', [$application, $portfolio]))->assertOk();
+
+        $other = $this->makeUmkm('lain@test.id', 'Toko Lain');
+        $this->actingAs($other)->get(route('umkm.seleksi.portofolio', [$application, $portfolio]))->assertForbidden();
+    }
+
+    public function test_portfolio_document_of_another_candidate_cannot_be_read_through_this_application(): void
+    {
+        Storage::fake('public');
+        $mine = $this->apply($this->project, 'Kandidat A', ApplicationStatus::Pending);
+        $theirs = $this->apply($this->project, 'Kandidat B', ApplicationStatus::Pending);
+        Storage::disk('public')->put('portfolios/9/b.pdf', '%PDF-1.4 demo');
+        $portfolio = $theirs->candidateProfile->portfolios()->create(['title' => 'B', 'description' => 'x', 'file_path' => 'portfolios/9/b.pdf']);
+
+        $this->actingAs($this->umkm)->get(route('umkm.seleksi.portofolio', [$mine, $portfolio]))->assertNotFound();
+    }
+
+    public function test_missing_portfolio_file_and_empty_portfolio_show_clear_messages(): void
+    {
+        Storage::fake('public');
+        $application = $this->apply($this->project, 'Kandidat Kosong', ApplicationStatus::Pending);
+        $profile = $application->candidateProfile;
+        $missing = $profile->portfolios()->create(['title' => 'Hilang', 'description' => 'x', 'file_path' => 'portfolios/1/hilang.pdf']);
+        $profile->portfolios()->create(['title' => 'Kosong', 'description' => 'x']);
+
+        $this->actingAs($this->umkm)->get(route('umkm.seleksi.show', $application))
+            ->assertOk()
+            ->assertSee('berkas tidak ditemukan')
+            ->assertSee('Tidak ada tautan atau dokumen.');
+
+        $this->actingAs($this->umkm)->get(route('umkm.seleksi.portofolio', [$application, $missing]))->assertNotFound();
     }
 
     public function test_detail_handles_candidate_without_experience_portfolio_rating_or_history(): void
