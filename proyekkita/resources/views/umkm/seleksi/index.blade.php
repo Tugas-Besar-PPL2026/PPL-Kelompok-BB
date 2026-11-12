@@ -5,8 +5,7 @@
 @extends('layouts.app')
 @section('title', 'Seleksi Kandidat')
 
-@use('App\Support\CandidatePresenter')
-@use('App\Support\IdFormat')
+@use('App\Support\SelectionPresenter')
 
 @section('content')
     <div class="ph">
@@ -46,7 +45,7 @@
             <div class="stat">
                 <div class="l">Total pelamar</div>
                 <div class="v num">{{ $counts['all'] }}</div>
-                <div class="s">{{ $project->published_at ? 'sejak '.IdFormat::date($project->published_at) : 'pada proyek ini' }}</div>
+                <div class="s">{{ $project->published_at ? 'sejak '.SelectionPresenter::date($project->published_at) : 'pada proyek ini' }}</div>
             </div>
             <div class="stat">
                 <div class="l">Menunggu keputusan</div>
@@ -110,19 +109,13 @@
                             @php
                                 $profile = $application->candidateProfile;
                                 $rep = $reputation[$profile->id] ?? ['rating' => null, 'evaluations' => 0, 'completed' => 0];
-                                $expCount = $profile->experiences->count();
-                                $expMonths = $profile->experiences->sum(fn ($e) => IdFormat::durationToMonths($e->duration) ?? 0);
-                                $photo = CandidatePresenter::photoUrl($profile);
+                                $expSummary = SelectionPresenter::experienceSummary($profile->experiences);
                             @endphp
                             <tr>
                                 <td>
                                     <div class="pc">
                                         <div class="av">
-                                            @if ($photo)
-                                                <img src="{{ $photo }}" alt="Foto {{ $profile->full_name }}">
-                                            @else
-                                                {{ CandidatePresenter::initials($profile->full_name) }}
-                                            @endif
+                                            {{ SelectionPresenter::initials($profile->full_name) }}
                                         </div>
                                         <div>
                                             <div class="nm">{{ $profile->full_name }}</div>
@@ -141,23 +134,23 @@
                                     </div>
                                 </td>
                                 <td>
-                                    @if ($expCount > 0)
-                                        <div>{{ $expCount }} pengalaman</div>
-                                        @if ($expMonths > 0)<div class="sub">{{ IdFormat::months($expMonths) }}</div>@endif
+                                    @if ($expSummary['count'] > 0)
+                                        <div>{{ $expSummary['count'] }} pengalaman</div>
+                                        @if ($expSummary['duration'])<div class="sub">{{ $expSummary['duration'] }}</div>@endif
                                     @else
                                         <span class="sub">Belum ada pengalaman</span>
                                     @endif
                                 </td>
                                 <td>
                                     @if ($rep['rating'] !== null)
-                                        <div class="b"><i data-lucide="star" class="ic star" width="14" height="14"></i> {{ IdFormat::rating($rep['rating']) }}</div>
+                                        <div class="b"><i data-lucide="star" class="ic star" width="14" height="14"></i> {{ SelectionPresenter::decimal($rep['rating']) }}</div>
                                         <div class="sub">{{ $rep['completed'] }} proyek selesai</div>
                                     @else
                                         <div class="sub">Belum ada penilaian</div>
                                         @if ($rep['completed'] > 0)<div class="sub">{{ $rep['completed'] }} proyek selesai</div>@endif
                                     @endif
                                 </td>
-                                <td class="nw">{{ IdFormat::date($application->created_at) }}</td>
+                                <td class="nw">{{ SelectionPresenter::date($application->created_at) }}</td>
                                 <td><span class="bd {{ $application->status->badge() }}">{{ $application->status->label() }}</span></td>
                                 <td class="ar">
                                     <a href="{{ route('umkm.seleksi.show', ['application' => $application->id, 'status' => $status?->value]) }}" class="btn o sm" aria-label="Lihat detail pelamar {{ $profile->full_name }}">Lihat</a>

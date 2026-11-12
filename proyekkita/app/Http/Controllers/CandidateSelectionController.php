@@ -4,10 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Enums\ApplicationStatus;
 use App\Models\Application;
+use App\Exceptions\SelectionNotAllowedException;
+use App\Http\Requests\SelectionDecisionRequest;
+use App\Models\Portfolio;
 use App\Models\Project;
+use App\Services\CandidateAcceptanceService;
+use App\Services\CandidateDecisionService;
+use App\Services\CandidatePortfolioService;
 use App\Services\CandidateSelectionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Seleksi Kandidat sisi UMKM (FR-11, PBI-19): daftar pelamar per proyek dan detail pelamar.
@@ -15,7 +22,12 @@ use Illuminate\Support\Facades\Gate;
  */
 class CandidateSelectionController extends Controller
 {
-    public function __construct(private CandidateSelectionService $selection) {}
+    public function __construct(
+        private CandidateSelectionService $selection,
+        private CandidateDecisionService $decisions,
+        private CandidateAcceptanceService $acceptance,
+        private CandidatePortfolioService $portfolios,
+    ) {}
 
     /** Daftar pelamar untuk satu proyek, dengan statistik, kuota, dan filter status. */
     public function index(Request $request)
@@ -81,7 +93,59 @@ class CandidateSelectionController extends Controller
             'quota' => $this->selection->quota($project, $counts[ApplicationStatus::Accepted->value]),
             'requiredSkillIds' => $project->skills->pluck('id')->all(),
             'listStatus' => $status,
+            // Info berkas portofolio (null bila berkas tidak ada di penyimpanan), diindeks per id portofolio.
+            'files' => $profile->portfolios->mapWithKeys(fn (Portfolio $p) => [$p->id => $this->portfolios->locateFile($p)])->all(),
         ]);
+    }
+
+    /** Memproses keputusan seleksi: shortlist / reject (PBI-20) atau accept (PBI-21). */
+    public function decide(SelectionDecisionRequest $request, Application $application)
+    {
+        Gate::authorize('decide', $application);
+
+        $note = $request->note();
+        $back = redirect()->route('umkm.seleksi.show', array_filter([
+            'application' => $application->id,
+            'status' => $request->query('status'),
+        ]));
+
+        try {
+            match ($request->validated('keputusan')) {
+                'shortlist' => $this->decisions->shortlist($application, $note),
+                'reject' => $this->decisions->reject($application, $note),
+                'accept' => $this->acceptance->accept($application, $note),
+            };
+        } catch (SelectionNotAllowedException $e) {
+            return $back->with('error', $e->getMessage())->withInput();
+        }
+
+        return $back->with('success', match ($request->validated('keputusan')) {
+            'shortlist' => 'Pelamar dimasukkan ke daftar terpilih sementara.',
+            'reject' => 'Pelamar ditolak dan catatan penolakan tersimpan.',
+            'accept' => 'Pelamar berhasil diterima.',
+        });
+    }
+
+    /** Membuka dokumen portofolio pelamar. Hanya untuk UMKM pemilik proyek, dan dokumen harus milik pelamar itu. */
+    public function portfolioFile(Application $application, Portfolio $portfolio)
+    {
+        Gate::authorize('view', $application);
+        abort_unless((int) $portfolio->candidate_profile_id === (int) $application->candidate_profile_id, 404);
+
+        $file = $this->portfolios->locateFile($portfolio);
+        abort_if($file === null, 404, 'Berkas portofolio tidak ditemukan.');
+
+        $disk = Storage::disk($file['disk']);
+        $name = basename($file['path']);
+        $headers = ['X-Content-Type-Options' => 'nosniff'];
+        $mime = $disk->mimeType($file['path']) ?: '';
+
+        // Hanya PDF dan gambar yang ditampilkan di browser. Tipe lain diunduh agar tidak dieksekusi.
+        if ($mime === 'application/pdf' || in_array($mime, ['image/png', 'image/jpeg', 'image/gif', 'image/webp'], true)) {
+            return $disk->response($file['path'], $name, $headers);
+        }
+
+        return $disk->download($file['path'], $name, $headers);
     }
 
     /** Nilai ?status= yang tidak dikenal diperlakukan sebagai "Semua"; status Dibatalkan bukan tab. */
