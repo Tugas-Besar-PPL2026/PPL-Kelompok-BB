@@ -9,6 +9,7 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\CandidateApplicationController;
+use App\Http\Controllers\ApplicationCancellationController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 
@@ -44,6 +45,11 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
 
     // PBI-17: kandidat memantau status dan riwayat lamaran
     Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
+
+     // PBI-18: kandidat membatalkan lamaran
+    Route::patch('lamaran/{application}/batal', ApplicationCancellationController::class)
+        ->whereNumber('application')
+        ->name('lamaran.cancel');
 });
 
 //Middleware untuk UMKM
@@ -58,6 +64,13 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::get('seleksi/pelamar/{application}', [CandidateSelectionController::class, 'show'])
         ->whereNumber('application')
         ->name('seleksi.show');
+    // PBI-20/21: keputusan seleksi (terpilih sementara, tolak, terima) dan dokumen portofolio pelamar.
+    Route::post('seleksi/pelamar/{application}/keputusan', [CandidateSelectionController::class, 'decide'])
+        ->whereNumber('application')
+        ->name('seleksi.keputusan');
+    Route::get('seleksi/pelamar/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolioFile'])
+        ->whereNumber(['application', 'portfolio'])
+        ->name('seleksi.portofolio');
 });
 
 //Middleware untuk admin
