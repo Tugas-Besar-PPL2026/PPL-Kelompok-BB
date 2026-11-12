@@ -14,7 +14,7 @@
     $checks = [
         ['ok' => $profile['eligible'], 'yes' => 'Profil Anda memenuhi syarat melamar', 'no' => 'Profil Anda belum memenuhi syarat melamar'],
         ['ok' => $apply['closedReason'] === null, 'yes' => 'Proyek masih menerima lamaran', 'no' => $apply['closedReason'] ?? ''],
-        ['ok' => $existing === null, 'yes' => 'Anda belum melamar proyek ini', 'no' => 'Anda sudah melamar proyek ini'],
+        ['ok' => $existing === null, 'yes' => 'Anda belum melamar proyek ini', 'no' => $existing?->status === \App\Enums\ApplicationStatus::Cancelled ? 'Lamaran Anda pada proyek ini sudah dibatalkan' : 'Anda sudah melamar proyek ini'],
     ];
 
     // Komponen profil yang dilampirkan otomatis: [ikon, label, keterangan, sudah terisi, wajib]
@@ -42,9 +42,12 @@
         <div class="al ok mb16" dusk="status-lamaran">
             <i data-lucide="circle-check" class="ic" width="19" height="19"></i>
             <div>
-                <b>Lamaran Anda sudah terkirim</b>
+                <b>{{ $existing->status === \App\Enums\ApplicationStatus::Cancelled ? 'Lamaran Anda sudah dibatalkan' : 'Lamaran Anda sudah terkirim' }}</b>
                 Dikirim pada {{ $existing->created_at->locale('id')->translatedFormat('j M Y, H:i') }} ·
                 <span class="bd {{ $existing->status->badge() }}">{{ $existing->status->label() }}</span>
+                @if ($existing->status === \App\Enums\ApplicationStatus::Cancelled)
+                    <div style="margin-top:4px">Lamaran yang sudah dibatalkan tidak dapat diajukan kembali pada proyek ini.</div>
+                @endif
             </div>
         </div>
     @elseif ($apply['blocker'] === 'closed')

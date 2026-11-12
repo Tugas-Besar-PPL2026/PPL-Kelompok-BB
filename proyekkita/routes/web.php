@@ -9,6 +9,7 @@ use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\CandidateApplicationController;
+use App\Http\Controllers\ApplicationCancellationController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 
@@ -44,6 +45,11 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
 
     // PBI-17: kandidat memantau status dan riwayat lamaran
     Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
+
+     // PBI-18: kandidat membatalkan lamaran
+    Route::patch('lamaran/{application}/batal', ApplicationCancellationController::class)
+        ->whereNumber('application')
+        ->name('lamaran.cancel');
 });
 
 //Middleware untuk UMKM
