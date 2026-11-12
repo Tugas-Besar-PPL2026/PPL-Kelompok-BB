@@ -78,8 +78,14 @@ class CandidateSelectionService
      *
      * @return array{accepted: int, total: int, percent: int, remaining: int, full: bool}
      */
-    public function quota(Project $project, int $accepted): array
+    public function quota(Project $project, ?int $accepted = null): array
     {
+        // Bila jumlah diterima tidak diberikan, hitung dari database (hanya status Diterima).
+        $accepted ??= Application::query()
+            ->where('project_id', $project->id)
+            ->where('status', ApplicationStatus::Accepted->value)
+            ->count();
+
         $total = max((int) $project->quota, 0);
         $percent = $total > 0 ? (int) min(100, round($accepted / $total * 100)) : 0;
 
