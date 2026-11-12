@@ -16,6 +16,14 @@ use Tests\DuskTestCase;
  * Pelengkap Feature Test (tests/Feature/Kandidat/BatalkanLamaranTest.php), bukan penggantinya.
  * Mengikuti pola Dusk PBI-16: data dibuat unik per test dan asersi database dibatasi pada lamaran milik test ini.
  *
+ * PRASYARAT LINGKUNGAN (jika semua test gagal dengan \"halaman tidak ditemukan\", periksa ini lebih dulu):
+ *   1. APP_URL pada .env.dusk.local harus alamat server Laravel yang berjalan (mis. http://127.0.0.1:8000),
+ *      BUKAN http://localhost tanpa port (itu mengarah ke Apache/XAMPP di port 80).
+ *   2. Server aplikasi harus berjalan memakai environment Dusk (php artisan serve --env=dusk.local).
+ *   3. Database Dusk sudah dimigrasi (php artisan migrate --env=dusk.local).
+ * Tiap test diawali assertTitleContains() agar kegagalan lingkungan tidak lolos diam-diam
+ * (asersi \"tidak terlihat\" saja akan lulus pada halaman 404).
+ *
  * Selector memakai atribut dusk pada partial kandidat/lamaran/_batalkan.blade.php:
  *   batalkan-lamaran-{id}, dialog-batal-{id}, tutup-batal-{id}, konfirmasi-batal-{id}
  */
@@ -42,6 +50,7 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $judul, $id) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index'))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->assertSee($judul)
                 ->assertPresent("@batalkan-lamaran-{$id}")
                 ->assertMissing("@dialog-batal-{$id}")          // dialog belum tampil
@@ -86,6 +95,7 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $id) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index', ['status' => 'shortlisted']))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->assertPresent("@batalkan-lamaran-{$id}")
                 ->click("@batalkan-lamaran-{$id}")
                 ->waitFor("@dialog-batal-{$id}")
@@ -96,6 +106,7 @@ class BatalkanLamaranTest extends DuskTestCase
                 ->assertQueryStringHas('status', 'shortlisted')
                 ->assertSee('Tidak ada lamaran dengan status Terpilih Sementara')
                 ->visit(route('kandidat.lamaran.index', ['status' => 'cancelled']))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->assertSeeIn("#lamaran-{$id}", 'Dibatalkan')
                 ->assertSeeIn("#lamaran-{$id}", 'Anda masuk daftar pendek.'); // catatan UMKM tidak hilang
         });
@@ -116,12 +127,14 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $id, $projectId) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index'))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->click("@batalkan-lamaran-{$id}")
                 ->waitFor("@dialog-batal-{$id}")
                 ->press("@konfirmasi-batal-{$id}")
                 ->waitForText('Lamaran berhasil dibatalkan')
 
                 ->visit(route('kandidat.proyek.show', $projectId))
+                ->assertTitleContains('ProyekKita')
                 ->assertSeeIn('@status-lamaran', 'Lamaran Anda sudah dibatalkan')
                 ->assertSeeIn('@status-lamaran', 'tidak dapat diajukan kembali pada proyek ini')
                 ->assertDisabled('@pesan-lamaran')
@@ -144,6 +157,7 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $id) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index'))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
 
                 // "Tidak, Kembali" menutup dialog.
                 ->click("@batalkan-lamaran-{$id}")
@@ -175,6 +189,7 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $aktif, $diterima, $ditolak, $dibatalkan) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index'))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->assertPresent("@batalkan-lamaran-{$aktif->id}")      // pembanding: yang aktif punya tombol
                 ->assertMissing("@batalkan-lamaran-{$diterima->id}")
                 ->assertMissing("@batalkan-lamaran-{$ditolak->id}")
@@ -192,6 +207,7 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $id) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index'))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->click("@batalkan-lamaran-{$id}")
                 ->waitFor("@dialog-batal-{$id}");
 
@@ -218,6 +234,7 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($lain, $judul, $lamaran) {
             $browser->loginAs($lain)
                 ->visit(route('kandidat.lamaran.index'))
+                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                 ->assertDontSee($judul)
                 ->assertMissing("@batalkan-lamaran-{$lamaran->id}");
         });
@@ -240,6 +257,7 @@ class BatalkanLamaranTest extends DuskTestCase
                 $browser->resize(375, 812)
                     ->loginAs($kandidat)
                     ->visit(route('kandidat.lamaran.index'))
+                    ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
                     ->scrollIntoView("@batalkan-lamaran-{$id}")
                     ->click("@batalkan-lamaran-{$id}")
                     ->waitFor("@dialog-batal-{$id}")

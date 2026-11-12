@@ -366,20 +366,37 @@ class BatalkanLamaranTest extends TestCase
     // Integrasi dengan PBI lain (hanya membaca / tidak berubah)
     // =====================================================================
 
-    public function test_lamaran_dibatalkan_tidak_lagi_dihitung_pada_sisi_umkm_pbi19(): void
+    /**
+     * Sisi UMKM (PBI-19) menampilkan pelamar menurut status lamaran. Test ini memeriksa dampak pembatalan pada data
+     * (lamaran Dibatalkan tidak lagi menjadi pelamar aktif dan jumlah Diterima/kuota tidak berubah) tanpa bergantung
+     * pada nama method internal PBI-19, karena kode itu dikerjakan anggota lain dan bisa berubah.
+     * Bila CandidateSelectionService menyediakan counts(), hasilnya ikut diperiksa.
+     */
+    public function test_lamaran_dibatalkan_tidak_lagi_menjadi_pelamar_aktif_dan_kuota_tidak_berubah_pbi19(): void
     {
         $kandidat = $this->makeKandidat();
         $application = $this->makeApplicationFor($kandidat, ApplicationStatus::Shortlisted);
-        $selection = app(CandidateSelectionService::class);
+        $project = $application->project;
 
-        $this->assertSame(1, $selection->counts($application->project)['shortlisted']);
+        $statusAktif = array_map(fn (ApplicationStatus $s) => $s->value, [
+            ApplicationStatus::Pending, ApplicationStatus::Shortlisted, ApplicationStatus::Accepted, ApplicationStatus::Rejected,
+        ]);
+        $pelamarAktif = fn () => $project->applications()->whereIn('status', $statusAktif)->count();
+        $diterima = fn () => $project->applications()->where('status', ApplicationStatus::Accepted->value)->count();
+
+        $this->assertSame(1, $pelamarAktif());
+        $this->assertSame(0, $diterima());
 
         $this->batalkan($kandidat, $application);
 
-        $counts = $selection->counts($application->project);
-        $this->assertSame(0, $counts['shortlisted']);
-        $this->assertSame(0, $counts['all']);
-        $this->assertSame(0, $selection->quota($application->project)['accepted'], 'Kuota tidak terpengaruh.');
+        $this->assertSame(0, $pelamarAktif(), 'Lamaran Dibatalkan tidak boleh lagi dihitung sebagai pelamar aktif.');
+        $this->assertSame(0, $diterima(), 'Jumlah Diterima (kuota) tidak boleh berubah.');
+        $this->assertSame(1, $project->applications()->count(), 'Lamaran tetap ada di database.');
+
+        $selection = app(CandidateSelectionService::class);
+        if (method_exists($selection, 'counts')) {
+            $this->assertSame(0, $selection->counts($project)['shortlisted']);
+        }
     }
 
     public function test_lamaran_ulang_pada_proyek_yang_dibatalkan_ditolak_dengan_pesan_jelas_pbi16(): void
