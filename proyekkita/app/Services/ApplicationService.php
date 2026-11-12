@@ -46,8 +46,12 @@ class ApplicationService
                 // Kunci baris proyek dan baca ulang statusnya, supaya keputusan memakai data terbaru.
                 $locked = Project::query()->whereKey($project->getKey())->lockForUpdate()->firstOrFail();
 
-                if ($this->existingApplication($profile, $locked)) {
-                    throw new ApplicationNotAllowedException('Anda sudah pernah melamar proyek ini. Satu kandidat hanya dapat melamar sekali untuk setiap proyek.');
+                 if ($existing = $this->existingApplication($profile, $locked)) {
+                    throw new ApplicationNotAllowedException(
+                        $existing->status === ApplicationStatus::Cancelled
+                            ? 'Anda sudah pernah mengajukan lamaran pada proyek ini. Lamaran yang sudah dibatalkan tidak dapat diajukan kembali.'
+                            : 'Anda sudah pernah melamar proyek ini. Satu kandidat hanya dapat melamar sekali untuk setiap proyek.'
+                    );
                 }
 
                 if ($reason = $this->closedReason($locked)) {
