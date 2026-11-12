@@ -69,18 +69,18 @@
             <div class="between">
                 <div class="qt">
                     <i data-lucide="user-check" class="ic" width="20" height="20"></i>
-                    <span>Kuota kandidat terisi {{ $quota['accepted'] }} dari {{ $quota['total'] }}</span>
+                    <span dusk="kuota-daftar">Kuota kandidat terisi {{ $quota['accepted'] }} dari {{ $quota['total'] }}</span>
                 </div>
                 <div class="sub">{{ $quota['full'] ? 'Kuota terpenuhi' : 'Sisa '.$quota['remaining'].' kandidat dapat diterima' }}</div>
             </div>
-            <div class="prog" role="progressbar" aria-label="Kuota kandidat terisi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $quota['percent'] }}">
+            <div class="prog" dusk="progres-kuota-daftar" role="progressbar" aria-label="Kuota kandidat terisi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $quota['percent'] }}">
                 <i style="width:{{ $quota['percent'] }}%"></i>
             </div>
         </section>
 
         {{-- Tab status dan tabel pelamar --}}
         <section class="card tcard">
-            <nav class="tabs" aria-label="Filter status pelamar">
+            <nav class="tabs" dusk="tab-status" aria-label="Filter status pelamar">
                 <a href="{{ route('umkm.seleksi.index', ['proyek' => $project->id]) }}" class="{{ $status === null ? 'on' : '' }}" @if ($status === null) aria-current="page" @endif>
                     Semua <span>{{ $counts['all'] }}</span>
                 </a>
@@ -151,9 +151,9 @@
                                     @endif
                                 </td>
                                 <td class="nw">{{ SelectionPresenter::date($application->created_at) }}</td>
-                                <td><span class="bd {{ $application->status->badge() }}">{{ $application->status->label() }}</span></td>
+                                <td><span dusk="status-pelamar-{{ $application->id }}" class="bd {{ $application->status->badge() }}">{{ $application->status->label() }}</span></td>
                                 <td class="ar">
-                                    <a href="{{ route('umkm.seleksi.show', ['application' => $application->id, 'status' => $status?->value]) }}" class="btn o sm" aria-label="Lihat detail pelamar {{ $profile->full_name }}">Lihat</a>
+                                    <a href="{{ route('umkm.seleksi.show', ['application' => $application->id, 'status' => $status?->value]) }}" dusk="lihat-pelamar-{{ $application->id }}" class="btn o sm" aria-label="Lihat detail pelamar {{ $profile->full_name }}">Lihat</a>
                                 </td>
                             </tr>
                         @empty
