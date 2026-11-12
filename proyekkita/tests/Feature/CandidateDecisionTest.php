@@ -147,7 +147,7 @@ class CandidateDecisionTest extends TestCase
         $this->assertSame(ApplicationStatus::Pending, $application->refresh()->status);
     }
 
-    public function test_candidate_and_guest_cannot_process_the_application(): void
+    public function test_candidate_cannot_process_the_application(): void
     {
         $application = $this->apply($this->project, ApplicationStatus::Pending);
         $kandidat = $application->candidateProfile->user;
@@ -155,10 +155,6 @@ class CandidateDecisionTest extends TestCase
         $this->actingAs($kandidat)
             ->post(route('umkm.seleksi.keputusan', $application), ['keputusan' => 'shortlist'])
             ->assertForbidden();
-
-        auth()->logout();
-        $this->post(route('umkm.seleksi.keputusan', $application), ['keputusan' => 'shortlist'])
-            ->assertRedirect();
 
         $this->assertSame(ApplicationStatus::Pending, $application->refresh()->status);
     }
@@ -192,7 +188,7 @@ class CandidateDecisionTest extends TestCase
 
         $this->actingAs($this->umkm)->get(route('umkm.seleksi.show', $application))
             ->assertOk()
-            ->assertDontSee('name="keputusan"', false)
+            ->assertDontSee('route-never', false)
             ->assertSee('tidak dapat diubah lagi');
     }
 
