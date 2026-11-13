@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 class ProjectRequest extends FormRequest
 {
@@ -25,6 +26,40 @@ class ProjectRequest extends FormRequest
             'target_completion_date' => ['required', 'date', 'after:application_deadline'],
             'quota' => ['required', 'integer', 'min:1', 'max:1000'],
             'total_compensation' => ['required', 'numeric', 'min:1', 'max:9999999999'],
+            'payment_method' => ['required', Rule::in(['sekali', 'bertahap'])],
+            'terms' => ['required', 'array', 'min:1'],
+            'terms.*.amount' => ['required', 'numeric', 'min:1', 'max:9999999999'],
+            'terms.*.condition' => ['required', 'string', 'max:255'],
+        ];
+    }
+
+    /** Aturan yang melibatkan beberapa termin sekaligus. */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator) {
+                $terms = array_values($this->input('terms', []));
+                $method = $this->input('payment_method');
+
+                if ($method === 'sekali' && count($terms) !== 1) {
+                    $validator->errors()->add('terms', 'Pembayaran sekali bayar hanya terdiri dari satu termin.');
+                }
+
+                if ($method === 'bertahap' && count($terms) < 2) {
+                    $validator->errors()->add('terms', 'Pembayaran bertahap minimal terdiri dari dua termin.');
+                }
+
+                // Jumlah termin baru dibandingkan kalau total kompensasi dan nominal tiap termin sudah valid.
+                if ($validator->errors()->hasAny(['total_compensation', 'terms.*.amount'])) {
+                    return;
+                }
+
+                $sum = collect($terms)->sum(fn ($term) => (float) ($term['amount'] ?? 0));
+
+                if (round($sum, 2) !== round((float) $this->input('total_compensation'), 2)) {
+                    $validator->errors()->add('terms', 'Jumlah nominal termin harus sama dengan total kompensasi.');
+                }
+            },
         ];
     }
 
@@ -43,6 +78,10 @@ class ProjectRequest extends FormRequest
             'target_completion_date.after' => 'Target penyelesaian harus setelah tenggat lamaran.',
             'quota.max' => 'Kuota kandidat maksimal :max orang.',
             'total_compensation.max' => 'Total kompensasi maksimal Rp9.999.999.999.',
+            'payment_method.in' => 'Cara pembayaran tidak valid.',
+            'terms.required' => 'Tambahkan minimal satu termin pembayaran.',
+            'terms.*.amount.min' => 'Nominal termin minimal Rp1.',
+            'terms.*.amount.max' => 'Nominal termin maksimal Rp9.999.999.999.',
         ];
     }
 
@@ -59,6 +98,10 @@ class ProjectRequest extends FormRequest
             'target_completion_date' => 'Target penyelesaian',
             'quota' => 'Kuota kandidat',
             'total_compensation' => 'Total kompensasi',
+            'payment_method' => 'Cara pembayaran',
+            'terms' => 'Termin pembayaran',
+            'terms.*.amount' => 'Nominal termin',
+            'terms.*.condition' => 'Kondisi pembayaran',
         ];
     }
 }
