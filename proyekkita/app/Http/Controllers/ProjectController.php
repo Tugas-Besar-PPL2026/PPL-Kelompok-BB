@@ -32,7 +32,7 @@ class ProjectController extends Controller
     {
         $this->authorizeDraft($project);
 
-        return view('umkm.proyek.edit', $this->formData() + ['project' => $project->load('skills')]);
+        return view('umkm.proyek.edit', $this->formData() + ['project' => $project->load('skills', 'paymentTerms')]);
     }
 
     public function update(ProjectRequest $request, Project $project)
