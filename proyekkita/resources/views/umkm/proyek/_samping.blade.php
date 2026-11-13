@@ -15,7 +15,7 @@
         'info' => 'Judul, kategori, dan deskripsi',
         'hasil' => 'Hasil pekerjaan & keterampilan',
         'jadwal' => 'Jadwal dan kuota kandidat',
-        'bayar' => 'Total kompensasi diisi',
+        'bayar' => 'Skema pembayaran sesuai total',
     ] as $key => $label)
         <div class="row" style="padding:7px 0">
             <span class="chk {{ $key === 'akun' && $isVerified ? 'on' : '' }}" data-cek="{{ $key }}"><i data-lucide="check" class="ic" width="13" height="13"></i></span>
@@ -59,7 +59,13 @@
         info: () => val('title') && val('category_id') && val('description'),
         hasil: () => val('expected_output') && form.querySelector('[name="skills[]"]:checked'),
         jadwal: () => val('application_deadline') && val('target_completion_date') && Number(val('quota')) > 0,
-        bayar: () => Number(val('total_compensation')) > 0,
+        bayar: () => {
+            const totalValue = Number(val('total_compensation'));
+            const amounts = [...form.querySelectorAll('.term-amount')].map(input => Number(input.value) || 0);
+            const sum = amounts.reduce((a, b) => a + b, 0);
+            const conditionsFilled = [...form.querySelectorAll('[name$="[condition]"]')].every(input => input.value.trim() !== '');
+            return totalValue > 0 && amounts.length > 0 && amounts.every(a => a > 0) && conditionsFilled && Math.abs(sum - totalValue) < 0.005;
+        },
     };
 
     function refresh() {

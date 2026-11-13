@@ -13,7 +13,7 @@
             <p>Lengkapi informasi proyek. Draf dapat disimpan dan diajukan untuk moderasi kapan saja.</p>
         </div>
         <div class="act">
-            <button type="submit" form="form-proyek" class="btn o">
+            <button type="submit" form="form-proyek" class="btn o" dusk="simpan-draf">
                 <i data-lucide="save" class="ic" width="16" height="16"></i>Simpan sebagai Draf
             </button>
         </div>

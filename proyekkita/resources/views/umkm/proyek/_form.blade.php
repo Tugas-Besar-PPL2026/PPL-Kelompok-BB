@@ -38,10 +38,11 @@
             <label>Keterampilan yang dibutuhkan <i>*</i></label>
             <div class="in picks @error('skills') err @enderror">
                 @foreach ($skills as $skill)
-                    <label class="pick">
-                        <input type="checkbox" name="skills[]" value="{{ $skill->id }}" @checked(in_array($skill->id, $picked))>
-                        <span>{{ $skill->name }}</span><i data-lucide="x" class="ic" width="12" height="12"></i>
-                    </label>
+                    <label class="pick" dusk="skill-{{ $skill->id }}"></label>
+                        <label class="pick">
+                            <input type="checkbox" name="skills[]" value="{{ $skill->id }}" @checked(in_array($skill->id, $picked))>
+                            <span>{{ $skill->name }}</span><i data-lucide="x" class="ic" width="12" height="12"></i>
+                        </label>
                 @endforeach
             </div>
             @error('skills') <div class="hint err">{{ $message }}</div> @else <div class="hint">Klik untuk memilih. Dipilih dari data master keterampilan.</div> @enderror
@@ -102,21 +103,137 @@
 <section class="card" id="skema-pembayaran">
     <div class="ch"><i data-lucide="wallet" class="ic" width="20" height="20"></i><h3>Skema Pembayaran</h3></div>
 
+    @php
+        $terms = old('terms', $p?->paymentTerms->map(fn ($term) => ['amount' => (float) $term->amount, 'condition' => $term->condition])->all() ?: [['amount' => '', 'condition' => '']]);
+        $method = old('payment_method', count($terms) > 1 ? 'bertahap' : 'sekali');
+    @endphp
+
     <div class="form c2">
         <div class="fl">
             <label for="total_compensation">Total kompensasi per kandidat <i>*</i></label>
             <div class="in @error('total_compensation') err @enderror">
-                <input type="number" id="total_compensation" name="total_compensation" min="1" max="9999999999" placeholder="2500000" placeholder="2500000" value="{{ old('total_compensation', $p ? (int) $p->total_compensation : '') }}">
+                <input type="number" id="total_compensation" name="total_compensation" min="1" max="9999999999" placeholder="2500000" value="{{ old('total_compensation', $p ? (int) $p->total_compensation : '') }}">
                 <span class="sfx">IDR</span>
             </div>
             @error('total_compensation') <div class="hint err">{{ $message }}</div> @enderror
         </div>
+
+        <div class="fl">
+            <label>Cara pembayaran <i>*</i></label>
+            <div class="radios">
+                <label class="radio"><input type="radio" name="payment_method" value="sekali" dusk="cara-sekali" @checked($method === 'sekali')> Sekali bayar</label>
+                <label class="radio"><input type="radio" name="payment_method" value="bertahap" dusk="cara-bertahap" @checked($method === 'bertahap')> Bertahap (termin)</label>
+            </div>
+            @error('payment_method') <div class="hint err">{{ $message }}</div> @enderror
+        </div>
     </div>
 
-    {{-- Pilihan cara pembayaran dan tabel termin ditempatkan di sini. --}}
+    <table class="t mt16" id="tabel-termin">
+        <thead>
+            <tr><th style="width:96px">Termin</th><th>Kondisi / Target Pembayaran</th><th style="width:200px">Nominal</th><th style="width:70px">Porsi</th><th style="width:52px"></th></tr>
+        </thead>
+        <tbody>
+            @foreach ($terms as $index => $term)
+                @include('umkm.proyek._baris-termin', ['index' => $index, 'term' => $term, 'no' => $loop->iteration])
+            @endforeach
+        </tbody>
+        <tfoot>
+            <tr><td class="b">Total</td><td></td><td class="b num" id="total-termin">Rp0</td><td class="mut num" id="total-porsi">-</td><td></td></tr>
+        </tfoot>
+    </table>
+
+    <template id="template-termin">
+        @include('umkm.proyek._baris-termin', ['index' => '__INDEX__', 'term' => [], 'no' => ''])
+    </template>
+
+    <div class="between mt12">
+        <button type="button" class="btn ob sm" id="tambah-termin" dusk="tambah-termin"><i data-lucide="plus" class="ic" width="15" height="15"></i>Tambah termin</button>
+        <span class="bd" id="status-termin" dusk="status-termin"></span>
+    </div>
+    @foreach ($errors->get('terms') as $message)
+        <div class="hint err mt8">{{ $message }}</div>
+    @endforeach
 
     <div class="al info mt16">
         <i data-lucide="info" class="ic" width="19" height="19"></i>
         <div>Pembayaran dilakukan langsung di luar aplikasi (transfer atau tunai). ProyekKita hanya mencatat pembayaran setiap termin dan konfirmasi penerimaan dari kandidat.</div>
     </div>
 </section>
+
+@push('scripts')
+<script>
+(() => {
+    const form = document.getElementById('form-proyek');
+    const body = document.querySelector('#tabel-termin tbody');
+    if (!form || !body) return;
+
+    const total = document.getElementById('total_compensation');
+    const template = document.getElementById('template-termin');
+    const addButton = document.getElementById('tambah-termin');
+    const status = document.getElementById('status-termin');
+
+    const rows = () => [...body.querySelectorAll('.baris-termin')];
+    const method = () => form.querySelector('[name="payment_method"]:checked')?.value || 'sekali';
+    const rupiah = value => 'Rp' + Math.round(value).toLocaleString('id-ID');
+    const percent = (part, whole) => whole > 0 ? Math.round(part / whole * 100) + '%' : '-';
+
+    function addRow() {
+        body.insertAdjacentHTML('beforeend', template.innerHTML.replaceAll('__INDEX__', Date.now() + rows().length));
+        window.lucide?.createIcons();
+    }
+
+    function refresh() {
+        const once = method() === 'sekali';
+        const totalValue = parseFloat(total.value) || 0;
+        let sum = 0;
+        let allFilled = true;
+
+        rows().forEach((row, i) => {
+            const amount = row.querySelector('.term-amount');
+            amount.readOnly = once && i === 0;
+            if (amount.readOnly) amount.value = total.value;
+
+            const value = parseFloat(amount.value) || 0;
+            sum += value;
+            allFilled &&= value > 0;
+            row.querySelector('.no').textContent = i + 1;
+            row.querySelector('.porsi').textContent = percent(value, totalValue);
+            row.querySelector('.hapus-termin').disabled = rows().length <= 1;
+        });
+
+        addButton.hidden = once;
+        document.getElementById('total-termin').textContent = rupiah(sum);
+        document.getElementById('total-porsi').textContent = percent(sum, totalValue);
+
+        const matches = totalValue > 0 && allFilled && Math.abs(sum - totalValue) < 0.005;
+        status.className = 'bd ' + (matches ? 'ok' : 'bad');
+        status.textContent = matches ? 'Jumlah termin sesuai total kompensasi' : 'Jumlah termin belum sesuai total kompensasi';
+
+        // Memberi tahu panel Kelengkapan Draf bahwa isian termin berubah.
+        form.dispatchEvent(new Event('change'));
+    }
+
+    function changeMethod() {
+        if (method() === 'sekali') {
+            rows().slice(1).forEach(row => row.remove());
+        } else if (rows().length < 2) {
+            addRow();
+        }
+        refresh();
+    }
+
+    addButton.addEventListener('click', () => { addRow(); refresh(); });
+    body.addEventListener('click', event => {
+        const button = event.target.closest('.hapus-termin');
+        if (button && !button.disabled && rows().length > 1) {
+            button.closest('tr').remove();
+            refresh();
+        }
+    });
+    body.addEventListener('input', refresh);
+    total.addEventListener('input', refresh);
+    form.querySelectorAll('[name="payment_method"]').forEach(radio => radio.addEventListener('change', changeMethod));
+    refresh();
+})();
+</script>
+@endpush
