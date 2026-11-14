@@ -4,6 +4,7 @@
    ========================================================================== */
 
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
 :root{
   --bg:#FAF8FF;--panel:#F2F3FF;--card:#fff;--line:#E4E5EF;--line2:#ECEDF4;
   --ink:#171A26;--ink2:#3F4352;--mut:#6B7083;
@@ -110,6 +111,14 @@ button{font:inherit;cursor:pointer}
 .in.ta{align-items:flex-start}
 .hint{font-size:12px;color:var(--mut)}
 .hint.err{color:var(--bad)}
+
+/* Pilihan radio dan input terkunci */
+.radios{display:flex;gap:22px;align-items:center;min-height:42px;flex-wrap:wrap}
+.radio{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.radio input{width:18px;height:18px;accent-color:var(--pri2);margin:0}
+.in:has(input[readonly]){background:#F7F8FC}
+.in input[readonly]{color:var(--ink2);cursor:not-allowed}
+table.t tfoot td{border-top:1px solid var(--line);border-bottom:none}
 
 /* Pilihan keterampilan berbentuk tag */
 .in.picks{flex-wrap:wrap;gap:6px;padding:8px 10px;min-height:56px}

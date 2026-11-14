@@ -22,10 +22,27 @@ class ProjectService
                 'status' => ProjectStatus::Draft,
             ]);
 
-            $project->fill(Arr::except($data, ['skills']))->save();
+            $project->fill(Arr::except($data, ['skills', 'payment_method', 'terms']))->save();
             $project->skills()->sync($data['skills']);
+            $this->syncPaymentTerms($project, $data['terms']);
 
             return $project;
         });
+    }
+    /**
+     * Mengganti seluruh termin proyek dengan termin dari form, bernomor urut mulai 1.
+     * Aman dilakukan karena termin hanya bisa diubah selama draf, saat belum ada pembayaran yang mengacu ke termin.
+     */
+    public function syncPaymentTerms(Project $project, array $terms): void
+    {
+        $project->paymentTerms()->delete();
+
+        foreach (array_values($terms) as $i => $term) {
+            $project->paymentTerms()->create([
+                'term_number' => $i + 1,
+                'amount' => $term['amount'],
+                'condition' => $term['condition'],
+            ]);
+        }
     }
 }
