@@ -16,7 +16,14 @@ class CandidateProfileController extends Controller
     {
         abort_unless($request->user()?->isKandidat(), 403);
 
-        $profile = $request->user()->candidateProfile?->load(['skills', 'experiences', 'portfolios']);
+        $user = $request->user();
+        $profile = $user->candidateProfile?->load(['skills', 'experiences', 'portfolios']);
+
+        // Membuat inisial nama secara otomatis dari nama user yang sedang login
+        $navInitials = collect(explode(' ', $user->name ?? ''))
+            ->map(fn($segment) => mb_substr($segment, 0, 1))
+            ->take(2)
+            ->implode('');
 
         // Variabel ini dibutuhkan partial kandidat.profil._samping (kelengkapan profil).
         return view('kandidat.profil.datadiri', [
@@ -24,6 +31,7 @@ class CandidateProfileController extends Controller
             'selectedSkills' => $profile?->skills ?? collect(),
             'experiences' => $profile?->experiences ?? collect(),
             'portfolios' => $profile?->portfolios ?? collect(),
+            'navInitials' => $navInitials, // <--- Ditambahkan di sini agar tidak error
         ]);
     }
 
