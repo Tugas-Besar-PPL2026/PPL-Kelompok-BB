@@ -54,3 +54,10 @@ Route::get('/login', function () use ($devLogin) {
     );
 })->name('login');
 
+// Login sebagai Admin
+Route::get('/dev/login/admin', function () use ($devLogin) {
+    return $devLogin(
+        'admin@proyekkita.test',
+        route('admin.master.index')
+    );
+});

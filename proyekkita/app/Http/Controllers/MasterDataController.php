@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Category;
+use App\Models\Skill;
+use Closure;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -15,7 +17,13 @@ class MasterDataController extends Controller
         $categories = Category::withCount('projects')->orderBy('id')->get();
         $activeCategoriesCount = $categories->where('is_active', true)->count();
 
-        return view('admin.master.index', compact('categories', 'activeCategoriesCount'));
+        // PBI-07: DIPAKAI = jumlah kandidat + jumlah proyek yang memakai keterampilan
+        $skills = Skill::withCount(['candidateProfiles', 'projects'])->orderBy('id')->get();
+        $activeSkillsCount = $skills->where('is_active', true)->count();
+
+        return view('admin.master.index', compact(
+            'categories', 'activeCategoriesCount', 'skills', 'activeSkillsCount'
+        ));
     }
 
     public function storeCategory(Request $request): RedirectResponse
@@ -54,5 +62,72 @@ class MasterDataController extends Controller
         $category->update(['is_active' => !$category->is_active]);
 
         return redirect()->route('admin.master.index')->with('status', 'Status kategori berhasil diperbarui.');
+    }
+
+    // ------------------------------------------------------------------
+    // PBI-07: Mengelola Data Master Keterampilan
+    // ------------------------------------------------------------------
+
+    public function storeSkill(Request $request): RedirectResponse
+    {
+        $validated = $request->validateWithBag('skillCreate', [
+            'skill_name' => $this->skillNameRules(),
+        ], $this->skillMessages());
+
+        Skill::create([
+            'name' => trim($validated['skill_name']),
+            'is_active' => true,
+        ]);
+
+        return redirect()->route('admin.master.index')->with('success', 'Keterampilan baru berhasil ditambahkan.');
+    }
+
+    public function updateSkill(Request $request, Skill $skill): RedirectResponse
+    {
+        $validated = $request->validateWithBag('skillUpdate-' . $skill->id, [
+            'skill_name' => $this->skillNameRules($skill),
+        ], $this->skillMessages());
+
+        $skill->update(['name' => trim($validated['skill_name'])]);
+
+        return redirect()->route('admin.master.index')->with('success', 'Nama keterampilan berhasil diperbarui.');
+    }
+
+    /** Keterampilan tidak dihapus, hanya dinonaktifkan atau diaktifkan kembali. */
+    public function toggleSkill(Skill $skill): RedirectResponse
+    {
+        $skill->update(['is_active' => ! $skill->is_active]);
+
+        return redirect()->route('admin.master.index')->with('success', 'Status keterampilan berhasil diperbarui.');
+    }
+
+    /**
+     * Nama wajib unik TANPA membedakan huruf besar/kecil ("figma" dianggap sama dengan "Figma"),
+     * supaya hasilnya sama di SQLite (test) dan MySQL. $ignore = keterampilan yang sedang diubah.
+     */
+    private function skillNameRules(?Skill $ignore = null): array
+    {
+        return [
+            'bail', 'required', 'string', 'max:100',
+            function (string $attribute, mixed $value, Closure $fail) use ($ignore) {
+                $existing = Skill::query()
+                    ->whereRaw('LOWER(name) = ?', [mb_strtolower(trim($value))])
+                    ->when($ignore, fn ($q) => $q->whereKeyNot($ignore->id))
+                    ->first();
+
+                if ($existing) {
+                    $fail('Keterampilan "' . $existing->name . '" sudah terdaftar. Nama keterampilan harus unik.');
+                }
+            },
+        ];
+    }
+
+    private function skillMessages(): array
+    {
+        return [
+            'skill_name.required' => 'Nama keterampilan wajib diisi.',
+            'skill_name.string' => 'Nama keterampilan tidak valid.',
+            'skill_name.max' => 'Nama keterampilan maksimal :max karakter.',
+        ];
     }
 }
