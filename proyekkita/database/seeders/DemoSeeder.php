@@ -66,11 +66,23 @@ class DemoSeeder extends Seeder
         $kandidat->skills()->sync(Skill::whereIn('name', ['Figma', 'Desain Grafis', 'Desain Kemasan', 'Ilustrasi', 'Canva'])->pluck('id'));
         $kandidat->experiences()->firstOrCreate(['work_type' => 'Desain kemasan produk UMKM (freelance)'], [
             'duration' => '8 bulan',
-            'description' => 'Merancang label dan kemasan untuk 4 UMKM makanan ringan di Bandung.',
+            'description' => 'Merancang label dan kemasan untuk 4 UMKM makanan ringan di Bandung, termasuk penyiapan file siap cetak untuk percetakan.',
+        ]);
+        $kandidat->experiences()->firstOrCreate(['work_type' => 'Desainer grafis Himpunan Mahasiswa DKV'], [
+            'duration' => '6 bulan',
+            'description' => 'Membuat materi publikasi acara dan konten Instagram himpunan.',
         ]);
         $kandidat->portfolios()->firstOrCreate(['title' => 'Label Kemasan Sambal Bu Iyah'], [
             'description' => 'Redesain label 3 varian sambal kemasan botol, siap cetak.',
             'link' => 'https://behance.net/fajarpratama/sambal-bu-iyah',
+        ]);
+        $kandidat->portfolios()->firstOrCreate(['title' => 'Katalog Produk Roti Kampung'], [
+            'description' => 'Katalog digital 12 halaman untuk reseller.',
+            'file_path' => 'portfolios/demo/katalog-roti-kampung.pdf',
+        ]);
+        $kandidat->portfolios()->firstOrCreate(['title' => 'Identitas Visual Kedai Seduh'], [
+            'description' => 'Logo, kartu menu, dan stiker gelas.',
+            'link' => 'https://dribbble.com/fajarp/kedai-seduh',
         ]);
 
         // Proyek yang sudah dipublikasikan dengan skema pembayaran 2 termin
