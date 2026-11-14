@@ -14,7 +14,7 @@ use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
-use App\Http\Controllers\UMKM\ProjectMonitoringController;
+use App\Http\Controllers\ProjectMonitoringController;
 
 use App\Models\Project;
 
@@ -67,6 +67,9 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
         ->name('profil-usaha.update');
 
+    // PBI-13: UMKM memantau daftar proyek, status, dan hasil moderasi
+    Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
+
     //
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
@@ -101,11 +104,3 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 if (app()->environment(['local', 'dusk.local']) && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
 }
-
-Route::middleware(['auth'])->prefix('umkm')->name('umkm.')->group(function () {
-    Route::get('/projects/monitoring', [ProjectMonitoringController::class, 'index'])
-        ->name('projects.monitoring');
-
-    Route::get('/projects/monitoring/{id}', [ProjectMonitoringController::class, 'show'])
-        ->name('projects.monitoring.detail');
-});
