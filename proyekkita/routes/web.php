@@ -18,8 +18,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/profil-usaha', [ProfilUsahaController::class, 'edit'])->name('profil-usaha');
-Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])->name('profil-usaha.update');
 //Middleware untuk kandidat
 Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
     Route::get('profil', [CandidateSkillController::class, 'edit'])->name('profil.edit');
@@ -57,11 +55,9 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
 
 //Middleware untuk UMKM
 Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
-    //PBI-1: UMKM mengelola profil usaha
-    Route::get('/profil-usaha', [ProfilUsahaController::class, 'edit'])
-    ->name('profil-usaha');
-    Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
-        ->name('profil-usaha.update');
+    // PBI-01: UMKM mengelola profil usaha dan melihat status verifikasi
+    Route::get('profil', [ProfilUsahaController::class, 'edit'])->name('profil.edit');
+    Route::put('profil', [ProfilUsahaController::class, 'update'])->name('profil.update');
 
     //
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
