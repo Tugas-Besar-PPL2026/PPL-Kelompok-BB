@@ -20,7 +20,7 @@ class MasterDataSeeder extends Seeder
     ];
 
     public const SKILLS = [
-        'Figma', 'Desain Grafis', 'Desain Kemasan', 'UI/UX Design', 'Ilustrasi', 'Canva',
+        'Figma', 'Desain Grafis', 'Desain Kemasan', 'UI/UX Design', 'Desain Logo', 'Ilustrasi', 'Canva',
         'Laravel', 'MySQL', 'Copywriting', 'Microsoft Excel', 'Fotografi Produk', 'Social Media',
     ];
 
