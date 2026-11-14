@@ -148,7 +148,10 @@
         {{-- ===== PBI-14: daftar proyek ===== --}}
         <div>
             <div class="pj-count" dusk="jumlah-hasil">
-                {{ $projects->total() }} proyek ditemukan@if ($filterCount > 0) · {{ $filterCount }} filter aktif @endif
+                {{ $projects->total() }} proyek ditemukan
+                @if ($filterCount > 0)
+                   · {{ $filterCount }} filter aktif
+                @endif
             </div>
 
             @forelse ($projects as $project)
