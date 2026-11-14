@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsCancellationScenario;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
  * [PBI-18 / FR-10] Alur pembatalan lamaran melalui browser: tombol, dialog konfirmasi, dan hasil pembatalan.
@@ -30,6 +31,7 @@ use Tests\DuskTestCase;
 class BatalkanLamaranTest extends DuskTestCase
 {
     use BuildsCancellationScenario;
+    use UsesDuskTestDatabase;
 
     private function judul(string $awalan): string
     {
@@ -70,8 +72,11 @@ class BatalkanLamaranTest extends DuskTestCase
                 ->assertMissing("@batalkan-lamaran-{$id}")       // tombol tidak lagi tersedia
                 ->assertSeeIn("#lamaran-{$id}", 'Dibatalkan')
                 ->assertSeeIn("#lamaran-{$id}", 'Dibatalkan oleh Anda pada')
-                ->assertSeeIn("#lamaran-{$id}", 'Riwayat status (2)');
-        });
+                ->assertScript(
+                    "document.querySelector('#lamaran-{$id} details.la-hist summary').textContent.trim()",
+                    'Riwayat status (2)'
+                );     
+            });
 
         // Status berubah, data lamaran tetap ada, dan riwayat pembatalan tersimpan.
         $lamaran = Application::findOrFail($id);
@@ -157,25 +162,40 @@ class BatalkanLamaranTest extends DuskTestCase
         $this->browse(function (Browser $browser) use ($kandidat, $id) {
             $browser->loginAs($kandidat)
                 ->visit(route('kandidat.lamaran.index'))
-                ->assertTitleContains('Lamaran Saya')   // gagal jelas bila halaman tidak termuat (URL/server salah)
+                ->assertTitleContains('Lamaran Saya');
 
-                // "Tidak, Kembali" menutup dialog.
-                ->click("@batalkan-lamaran-{$id}")
+            // 1. Tombol "Tidak, Kembali" menutup dialog.
+            $browser->click("@batalkan-lamaran-{$id}")
                 ->waitFor("@dialog-batal-{$id}")
                 ->click("@tutup-batal-{$id}")
                 ->waitUntilMissing("@dialog-batal-{$id}")
-                ->assertPresent("@batalkan-lamaran-{$id}")
+                ->assertPresent("@batalkan-lamaran-{$id}");
 
-                // Tombol Escape juga menutup dialog.
-                ->click("@batalkan-lamaran-{$id}")
-                ->waitFor("@dialog-batal-{$id}")
-                ->keys("@tutup-batal-{$id}", ['{escape}'])
-                ->waitUntilMissing("@dialog-batal-{$id}")
+            // 2. Tombol Escape juga menutup dialog.
+            $browser->click("@batalkan-lamaran-{$id}")
+                ->waitFor("@dialog-batal-{$id}");
+
+            $browser->script("
+                document.dispatchEvent(new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    bubbles: true
+                }));
+            ");
+
+            $browser->waitUntilMissing("@dialog-batal-{$id}")
                 ->assertDontSee('Lamaran berhasil dibatalkan');
         });
 
-        $this->assertSame(ApplicationStatus::Pending, Application::findOrFail($id)->status);
-        $this->assertSame(1, ApplicationStatusHistory::where('application_id', $id)->count());
+        // Memastikan kedua cara menutup dialog tidak mengubah data lamaran.
+        $this->assertSame(
+            ApplicationStatus::Pending,
+            Application::findOrFail($id)->status
+        );
+
+        $this->assertSame(
+            1,
+            ApplicationStatusHistory::where('application_id', $id)->count()
+        );
     }
 
     public function test_tombol_batalkan_tidak_tersedia_pada_status_diterima_ditolak_dan_dibatalkan(): void
