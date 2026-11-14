@@ -17,18 +17,25 @@ class CandidateApplicationController extends Controller
 
     public function index(Request $request)
     {
-        // Halaman ini khusus kandidat. Middleware peran belum tersedia di repository, jadi dicek di sini.
         abort_unless($request->user()?->isKandidat(), 403, 'Halaman ini hanya untuk kandidat.');
 
         $profile = $request->user()->candidateProfile;
         $status = $this->applications->statusFromQuery($request->query('status'));
         $counts = $this->applications->counts($profile);
 
+        // Ambil data lamaran beserta pagination.
+        $items = $this->applications->applications($profile, $status);
+
+        // Jika halaman melebihi halaman terakhir, arahkan ke halaman terakhir.
+        if ($items->total() > 0 && $items->currentPage() > $items->lastPage()) {
+            return redirect()->to($items->url($items->lastPage()));
+        }
+
         return view('kandidat.lamaran.index', [
             'status' => $status,
             'counts' => $counts,
             'tabs' => $this->applications->tabs($counts),
-            'items' => $this->applications->applications($profile, $status),
+            'items' => $items,
         ]);
     }
 }
