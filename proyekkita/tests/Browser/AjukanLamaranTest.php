@@ -6,11 +6,13 @@ use App\Enums\ApplicationStatus;
 use App\Models\Application;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsApplicationScenario;
+use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 class AjukanLamaranTest extends DuskTestCase
 {
     use BuildsApplicationScenario;
+    use UsesDuskTestDatabase;
 
     public function test_kandidat_berhasil_mengirim_lamaran_melalui_browser(): void
     {

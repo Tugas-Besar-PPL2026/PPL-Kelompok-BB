@@ -21,18 +21,33 @@ class ApplicationCancellationController extends Controller
         private CandidateApplicationService $listing,
     ) {}
 
-    public function __invoke(Request $request, int $application): RedirectResponse
+    public function __invoke(Request $request, string $application): RedirectResponse
     {
-        // Aksi ini khusus kandidat. Middleware peran belum tersedia di repository, jadi dicek di sini.
         abort_unless($request->user()?->isKandidat(), 403, 'Aksi ini hanya untuk kandidat.');
 
-        // Kembali ke Lamaran Saya pada tab yang sedang aktif (halaman pertama). Nilai status divalidasi
-        // memakai enum sehingga isian sembarang diabaikan.
+        $maxId = (string) PHP_INT_MAX;
+        $normalizedId = ltrim($application, '0');
+
+        abort_unless(
+            $normalizedId !== ''
+            && ctype_digit($application)
+            && (
+                strlen($normalizedId) < strlen($maxId)
+                || (
+                    strlen($normalizedId) === strlen($maxId)
+                    && strcmp($normalizedId, $maxId) <= 0
+                )
+            ),
+            404
+        );
+
+        $applicationId = (int) $normalizedId;
+
         $status = $this->listing->statusFromQuery($request->input('status'));
         $back = redirect()->route('kandidat.lamaran.index', $status ? ['status' => $status->value] : []);
 
         try {
-            $this->cancellations->cancel($request->user(), $application);
+            $this->cancellations->cancel($request->user(), $applicationId);
         } catch (ApplicationNotAllowedException $e) {
             return $back->with('error', $e->getMessage());
         }
