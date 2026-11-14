@@ -63,11 +63,13 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
         ->name('profil-usaha.update');
 
-    //
+    //PBI-9-10-11: UMKM mengelola proyek (buat, ubah, tinjau, ajukan)
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
     Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
     Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
+    Route::get('proyek/{project}/tinjau', [ProjectController::class, 'review'])->name('proyek.review');
+    Route::post('proyek/{project}/ajukan', [ProjectController::class, 'submit'])->name('proyek.submit');
 
     // Seleksi Kandidat (FR-11, PBI-19): daftar pelamar dan detail pelamar. Akses dibatasi policy ke pemilik proyek.
     Route::get('seleksi', [CandidateSelectionController::class, 'index'])->name('seleksi.index');
