@@ -1,187 +1,197 @@
+{{--
+    Seleksi Kandidat (UMKM), daftar pelamar per proyek. PBI-19 / FR-11.
+    Data dari CandidateSelectionController@index. Semua angka dihitung dari database.
+--}}
 @extends('layouts.app')
+@section('title', 'Seleksi Kandidat')
+
+@use('App\Support\SelectionPresenter')
 
 @section('content')
-<div class="p-6 bg-[#FAF9FF] min-h-screen">
-    <!-- Header & Dropdown Proyek -->
-    <div class="mb-8 flex flex-col md:flex-row md:justify-between md:items-center">
-        <div class="mb-4 md:mb-0">
-            <h1 class="text-2xl font-bold text-[#191D2B]">Seleksi Kandidat</h1>
-            <p class="text-[#6B7280] text-sm mt-1">Tinjau pelamar, masukkan ke daftar terpilih sementara, lalu terima atau tolak sesuai kuota proyek.</p>
-        </div>
-        @if($projects->isNotEmpty())
+    <div class="ph">
         <div>
-            <form action="{{ route('umkm.seleksi.index') }}" method="GET" class="flex items-center bg-white border border-gray-200 rounded-lg px-3 py-2 shadow-sm">
-                <label for="project_id" class="mr-2 text-sm font-medium text-gray-500 whitespace-nowrap">Proyek:</label>
-                <select name="project_id" id="project_id" onchange="this.form.submit()" class="border-none text-sm font-semibold text-gray-900 focus:ring-0 cursor-pointer">
-                    @foreach($projects as $project)
-                        <option value="{{ $project->id }}" {{ $selectedProject->id == $project->id ? 'selected' : '' }}>
-                            {{ $project->title }}
-                        </option>
-                    @endforeach
-                </select>
-                @if(request('status'))
-                    <input type="hidden" name="status" value="{{ request('status') }}">
-                @endif
-            </form>
+            <h1>Seleksi Kandidat</h1>
+            <p>Tinjau pelamar, masukkan ke daftar terpilih sementara, lalu terima atau tolak sesuai kuota proyek.</p>
         </div>
+
+        @if ($project)
+            <div class="act">
+                <form method="GET" action="{{ route('umkm.seleksi.index') }}" class="psel">
+                    <label for="pilih-proyek">Proyek:</label>
+                    <select id="pilih-proyek" name="proyek" onchange="this.form.submit()">
+                        @foreach ($projects as $option)
+                            <option value="{{ $option->id }}" @selected($option->id === $project->id)>{{ $option->title }}</option>
+                        @endforeach
+                    </select>
+                    <i data-lucide="chevron-down" class="ic" width="16" height="16"></i>
+                    <noscript><button type="submit" class="btn o sm">Tampilkan</button></noscript>
+                </form>
+            </div>
         @endif
     </div>
 
-    @if($projects->isEmpty())
-        <div class="bg-white p-8 rounded-xl border border-gray-200 text-center shadow-sm">
-            <p class="text-gray-500">Anda belum memiliki proyek. Silakan buat proyek terlebih dahulu.</p>
-        </div>
+    @if (! $project)
+        <section class="card">
+            <div class="empty">
+                <i data-lucide="users" class="ic" width="32" height="32"></i>
+                <div class="b mt8">Belum ada proyek yang menerima pelamar</div>
+                <div class="sub mt8">Pelamar akan muncul di sini setelah proyek Anda dipublikasikan.</div>
+                <a href="{{ route('umkm.proyek.create') }}" class="btn p mt16"><i data-lucide="plus" class="ic" width="16" height="16"></i>Buat Proyek</a>
+            </div>
+        </section>
     @else
-        <!-- Kartu Statistik -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-sm font-medium text-gray-500 mb-2">Total pelamar</p>
-                <p class="text-3xl font-bold text-[#191D2B]">{{ $stats['total'] }}</p>
-                <p class="text-xs text-gray-400 mt-2">sejak {{ $selectedProject->created_at->format('j M Y') }}</p>
+        {{-- Ringkasan statistik --}}
+        <div class="grid g4 stats mb16">
+            <div class="stat">
+                <div class="l">Total pelamar</div>
+                <div class="v num">{{ $counts['all'] }}</div>
+                <div class="s">{{ $project->published_at ? 'sejak '.SelectionPresenter::date($project->published_at) : 'pada proyek ini' }}</div>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-sm font-medium text-gray-500 mb-2">Menunggu keputusan</p>
-                <p class="text-3xl font-bold text-[#191D2B]">{{ $stats['menunggu'] }}</p>
-                <p class="text-xs text-gray-400 mt-2">perlu ditinjau</p>
+            <div class="stat">
+                <div class="l">Menunggu keputusan</div>
+                <div class="v num">{{ $counts['pending'] }}</div>
+                <div class="s">perlu ditinjau</div>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-sm font-medium text-gray-500 mb-2">Terpilih sementara</p>
-                <p class="text-3xl font-bold text-[#191D2B]">{{ $stats['terpilih_sementara'] }}</p>
-                <p class="text-xs text-gray-400 mt-2">daftar pendek</p>
+            <div class="stat">
+                <div class="l">Terpilih sementara</div>
+                <div class="v num">{{ $counts['shortlisted'] }}</div>
+                <div class="s">daftar pendek</div>
             </div>
-            <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm">
-                <p class="text-sm font-medium text-gray-500 mb-2">Diterima</p>
-                <div class="flex items-baseline gap-1">
-                    <p class="text-3xl font-bold text-[#191D2B]">{{ $stats['diterima'] }}</p>
-                    <p class="text-lg font-medium text-gray-400">/ {{ $selectedProject->quota }}</p>
-                </div>
-                <p class="text-xs text-gray-400 mt-2">kuota kandidat</p>
+            <div class="stat">
+                <div class="l">Diterima</div>
+                <div class="v num">{{ $quota['accepted'] }} / {{ $quota['total'] }}</div>
+                <div class="s">kuota kandidat</div>
             </div>
         </div>
 
-        <!-- Progress Kuota -->
-        <div class="bg-white p-5 rounded-xl border border-gray-100 shadow-sm mb-6 flex items-center justify-between">
-            <div class="flex items-center space-x-3 w-3/4">
-                <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                <span class="text-sm font-semibold text-gray-800">Kuota kandidat terisi {{ $stats['diterima'] }} dari {{ $selectedProject->quota }}</span>
-                <div class="flex-1 ml-4 bg-gray-100 rounded-full h-2">
-                    <div class="bg-blue-600 h-2 rounded-full" style="width: {{ $selectedProject->quota > 0 ? min(100, ($stats['diterima'] / $selectedProject->quota) * 100) : 0 }}%"></div>
+        {{-- Kuota kandidat: hanya lamaran berstatus Diterima yang dihitung terisi --}}
+        <section class="card quota">
+            <div class="between">
+                <div class="qt">
+                    <i data-lucide="user-check" class="ic" width="20" height="20"></i>
+                    <span dusk="kuota-daftar">Kuota kandidat terisi {{ $quota['accepted'] }} dari {{ $quota['total'] }}</span>
                 </div>
+                <div class="sub">{{ $quota['full'] ? 'Kuota terpenuhi' : 'Sisa '.$quota['remaining'].' kandidat dapat diterima' }}</div>
             </div>
-            <div class="text-sm font-medium text-gray-500">
-                Sisa {{ max(0, $selectedProject->quota - $stats['diterima']) }} kandidat dapat diterima
+            <div class="prog" dusk="progres-kuota-daftar" role="progressbar" aria-label="Kuota kandidat terisi" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ $quota['percent'] }}">
+                <i style="width:{{ $quota['percent'] }}%"></i>
             </div>
-        </div>
+        </section>
 
-        <!-- Tab Filter & Tabel -->
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="border-b border-gray-100">
-                <nav class="flex px-2" aria-label="Tabs">
-                    @php
-                        $tabs = [
-                            'all' => ['label' => 'Semua', 'count' => $stats['total']],
-                            'pending' => ['label' => 'Menunggu Keputusan', 'count' => $stats['menunggu']],
-                            'shortlisted' => ['label' => 'Terpilih Sementara', 'count' => $stats['terpilih_sementara']],
-                            'accepted' => ['label' => 'Diterima', 'count' => $stats['diterima']],
-                            'rejected' => ['label' => 'Ditolak', 'count' => $stats['ditolak']]
-                        ];
-                        $currentTab = request('status', 'all');
-                    @endphp
-                    @foreach($tabs as $key => $tab)
-                        <a href="{{ route('umkm.seleksi.index', ['project_id' => $selectedProject->id, 'status' => $key]) }}" 
-                           class="whitespace-nowrap py-4 px-4 border-b-2 font-medium text-sm flex items-center gap-2 {{ $currentTab === $key ? 'border-blue-600 text-blue-700' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            {{ $tab['label'] }}
-                            <span class="{{ $currentTab === $key ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600' }} py-0.5 px-2 rounded-md text-xs">{{ $tab['count'] }}</span>
-                        </a>
-                    @endforeach
-                </nav>
-            </div>
+        {{-- Tab status dan tabel pelamar --}}
+        <section class="card tcard">
+            <nav class="tabs" dusk="tab-status" aria-label="Filter status pelamar">
+                <a href="{{ route('umkm.seleksi.index', ['proyek' => $project->id]) }}" class="{{ $status === null ? 'on' : '' }}" @if ($status === null) aria-current="page" @endif>
+                    Semua <span>{{ $counts['all'] }}</span>
+                </a>
+                @foreach ($tabs as $tab)
+                    <a href="{{ route('umkm.seleksi.index', ['proyek' => $project->id, 'status' => $tab->value]) }}" class="{{ $status === $tab ? 'on' : '' }}" @if ($status === $tab) aria-current="page" @endif>
+                        {{ $tab->label() }} <span>{{ $counts[$tab->value] }}</span>
+                    </a>
+                @endforeach
+            </nav>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-100">
-                    <thead class="bg-gray-50/50">
+            <div class="tscroll">
+                <table class="t pl">
+                    <thead>
                         <tr>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pelamar</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterampilan</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Pengalaman</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Penilaian</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Dilamar</th>
-                            <th scope="col" class="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
-                            <th scope="col" class="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider"></th>
+                            <th>Pelamar</th>
+                            <th>Keterampilan</th>
+                            <th>Pengalaman</th>
+                            <th>Penilaian</th>
+                            <th>Dilamar</th>
+                            <th>Status</th>
+                            <th><span class="sr">Aksi</span></th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-100">
-                        @forelse($applications as $app)
-                        <tr class="hover:bg-gray-50/50 transition duration-150">
-                            <td class="px-6 py-5 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10 bg-[#EDF2FF] rounded-lg flex items-center justify-center text-blue-700 font-bold">
-                                        {{ strtoupper(substr($app->candidateProfile->full_name, 0, 2)) }}
+                    <tbody>
+                        @forelse ($applicants as $application)
+                            @php
+                                $profile = $application->candidateProfile;
+                                $rep = $reputation[$profile->id] ?? ['rating' => null, 'evaluations' => 0, 'completed' => 0];
+                                $expSummary = SelectionPresenter::experienceSummary($profile->experiences);
+                            @endphp
+                            <tr>
+                                <td>
+                                    <div class="pc">
+                                        <div class="av">
+                                            {{ SelectionPresenter::initials($profile->full_name) }}
+                                        </div>
+                                        <div>
+                                            <div class="nm">{{ $profile->full_name }}</div>
+                                            <div class="sm">{{ $profile->university }}</div>
+                                            <div class="sm">{{ $profile->city }}</div>
+                                        </div>
                                     </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-semibold text-[#191D2B]">{{ $app->candidateProfile->full_name }}</div>
-                                        <div class="text-sm text-gray-500 mt-0.5">{{ $app->candidateProfile->university }}</div>
-                                        <div class="text-xs text-gray-400 mt-0.5">{{ $app->candidateProfile->city }}</div>
+                                </td>
+                                <td class="sk">
+                                    <div class="tags tight">
+                                        @forelse ($profile->skills as $skill)
+                                            <span class="tag s">{{ $skill->name }}</span>
+                                        @empty
+                                            <span class="sub">Belum ada keterampilan</span>
+                                        @endforelse
                                     </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-5">
-                                <div class="flex flex-wrap gap-1.5 max-w-[200px]">
-                                    @foreach($app->candidateProfile->skills->take(3) as $skill)
-                                        <span class="inline-flex items-center px-2 py-1 rounded bg-[#EDF2FF] text-blue-700 text-xs font-medium border border-[#DCE4FF]">
-                                            {{ $skill->name }}
-                                        </span>
-                                    @endforeach
-                                    @if($app->candidateProfile->skills->count() > 3)
-                                        <span class="inline-flex items-center px-2 py-1 rounded bg-gray-100 text-gray-600 text-xs font-medium">
-                                            +{{ $app->candidateProfile->skills->count() - 3 }}
-                                        </span>
+                                </td>
+                                <td>
+                                    @if ($expSummary['count'] > 0)
+                                        <div>{{ $expSummary['count'] }} pengalaman</div>
+                                        @if ($expSummary['duration'])<div class="sub">{{ $expSummary['duration'] }}</div>@endif
+                                    @else
+                                        <span class="sub">Belum ada pengalaman</span>
                                     @endif
-                                </div>
-                            </td>
-                            <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-600">
-                                <div class="font-medium text-gray-700">{{ $app->candidateProfile->experiences->count() }} pengalaman</div>
-                            </td>
-                            <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-600">
-                                @php
-                                    $rating = rand(4, 5) . '.' . rand(0, 9); // Pengganti statis jika tabel evaluasi agregat belum ada
-                                    $completed = rand(1, 5);
-                                @endphp
-                                <div class="flex items-center">
-                                    <svg class="w-4 h-4 text-yellow-400 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                    <span class="font-bold text-[#191D2B]">{{ $rating }}</span>
-                                </div>
-                                <div class="text-xs text-gray-500 mt-1">{{ $completed }} proyek selesai</div>
-                            </td>
-                            <td class="px-6 py-5 whitespace-nowrap text-sm text-gray-600">
-                                {{ $app->created_at->format('j M Y') }}
-                            </td>
-                            <td class="px-6 py-5 whitespace-nowrap">
-                                @if($app->status->value === 'pending')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[#FFFBEB] text-[#B45309]">Menunggu Keputusan</span>
-                                @elseif($app->status->value === 'shortlisted')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[#F3E8FF] text-[#7E22CE]">Terpilih Sementara</span>
-                                @elseif($app->status->value === 'accepted')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[#ECFDF5] text-[#047857]">Diterima</span>
-                                @elseif($app->status->value === 'rejected')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-[#FEF2F2] text-[#B91C1C]">Ditolak</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-5 whitespace-nowrap text-right text-sm font-medium">
-                                <a href="{{ route('umkm.seleksi.show', ['projectId' => $selectedProject->id, 'applicationId' => $app->id]) }}" class="text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 px-4 py-2 rounded-lg text-sm font-medium shadow-sm transition">Lihat</a>
-                            </td>
-                        </tr>
+                                </td>
+                                <td>
+                                    @if ($rep['rating'] !== null)
+                                        <div class="b"><i data-lucide="star" class="ic star" width="14" height="14"></i> {{ SelectionPresenter::decimal($rep['rating']) }}</div>
+                                        <div class="sub">{{ $rep['completed'] }} proyek selesai</div>
+                                    @else
+                                        <div class="sub">Belum ada penilaian</div>
+                                        @if ($rep['completed'] > 0)<div class="sub">{{ $rep['completed'] }} proyek selesai</div>@endif
+                                    @endif
+                                </td>
+                                <td class="nw">{{ SelectionPresenter::date($application->created_at) }}</td>
+                                <td><span dusk="status-pelamar-{{ $application->id }}" class="bd {{ $application->status->badge() }}">{{ $application->status->label() }}</span></td>
+                                <td class="ar">
+                                    <a href="{{ route('umkm.seleksi.show', ['application' => $application->id, 'status' => $status?->value]) }}" dusk="lihat-pelamar-{{ $application->id }}" class="btn o sm" aria-label="Lihat detail pelamar {{ $profile->full_name }}">Lihat</a>
+                                </td>
+                            </tr>
                         @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-500 bg-gray-50/30">
-                                Belum ada pelamar dengan status ini.
-                            </td>
-                        </tr>
+                            <tr>
+                                <td colspan="7">
+                                    <div class="empty">
+                                        <i data-lucide="inbox" class="ic" width="30" height="30"></i>
+                                        <div class="b mt8">
+                                            {{ $status ? 'Tidak ada pelamar dengan status '.$status->label() : 'Belum ada pelamar pada proyek ini' }}
+                                        </div>
+                                        <div class="sub mt8">
+                                            {{ $status ? 'Coba pilih tab status lain.' : 'Pelamar akan muncul di sini setelah kandidat mengirim lamaran.' }}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-        </div>
+
+            @if ($applicants->hasPages())
+                <div class="pager">
+                    <span>Halaman {{ $applicants->currentPage() }} dari {{ $applicants->lastPage() }} · {{ $applicants->total() }} pelamar</span>
+                    <span class="row">
+                        @if ($applicants->onFirstPage())
+                            <span class="btn o sm dis">Sebelumnya</span>
+                        @else
+                            <a href="{{ $applicants->previousPageUrl() }}" class="btn o sm">Sebelumnya</a>
+                        @endif
+                        @if ($applicants->hasMorePages())
+                            <a href="{{ $applicants->nextPageUrl() }}" class="btn o sm">Berikutnya</a>
+                        @else
+                            <span class="btn o sm dis">Berikutnya</span>
+                        @endif
+                    </span>
+                </div>
+            @endif
+        </section>
     @endif
-</div>
 @endsection

@@ -4,6 +4,7 @@
    ========================================================================== */
 
 *{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none !important}
 :root{
   --bg:#FAF8FF;--panel:#F2F3FF;--card:#fff;--line:#E4E5EF;--line2:#ECEDF4;
   --ink:#171A26;--ink2:#3F4352;--mut:#6B7083;
@@ -111,6 +112,14 @@ button{font:inherit;cursor:pointer}
 .hint{font-size:12px;color:var(--mut)}
 .hint.err{color:var(--bad)}
 
+/* Pilihan radio dan input terkunci */
+.radios{display:flex;gap:22px;align-items:center;min-height:42px;flex-wrap:wrap}
+.radio{display:inline-flex;align-items:center;gap:8px;font-size:14px;cursor:pointer}
+.radio input{width:18px;height:18px;accent-color:var(--pri2);margin:0}
+.in:has(input[readonly]){background:#F7F8FC}
+.in input[readonly]{color:var(--ink2);cursor:not-allowed}
+table.t tfoot td{border-top:1px solid var(--line);border-bottom:none}
+
 /* Pilihan keterampilan berbentuk tag */
 .in.picks{flex-wrap:wrap;gap:6px;padding:8px 10px;min-height:56px}
 .pick{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:4px 10px;border-radius:6px;border:1px dashed #C9CCD8;color:var(--mut);cursor:pointer;user-select:none}
@@ -190,4 +199,108 @@ table.t tr:last-child td{border-bottom:none}
   .span2{grid-column:auto}
   .ph{flex-wrap:wrap}
   .ph .act{margin-left:0}
+}
+
+/* ==========================================================================
+   Seleksi Kandidat (PBI-19): daftar pelamar dan detail pelamar.
+   Hanya menambah kelas baru, tidak mengubah kelas yang sudah ada.
+   ========================================================================== */
+
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.nw{white-space:nowrap}
+.ar{text-align:right}
+.rowwrap{flex-wrap:wrap}
+.empty{text-align:center;padding:30px 16px;color:var(--mut)}
+.empty .ic{color:#B8BCCB}
+.empty .b{color:var(--ink)}
+
+/* Pilihan proyek pada header */
+.psel{position:relative;display:flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:0 38px 0 16px;min-height:42px;max-width:100%}
+.psel:focus-within{border-color:var(--pri2);box-shadow:0 0 0 3px #E2E8FF}
+.psel label{color:var(--mut);font-size:14px;white-space:nowrap}
+.psel select{appearance:none;-webkit-appearance:none;border:0;outline:0;background:transparent;font:inherit;font-weight:600;color:var(--ink);padding:10px 0;cursor:pointer;min-width:0;max-width:360px;text-overflow:ellipsis}
+.psel .ic{position:absolute;right:13px;top:50%;transform:translateY(-50%);pointer-events:none;color:var(--ink2)}
+
+/* Kartu kuota */
+.card.quota{padding:16px 22px}
+.quota .qt{display:flex;align-items:center;gap:10px;font-weight:600;font-size:14.5px}
+.quota .qt .ic{color:var(--ink)}
+.quota .prog{margin-top:12px}
+.card+.card.quota,.grid+.card.quota{margin-top:0}
+
+/* Tabel pelamar */
+.card.tcard{margin-top:16px;padding:6px 12px 12px}
+.tcard .tabs{padding:0 12px;margin-bottom:10px;overflow-x:auto;white-space:nowrap}
+.tscroll{overflow-x:auto}
+table.t.pl{min-width:900px}
+table.t.pl td{vertical-align:middle}
+.pc{display:flex;align-items:center;gap:12px}
+.pc .nm{font-weight:600}
+.pc .sm{font-size:12.5px;color:var(--mut);line-height:1.35}
+.av img{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}
+td.sk{min-width:200px;max-width:260px}
+.tags.tight{gap:6px}
+.tag.s{font-size:12px;padding:2px 8px}
+.star{color:#F5A524;fill:#F5A524}
+.star.off{color:#D5D8E3;fill:none}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 12px 4px;font-size:13px;color:var(--mut);flex-wrap:wrap}
+
+/* Detail pelamar */
+.grid.gtop{align-items:start}
+.av.lg{width:84px;height:84px;border-radius:18px;font-size:30px}
+.prof{display:flex;gap:20px;align-items:flex-start}
+.pbody{min-width:0;flex:1}
+.prof h2{font-size:23px;font-weight:700;letter-spacing:-.3px;line-height:1.25}
+.prof .hl{color:var(--ink2);margin-top:6px;font-size:14.5px}
+.meta3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+.meta3>div{display:flex;gap:8px;align-items:flex-start;color:var(--ink2);font-size:13px;line-height:1.35}
+.meta3 .ic{color:var(--mut);margin-top:1px}
+.rate{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:14px}
+.stars{display:inline-flex;gap:2px}
+.sech{font-size:14.5px;font-weight:600;margin-bottom:8px}
+.msg{white-space:pre-line;color:var(--ink2);line-height:1.6;overflow-wrap:anywhere}
+.tag.req{font-weight:700;background:#DDE5FF;border-color:#BFCBFA;color:#12276B}
+.tag.oth{font-weight:400;background:#F4F5FB;border-color:var(--line);color:var(--ink2)}
+.ico{width:36px;height:36px;border-radius:8px;background:var(--pril);color:var(--pri);display:flex;align-items:center;justify-content:center;flex:none}
+.exp{display:flex;gap:14px;padding:14px 0;border-top:1px solid var(--line2)}
+.explist .exp:first-child{border-top:0;padding-top:0}
+.exp .expd{font-size:13.5px;color:var(--ink2);margin-top:6px;overflow-wrap:anywhere}
+.pfg{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.pf{display:flex;gap:12px;border:1px solid var(--line);border-radius:10px;padding:14px;align-items:flex-start}
+.pfb{min-width:0;display:flex;flex-direction:column;gap:3px}
+.pf .nm{font-weight:600;font-size:13.5px}
+.pf a.lk{display:flex;gap:6px;align-items:center;font-size:12.5px;color:var(--ink2);overflow-wrap:anywhere}
+.pf a.lk:hover{color:var(--pri)}
+
+/* Panel keputusan seleksi */
+.qbox{border:1px solid var(--line);background:#FAFAFD;border-radius:10px;padding:12px 14px;font-size:13px}
+.opts{display:grid;gap:10px}
+.opt{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:13px 14px;cursor:pointer;position:relative}
+.opt input{position:absolute;opacity:0;pointer-events:none}
+.opt .rd{width:18px;height:18px;border-radius:50%;border:1.5px solid #B8BCCB;flex:none;margin-top:2px;background:#fff;display:flex;align-items:center;justify-content:center}
+.opt b{display:block;font-size:14px}
+.opt .d{display:block;font-size:13px;color:var(--mut);margin-top:2px}
+.opt:has(input:checked){border-color:var(--pri2);box-shadow:0 0 0 2px #E2E8FF;background:#F7F9FF}
+.opt:has(input:checked) .rd{border-color:var(--pri2)}
+.opt:has(input:checked) .rd:after{content:"";width:8px;height:8px;border-radius:50%;background:var(--pri2)}
+.opt:has(input:focus-visible){outline:2px solid var(--pri2);outline-offset:2px}
+.opt:has(input:disabled){cursor:default}
+.opt:has(input:disabled:not(:checked)){opacity:.6;background:#FAFAFD}
+.in.ta textarea{min-height:84px}
+.in textarea[readonly]{cursor:default}
+
+/* Layar kecil */
+@media (max-width:1000px){
+  .grid.stats{grid-template-columns:repeat(2,1fr)}
+  .psel{width:100%}
+  .psel select{flex:1;max-width:none}
+  .ph .act{width:100%}
+}
+@media (max-width:700px){
+  .meta3,.pfg{grid-template-columns:1fr}
+  .prof{flex-direction:column;gap:14px}
+  .card.quota .between{flex-direction:column;align-items:flex-start;gap:4px}
+}
+@media (max-width:380px){
+  .grid.stats{grid-template-columns:1fr}
 }

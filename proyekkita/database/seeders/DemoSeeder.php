@@ -76,6 +76,14 @@ class DemoSeeder extends Seeder
             'description' => 'Redesain label 3 varian sambal kemasan botol, siap cetak.',
             'link' => 'https://behance.net/fajarpratama/sambal-bu-iyah',
         ]);
+        $kandidat->portfolios()->firstOrCreate(['title' => 'Katalog Produk Roti Kampung'], [
+            'description' => 'Katalog digital 12 halaman untuk reseller.',
+            'file_path' => 'portfolios/demo/katalog-roti-kampung.pdf',
+        ]);
+        $kandidat->portfolios()->firstOrCreate(['title' => 'Identitas Visual Kedai Seduh'], [
+            'description' => 'Logo, kartu menu, dan stiker gelas.',
+            'link' => 'https://dribbble.com/fajarp/kedai-seduh',
+        ]);
 
         // Proyek yang sudah dipublikasikan dengan skema pembayaran 2 termin
         $project = $umkm->projects()->updateOrCreate(['title' => 'Redesain Katalog Digital & Label Kemasan'], [
