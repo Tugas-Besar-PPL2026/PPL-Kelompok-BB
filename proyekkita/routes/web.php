@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\ProjectModerationController;
 use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
 use App\Models\Project;
@@ -46,7 +47,7 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     // PBI-17: kandidat memantau status dan riwayat lamaran
     Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
 
-     // PBI-18: kandidat membatalkan lamaran
+    // PBI-18: kandidat membatalkan lamaran
     Route::patch('lamaran/{application}/batal', ApplicationCancellationController::class)
         ->whereNumber('application')
         ->name('lamaran.cancel');
@@ -84,10 +85,11 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('data-master/keterampilan', [MasterDataController::class, 'storeSkill'])->name('master.skills.store');
     Route::put('data-master/keterampilan/{skill}', [MasterDataController::class, 'updateSkill'])->name('master.skills.update');
     Route::patch('data-master/keterampilan/{skill}/status', [MasterDataController::class, 'toggleSkill'])->name('master.skills.toggle');
+
+    // PBI-12: moderasi proyek
+    Route::get('moderasi-proyek', [ProjectModerationController::class, 'index'])->name('moderasi.index');
+    Route::post('moderasi-proyek/{project}', [ProjectModerationController::class, 'decide'])->name('moderasi.decide');
 });
-
-
-
 
 if (app()->environment(['local', 'dusk.local']) && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
