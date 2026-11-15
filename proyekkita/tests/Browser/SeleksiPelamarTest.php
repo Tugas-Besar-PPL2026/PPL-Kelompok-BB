@@ -7,6 +7,7 @@ use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsCancellationScenario;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
  * [PBI-19 / FR-11] UMKM melihat daftar pelamar dan membuka detail pelamar melalui browser.
@@ -17,6 +18,8 @@ use Tests\DuskTestCase;
 class SeleksiPelamarTest extends DuskTestCase
 {
     use BuildsCancellationScenario;
+    use UsesDuskTestDatabase;
+
 
     public function test_umkm_melihat_daftar_pelamar_dan_membuka_detail_yang_sesuai(): void
     {

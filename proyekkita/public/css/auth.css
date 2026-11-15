@@ -25,7 +25,7 @@ button{font:inherit;cursor:pointer}
 .pk-logo{display:flex;align-items:center;gap:8px;font-weight:700;font-size:21px;color:var(--pri);letter-spacing:-.3px}
 .pk-logo .ic{color:var(--pri2)}
 .pk-nav{display:flex;align-items:stretch;gap:28px;height:100%}
-.pk-nav a{display:flex;align-items:center;color:var(--ink2);font-size:15px;border-bottom:2px solid transparent;padding-top:2px}
+.pk-nav a{display:flex;align-items:center;color:var(--ink2);font-size:15px;border-bottom:2px solid transparent;padding-top:2px;transition:color .2s ease,border-color .2s ease}
 .pk-nav a:hover{color:var(--pri)}
 .pk-nav a.on{color:var(--pri2);border-bottom-color:var(--pri2)}
 .pk-actions{margin-left:auto;display:flex;gap:16px}

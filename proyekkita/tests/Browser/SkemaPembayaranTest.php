@@ -10,10 +10,13 @@ use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsApplicationScenario;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 class SkemaPembayaranTest extends DuskTestCase
 {
     use BuildsApplicationScenario;
+    use UsesDuskTestDatabase;
+
 
     public function test_umkm_menyimpan_draf_dengan_dua_termin_melalui_browser(): void
     {
