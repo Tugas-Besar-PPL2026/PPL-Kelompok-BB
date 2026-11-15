@@ -30,8 +30,9 @@ class UmkmVerificationController extends Controller
             ->orderBy('id')
             ->get();
 
+     
         $selected = $request->filled('usaha')
-            ? UmkmProfile::with('user')->find($request->query('usaha'))
+            ? $queue->firstWhere('id', $request->query('usaha')) ?? $queue->first()
             : $queue->first();
 
         return view('admin.verifikasi.index', compact('status', 'counts', 'queue', 'selected'));
