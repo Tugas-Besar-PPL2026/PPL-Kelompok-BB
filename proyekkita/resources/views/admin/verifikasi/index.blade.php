@@ -45,7 +45,7 @@
                     </div>
 
                     <div class="form c2">
-                        <div class="fl"><label>Pemilik akun</label><div>{{ $selected->user?->name }}</div></div>
+                        <div class="fl"><label>Pemilik akun</label><div dusk="detail-pemilik">{{ $selected->user?->name }}<div class="sub">{{ $selected->user?->email }}</div></div></div>
                         <div class="fl"><label>Bidang usaha</label><div>{{ $selected->business_field }}</div></div>
                         <div class="fl span2"><label>Deskripsi</label><div>{{ $selected->description }}</div></div>
                         <div class="fl"><label>Kontak</label><div>{{ $selected->contact_phone }}</div></div>
