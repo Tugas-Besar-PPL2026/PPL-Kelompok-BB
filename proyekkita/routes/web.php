@@ -12,6 +12,7 @@ use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
+use App\Http\Controllers\ProjectMonitoringController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -19,9 +20,6 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
-
-Route::get('/profil-usaha', [ProfilUsahaController::class, 'edit'])->name('profil-usaha');
-Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])->name('profil-usaha.update');
 
 // Middleware untuk kandidat (Menggabungkan rute lama + rute PBI-02 data diri Anda)
 Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
@@ -65,11 +63,12 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
 
 // Middleware untuk UMKM
 Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
-    // PBI-1: UMKM mengelola profil usaha
-    Route::get('/profil-usaha', [ProfilUsahaController::class, 'edit'])
-    ->name('profil-usaha');
-    Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
-        ->name('profil-usaha.update');
+    // PBI-01: UMKM mengelola profil usaha dan melihat status verifikasi
+    Route::get('profil', [ProfilUsahaController::class, 'edit'])->name('profil.edit');
+    Route::put('profil', [ProfilUsahaController::class, 'update'])->name('profil.update');
+
+    // PBI-13: UMKM memantau daftar proyek, status, dan hasil moderasi
+    Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
 
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
