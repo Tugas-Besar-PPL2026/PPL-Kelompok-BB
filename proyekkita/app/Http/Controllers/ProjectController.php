@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Skill;
 use App\Services\ProjectService;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
@@ -24,6 +25,9 @@ class ProjectController extends Controller
         abort_if(! $umkm, 403, 'Lengkapi profil usaha terlebih dahulu.');
 
         $project = $this->projects->saveDraft($umkm, $request->validated());
+        if ($request->boolean('lanjut_tinjau')) {
+            return redirect()->route('umkm.proyek.review', $project)->with('success', 'Draf proyek disimpan. Periksa kembali sebelum mengajukan.');
+        }
 
         return redirect()->route('umkm.proyek.edit', $project)->with('success', 'Draf proyek disimpan.');
     }
@@ -39,8 +43,36 @@ class ProjectController extends Controller
     {
         $this->authorizeDraft($project);
         $this->projects->saveDraft($project->umkmProfile, $request->validated(), $project);
+        if ($request->boolean('lanjut_tinjau')) {
+            return redirect()->route('umkm.proyek.review', $project)->with('success', 'Draf proyek diperbarui. Periksa kembali sebelum mengajukan.');
+        }
 
         return back()->with('success', 'Draf proyek diperbarui.');
+    }
+
+        public function review(Project $project)
+    {
+        Gate::authorize('update', $project);
+
+        return view('umkm.proyek.review', [
+            'project' => $project->load('category', 'skills', 'paymentTerms', 'umkmProfile'),
+            'checks' => $this->projects->submissionChecks($project),
+            'canSubmit' => in_array($project->status, ProjectService::EDITABLE, true),
+        ]);
+    }
+
+    public function submit(Request $request, Project $project)
+    {
+        Gate::authorize('update', $project);
+
+        $request->validate(
+            ['pernyataan' => ['accepted']],
+            ['pernyataan.accepted' => 'Centang pernyataan terlebih dahulu.']
+        );
+
+        $this->projects->submitForModeration($project);
+
+        return redirect()->route('umkm.proyek.review', $project)->with('success', 'Proyek diajukan dan menunggu moderasi admin.');
     }
 
     /** Hanya pemilik proyek, dan hanya selama proyek masih berstatus draf atau perlu perbaikan. */
