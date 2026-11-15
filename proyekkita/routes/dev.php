@@ -4,32 +4,46 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Route bantuan khusus local development agar membuka http://127.0.0.1:8000 langsung masuk ke halaman profil kandidat
-$autoLoginKandidat = function () {
-    $user = User::where('email', 'kandidat@proyekkita.test')->first();
 
-    if ($user) {
-        Auth::login($user);
 
-        return redirect()->route('kandidat.profil.edit');
+// Login development berdasarkan role
+$devLogin = function (string $email, string $redirectUrl) {
+    $user = User::where('email', $email)->first();
+
+    if (!$user) {
+        return response(
+            'User tidak ditemukan. Jalankan php artisan migrate:fresh --seed terlebih dahulu.',
+            404
+        );
     }
 
-    return response('Jalankan "php artisan migrate:fresh --seed" terlebih dahulu di terminal.', 500);
-};
-
-Route::get('/', $autoLoginKandidat);
-Route::get('/dashboard', $autoLoginKandidat);
-Route::get('/login', $autoLoginKandidat)->name('login');
-
-Route::get('/dev/login/{role?}', function (string $role = 'kandidat') {
-    $email = match ($role) {
-        'admin' => 'admin@proyekkita.test',
-        'umkm' => 'umkm@proyekkita.test',
-        default => 'kandidat@proyekkita.test',
-    };
-
-    $user = User::where('email', $email)->firstOrFail();
     Auth::login($user);
 
-    return redirect()->route($user->homeRoute());
+    return redirect($redirectUrl);
+};
+
+// Login sebagai Kandidat
+Route::get('/dev/login/kandidat', function () use ($devLogin) {
+    return $devLogin(
+        'kandidat@proyekkita.test',
+        route('kandidat.profil.edit')
+    );
+});
+
+// Login sebagai UMKM
+Route::get('/dev/login/umkm', function () use ($devLogin) {
+    return $devLogin(
+        'umkm@proyekkita.test',
+        '/umkm/seleksi'
+    );
+});
+
+// Catatan: route '/' dan '/login' sementara dihapus karena sekarang disediakan fitur autentikasi (FR-01).
+
+// Login sebagai Admin
+Route::get('/dev/login/admin', function () use ($devLogin) {
+    return $devLogin(
+        'admin@proyekkita.test',
+        route('admin.master.index')
+    );
 });
