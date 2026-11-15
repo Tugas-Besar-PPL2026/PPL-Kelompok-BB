@@ -1,7 +1,10 @@
 <?php
 //Import semua controller yang dibutuhkan disini
-use App\Http\Controllers\ProfilUsahaController;
+
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Gate;
+
+use App\Http\Controllers\ProfilUsahaController;
 use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateSkillController;
 use App\Http\Controllers\CandidateSelectionController;
@@ -11,8 +14,9 @@ use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
+use App\Http\Controllers\ProjectMonitoringController;
+
 use App\Models\Project;
-use Illuminate\Support\Facades\Gate;
 
 Route::get('/', function () {
     return view('welcome');
@@ -62,6 +66,9 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     ->name('profil-usaha');
     Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
         ->name('profil-usaha.update');
+
+    // PBI-13: UMKM memantau daftar proyek, status, dan hasil moderasi
+    Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
 
     //
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
