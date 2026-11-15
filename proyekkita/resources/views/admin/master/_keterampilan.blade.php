@@ -148,7 +148,7 @@
         input.addEventListener('input', () => {
             const value = input.value.trim();
             const found = existing.get(value.toLowerCase());
-            const message = found ? `Keterampilan "${found}" sudah terdaftar. Nama keterampilan harus unik.` : '';
+            const message = found ? `Keterampilan "${found}" sudah terdaftar. Silahkan tambah keterampilan yang lain.` : '';
 
             error.textContent = message;
             error.style.display = message ? '' : 'none';
