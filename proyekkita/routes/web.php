@@ -10,6 +10,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
+use App\Http\Controllers\ProjectModerationController;
 use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
 use App\Http\Controllers\ProjectMonitoringController;
@@ -56,7 +57,7 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
 
     Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
 
-     // PBI-18: kandidat membatalkan lamaran
+    // PBI-18: kandidat membatalkan lamaran
     Route::patch('lamaran/{application}/batal', ApplicationCancellationController::class)
         ->whereNumber('application')
         ->name('lamaran.cancel');
@@ -102,6 +103,9 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('data-master/keterampilan/{skill}', [MasterDataController::class, 'updateSkill'])->name('master.skills.update');
     Route::patch('data-master/keterampilan/{skill}/status', [MasterDataController::class, 'toggleSkill'])->name('master.skills.toggle');
 
+    // PBI-12: moderasi proyek
+    Route::get('moderasi-proyek', [ProjectModerationController::class, 'index'])->name('moderasi.index');
+    Route::post('moderasi-proyek/{project}', [ProjectModerationController::class, 'decide'])->name('moderasi.decide');
     Route::get('verifikasi', [UmkmVerificationController::class, 'index'])->name('verifikasi.index');
     Route::get('verifikasi/{profile}', [UmkmVerificationController::class, 'show'])
         ->whereNumber('profile')
