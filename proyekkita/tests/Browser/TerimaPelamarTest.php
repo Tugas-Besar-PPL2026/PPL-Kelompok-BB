@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsCancellationScenario;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
  * [PBI-21 / FR-11] Terima pelamar dengan validasi kuota melalui browser.
@@ -18,6 +19,8 @@ use Tests\DuskTestCase;
 class TerimaPelamarTest extends DuskTestCase
 {
     use BuildsCancellationScenario;
+    use UsesDuskTestDatabase;
+
 
     public function test_umkm_menerima_pelamar_dan_kuota_pada_daftar_serta_detail_diperbarui(): void
     {
