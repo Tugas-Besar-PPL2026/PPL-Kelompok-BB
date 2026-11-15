@@ -20,8 +20,8 @@ class ProjectController extends Controller
 
     public function store(ProjectRequest $request)
     {
+        // Profil dijamin ada oleh middleware umkm.profile.
         $umkm = $request->user()->umkmProfile;
-        abort_if(! $umkm, 403, 'Lengkapi profil usaha terlebih dahulu.');
 
         $project = $this->projects->saveDraft($umkm, $request->validated());
 

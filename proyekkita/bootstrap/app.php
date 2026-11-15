@@ -15,6 +15,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+            'umkm.profile' => \App\Http\Middleware\EnsureUmkmProfileExists::class,
         ]);
 
         // [FR-01] Pengguna yang sudah login dan membuka halaman khusus tamu (landing, masuk, daftar)

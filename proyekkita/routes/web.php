@@ -86,12 +86,15 @@ Route::middleware(['auth', 'role:umkm'])->prefix('umkm')->name('umkm.')->group(f
     Route::put('profil', [ProfilUsahaController::class, 'update'])->name('profil.update');
 
     // PBI-13: UMKM memantau daftar proyek, status, dan hasil moderasi
-    Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
+    // Semua halaman proyek mensyaratkan profil usaha sudah diisi (belum diisi: peringatan + arahkan ke profil).
+    Route::middleware('umkm.profile')->group(function () {
+        Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
 
-    Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
-    Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
-    Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
-    Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
+        Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
+        Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
+        Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
+        Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
+    });
 
 
     Route::get('seleksi', [CandidateSelectionController::class, 'index'])->name('seleksi.index');

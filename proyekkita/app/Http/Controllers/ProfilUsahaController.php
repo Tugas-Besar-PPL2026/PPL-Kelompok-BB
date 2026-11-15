@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Middleware\EnsureUmkmProfileExists;
 use App\Http\Requests\UmkmProfileRequest;
 use App\Services\UmkmProfileService;
 use Illuminate\Http\RedirectResponse;
@@ -42,6 +43,12 @@ class ProfilUsahaController extends Controller
         $message = 'Profil usaha berhasil disimpan.';
         if ($reset) {
             $message .= ' Status verifikasi kembali menjadi Menunggu Pemeriksaan.';
+        }
+
+        // Datang dari halaman proyek yang tertahan karena profil belum ada? Kembalikan ke sana.
+        $return = $request->session()->pull(EnsureUmkmProfileExists::RETURN_KEY);
+        if (is_string($return) && str_starts_with($return, '/') && ! str_starts_with($return, '//')) {
+            return redirect($return)->with('success', $message);
         }
 
         return redirect()->route('umkm.profil.edit')->with('success', $message);
