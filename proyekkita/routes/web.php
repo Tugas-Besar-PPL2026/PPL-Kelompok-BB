@@ -1,28 +1,33 @@
 <?php
 
-use App\Http\Controllers\UmkmVerificationController;
+// Import semua controller yang dibutuhkan disini
 use App\Http\Controllers\ProfilUsahaController;
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateSkillController;
 use App\Http\Controllers\CandidateSelectionController;
+use App\Http\Controllers\CandidateProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\MasterDataController;
 use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
+use App\Http\Controllers\ProjectMonitoringController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/profil-usaha', [ProfilUsahaController::class, 'edit'])->name('profil-usaha');
-Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])->name('profil-usaha.update');
-
+// Middleware untuk kandidat (Menggabungkan rute lama + rute PBI-02 data diri Anda)
 Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
+    // PBI-02: kandidat mengelola data pribadi dan akademik (Milik Anda)
+    Route::get('profil/data-diri', [CandidateProfileController::class, 'edit'])->name('profil.datadiri');
+    Route::put('profil/data-diri', [CandidateProfileController::class, 'update'])->name('profil.datadiri.update');
+
+    // Rute keterampilan
     Route::get('profil', [CandidateSkillController::class, 'edit'])->name('profil.edit');
     Route::get('profil/keterampilan', [CandidateSkillController::class, 'edit'])->name('profil.keterampilan.edit');
     Route::post('profil/keterampilan', [CandidateSkillController::class, 'store'])->name('profil.keterampilan.store');
@@ -56,17 +61,14 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
         ->name('lamaran.cancel');
 });
 
-
+// Middleware untuk UMKM
 Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
-
-    Route::get('/profil-usaha', [ProfilUsahaController::class, 'edit'])
-    ->name('profil-usaha');
-    Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
-        ->name('profil-usaha.update');
-
-    // SEMENTARA: nama route yang dipanggil sidebar. Akan digantikan oleh route PBI-01.
+    // PBI-01: UMKM mengelola profil usaha dan melihat status verifikasi
     Route::get('profil', [ProfilUsahaController::class, 'edit'])->name('profil.edit');
+    Route::put('profil', [ProfilUsahaController::class, 'update'])->name('profil.update');
 
+    // PBI-13: UMKM memantau daftar proyek, status, dan hasil moderasi
+    Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
 
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
@@ -87,7 +89,7 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
         ->name('seleksi.portofolio');
 });
 
-
+// Middleware untuk admin
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('data-master', [MasterDataController::class, 'index'])->name('master.index');
     Route::post('data-master/kategori', [MasterDataController::class, 'storeCategory'])->name('master.categories.store');
@@ -103,9 +105,6 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
         ->whereNumber('profile')
         ->name('verifikasi.decide');
 });
-
-
-
 
 if (app()->environment(['local', 'dusk.local']) && file_exists(base_path('routes/dev.php'))) {
     require base_path('routes/dev.php');
