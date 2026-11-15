@@ -38,19 +38,12 @@ Route::get('/dev/login/umkm', function () use ($devLogin) {
     );
 });
 
-// Halaman utama sementara langsung masuk sebagai Kandidat
-Route::get('/', function () use ($devLogin) {
+// Catatan: route '/' dan '/login' sementara dihapus karena sekarang disediakan fitur autentikasi (FR-01).
+
+// Login sebagai Admin
+Route::get('/dev/login/admin', function () use ($devLogin) {
     return $devLogin(
-        'kandidat@proyekkita.test',
-        route('kandidat.profil.edit')
+        'admin@proyekkita.test',
+        route('admin.master.index')
     );
 });
-
-// Halaman login sementara langsung masuk sebagai Kandidat
-Route::get('/login', function () use ($devLogin) {
-    return $devLogin(
-        'kandidat@proyekkita.test',
-        route('kandidat.profil.edit')
-    );
-})->name('login');
-

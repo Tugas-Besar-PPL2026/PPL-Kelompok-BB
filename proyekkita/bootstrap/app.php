@@ -3,6 +3,7 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -11,7 +12,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        $middleware->alias([
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
+            'role' => \App\Http\Middleware\EnsureUserHasRole::class,
+        ]);
+
+        // [FR-01] Pengguna yang sudah login dan membuka halaman khusus tamu (landing, masuk, daftar)
+        // diarahkan ke halaman awal sesuai perannya.
+        $middleware->redirectUsersTo(
+            fn (Request $request) => $request->user() ? route($request->user()->homeRoute()) : '/'
+        );
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
