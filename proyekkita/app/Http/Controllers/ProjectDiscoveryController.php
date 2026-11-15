@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProjectSearchRequest;
 use App\Models\Project;
 use App\Services\ApplicationService;
 use App\Services\ProjectDiscoveryService;
 use Illuminate\Http\Request;
 
 /**
- * [PBI-14 / FR-08] Daftar proyek yang terbuka dan halaman Detail Proyek untuk kandidat.
+ * [PBI-14 + PBI-15 / FR-08] Eksplor Proyek untuk kandidat: daftar proyek terbuka dengan pencarian, filter,
+ * dan pengurutan, serta halaman Detail Proyek.
  * Halaman detail juga memuat kartu Ajukan Lamaran (PBI-16): data kartunya diambil dari
  * ApplicationService, sedangkan proses pengiriman ada di ApplicationController.
  */
@@ -19,13 +21,20 @@ class ProjectDiscoveryController extends Controller
         private ApplicationService $applications,
     ) {}
 
-    public function index(Request $request)
+    /** Peran kandidat dan validasi parameter ditangani ProjectSearchRequest. */
+    public function index(ProjectSearchRequest $request)
     {
-        $this->ensureKandidat($request);
+        $filters = $request->filters();
 
         return view('kandidat.proyek.index', [
-            'projects' => $this->discovery->listOpen(),
+            // withQueryString: tautan halaman berikutnya membawa kata kunci, filter, dan urutan.
+            'projects' => $this->discovery->listOpen($filters)->withQueryString(),
             'discovery' => $this->discovery,
+            'filters' => $filters,
+            'filterCount' => $this->discovery->activeFilterCount($filters),
+            'categories' => $this->discovery->categoryOptions(),
+            'skills' => $this->discovery->skillOptions(),
+            'sorts' => ProjectDiscoveryService::SORTS,
         ]);
     }
 

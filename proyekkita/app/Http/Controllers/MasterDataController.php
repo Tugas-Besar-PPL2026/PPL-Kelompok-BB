@@ -116,7 +116,7 @@ class MasterDataController extends Controller
                     ->first();
 
                 if ($existing) {
-                    $fail('Keterampilan "' . $existing->name . '" sudah terdaftar. Nama keterampilan harus unik.');
+                    $fail('Keterampilan "' . $existing->name . '" sudah terdaftar, silahkan tambahkan keterampilan yang lain.');
                 }
             },
         ];
