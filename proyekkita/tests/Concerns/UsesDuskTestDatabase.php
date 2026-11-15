@@ -41,6 +41,7 @@ trait UsesDuskTestDatabase
         if (app()->environment('production')) {
             throw new RuntimeException('Test Dusk tidak boleh dijalankan di environment production.');
         }
+        $this->bersihkanSesiBrowser();
 
         $path = base_path('database'.DIRECTORY_SEPARATOR.'dusk.sqlite');
 
@@ -68,6 +69,17 @@ trait UsesDuskTestDatabase
         }
     }
 
+    private function bersihkanSesiBrowser(): void
+    {
+        Browser::$baseUrl = method_exists($this, 'baseUrl')
+            ? $this->baseUrl()
+            : rtrim((string) config('app.url'), '/');
+
+        $this->browse(function (Browser $browser) {
+            $browser->visit('/');
+            $browser->driver->manage()->deleteAllCookies();
+        });
+    }
     private function pastikanServerMemakaiDatabaseDusk(): void
     {
         $penanda = User::factory()->kandidat()->create(['id' => random_int(900000000, 999999999)]);
@@ -81,6 +93,7 @@ trait UsesDuskTestDatabase
         try {
             $this->browse(function (Browser $browser) use ($penanda) {
                 $browser->loginAs($penanda)->assertAuthenticatedAs($penanda);
+                $browser->driver->manage()->deleteAllCookies();
             });
         } catch (Throwable $e) {
             throw new RuntimeException(

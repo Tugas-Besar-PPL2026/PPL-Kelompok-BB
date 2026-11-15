@@ -26,8 +26,8 @@ class AutentikasiTest extends DuskTestCase
     private function isiMasuk(Browser $browser, string $email, string $password): Browser
     {
         return $browser->visit('/login')
-            ->type('email', $email)
-            ->type('password', $password)
+            ->type('#email', $email)
+            ->type('#password', $password)
             ->press('@masuk');
     }
 
@@ -118,8 +118,8 @@ class AutentikasiTest extends DuskTestCase
                 ->waitFor('@galat-login')
                 ->assertSeeIn('@galat-login', self::PESAN_GAGAL)
                 ->assertPathIs('/login')
-                ->assertInputValue('email', $user->email)
-                ->assertInputValue('password', '')
+                ->assertInputValue('#email', $user->email)
+                ->assertInputValue('#password', '')
                 ->assertGuest();
         });
     }
@@ -170,10 +170,10 @@ class AutentikasiTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/daftar/umkm')
-                ->type('name', 'Rina Kartika')
-                ->type('email', 'rina@kopinusantara.test')
-                ->type('password', 'rahasia123')
-                ->type('password_confirmation', 'rahasia123')
+                ->type('#name', 'Rina Kartika')
+                ->type('#email', 'rina@kopinusantara.test')
+                ->type('#password', 'rahasia123')
+                ->type('#password_confirmation', 'rahasia123')
                 ->check('terms')
                 ->press('@daftar')
                 ->waitForLocation('/umkm/profil')
@@ -192,10 +192,10 @@ class AutentikasiTest extends DuskTestCase
     {
         $this->browse(function (Browser $browser) {
             $browser->visit('/daftar/kandidat')
-                ->type('name', 'Fajar Pratama')
-                ->type('email', 'fajar.pratama@gmail.com')
-                ->type('password', 'rahasia123')
-                ->type('password_confirmation', 'rahasia123')
+                ->type('#name', 'Fajar Pratama')
+                ->type('#email', 'fajar.pratama@gmail.com')
+                ->type('#password', 'rahasia123')
+                ->type('#password_confirmation', 'rahasia123')
                 ->check('terms')
                 ->press('@daftar')
                 ->waitForLocation('/kandidat/profil')
@@ -214,16 +214,16 @@ class AutentikasiTest extends DuskTestCase
 
         $this->browse(function (Browser $browser) {
             $browser->visit('/daftar/kandidat')
-                ->type('name', 'Fajar Pratama')
-                ->type('email', 'sudah@ada.test')
-                ->type('password', 'pendek1')
-                ->type('password_confirmation', 'beda1234')
+                ->type('#name', 'Fajar Pratama')
+                ->type('#email', 'sudah@ada.test')
+                ->type('#password', 'pendek1')
+                ->type('#password_confirmation', 'beda1234')
                 ->press('@daftar')
                 ->waitFor('@galat-email')
                 ->assertSeeIn('@galat-email', 'Email sudah terdaftar.')
                 ->assertSeeIn('@galat-password', 'Kata sandi minimal 8 karakter.')
                 ->assertSeeIn('@galat-terms', 'Anda harus menyetujui syarat dan ketentuan')
-                ->assertInputValue('name', 'Fajar Pratama')
+                ->assertInputValue('#name', 'Fajar Pratama')
                 ->assertGuest();
         });
 
@@ -342,3 +342,4 @@ class AutentikasiTest extends DuskTestCase
         });
     }
 }
+
