@@ -1,0 +1,66 @@
+﻿
+   FAIL  Tests\Feature\Admin\VerifikasiUmkmTest
+  Γ¿» admin melihat antrean menunggu beserta detail                                                                    0.33s  
+  Γ¿» antrean dapat disaring per status                                                                                0.01s  
+  Γ£ô non admin tidak dapat mengakses                                                                                  0.03s  
+  Γ£ô admin menyetujui umkm                                                                                            0.02s  
+  Γ£ô penolakan tanpa alasan gagal                                                                                     0.02s  
+  Γ¿» penolakan dengan alasan tersimpan dan terlihat oleh umkm                                                         0.03s  
+  Γ£ô profil yang sudah diputuskan tidak dapat diputuskan lagi                                                         0.02s  
+  Γ£ô non admin tidak dapat memutuskan                                                                                 0.03s  
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\Admin\VerifikasiUmkmTest > admin melihat antrean menunggu beserta detail                           
+  Expected: 
+
+  To contain: Laundry Bersih Kilat
+
+  at tests\Feature\Kandidat\Admin\VerifikasiUmkmTest.php:36
+     32Γûò         $umkm = $this->pendingUmkm();
+     33Γûò 
+     34Γûò         $this->actingAs($this->admin())->get(route('admin.verifikasi.index'))
+     35Γûò             ->assertOk()
+  Γ₧£  36Γûò             ->assertSee('Laundry Bersih Kilat')
+     37Γûò             ->assertSee('8120015566702');
+     38Γûò     }
+     39Γûò 
+     40Γûò     public function test_antrean_dapat_disaring_per_status(): void
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\Admin\VerifikasiUmkmTest > antrean dapat disaring per status                                       
+  Expected: 
+
+  To contain: Usaha Terverifikasi
+
+  at tests\Feature\Kandidat\Admin\VerifikasiUmkmTest.php:46
+     42Γûò         $this->pendingUmkm(['business_name' => 'Usaha Menunggu']);
+     43Γûò         $this->makeUmkm(['business_name' => 'Usaha Terverifikasi', 'verification_status' => VerificationStatus::Verified]);
+     44Γûò 
+     45Γûò         $this->actingAs($this->admin())->get(route('admin.verifikasi.index', ['status' => 'verified']))
+  Γ₧£  46Γûò             ->assertSee('Usaha Terverifikasi')
+     47Γûò             ->assertDontSee('Usaha Menunggu');
+     48Γûò     }
+     49Γûò 
+     50Γûò     public function test_non_admin_tidak_dapat_mengakses(): void
+
+  ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ  
+   FAILED  Tests\Feature\Admin\VerifikasiUmkmTest > penolakan dengan alasan tersimpan dan terlihΓÇª  RouteNotFoundException   
+  Route [umkm.profil.edit] not defined.
+
+  at vendor\laravel\framework\src\Illuminate\Routing\UrlGenerator.php:536
+    532Γûò             ! is_null($url = call_user_func($this->missingNamedRouteResolver, $name, $parameters, $absolute))) {
+    533Γûò             return $url;
+    534Γûò         }
+    535Γûò 
+  Γ₧£ 536Γûò         throw new RouteNotFoundException("Route [{$name}] not defined.");
+    537Γûò     }
+    538Γûò 
+    539Γûò     /**
+    540Γûò      * Get the URL for a given route instance.
+
+  1   vendor\laravel\framework\src\Illuminate\Routing\UrlGenerator.php:536
+  2   vendor\laravel\framework\src\Illuminate\Foundation\helpers.php:870
+
+
+  Tests:    3 failed, 5 passed (20 assertions)
+  Duration: 0.71s
+

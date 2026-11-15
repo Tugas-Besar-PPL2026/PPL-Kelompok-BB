@@ -64,13 +64,16 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
     Route::post('/profil-usaha', [ProfilUsahaController::class, 'update'])
         ->name('profil-usaha.update');
 
-    
+    // SEMENTARA: nama route yang dipanggil sidebar. Akan digantikan oleh route PBI-01.
+    Route::get('profil', [ProfilUsahaController::class, 'edit'])->name('profil.edit');
+
+
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
     Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
     Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
 
-   
+
     Route::get('seleksi', [CandidateSelectionController::class, 'index'])->name('seleksi.index');
     Route::get('seleksi/pelamar/{application}', [CandidateSelectionController::class, 'show'])
         ->whereNumber('application')

@@ -20,6 +20,8 @@ a{color:inherit;text-decoration:none}
 .sidebar{width:240px;flex-shrink:0;background:#fff;border-right:1px solid #E5E7EB;padding:16px 12px;display:flex;flex-direction:column;justify-content:space-between}
 .biz{border:1px solid #E5E7EB;border-radius:10px;padding:10px;display:flex;gap:10px;align-items:center;margin-bottom:16px}
 .badge{display:inline-flex;align-items:center;gap:4px;background:#DCFCE7;color:#166534;border-radius:6px;padding:2px 8px;font-size:11px;font-weight:600}
+.badge-danger{background:#FEE2E2;color:#991B1B}
+.badge-warning{background:#FEF3C7;color:#92400E}
 .nav a{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;color:#374151;font-weight:500;margin-bottom:4px}
 .nav a.active{background:#2563EB;color:#fff}
 .nav .count{margin-left:auto;background:#DBEAFE;color:#1E40AF;font-size:11px;font-weight:600;border-radius:9px;padding:1px 7px}
@@ -73,7 +75,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
   <div class="user">
     <button class="bell" aria-label="Notifikasi, 3 baru">🔔<span>3</span></button>
     <div class="avatar">KN</div>
-    <div><b style="font-size:12px">{{ $usaha->nama ?? 'Kopi Nusantara' }}</b><div class="small">UMKM</div></div>
+    <div><b style="font-size:12px">{{ $profile->business_name ?? $usaha->nama ?? 'Kopi Nusantara' }}</b><div class="small">UMKM</div></div>
   </div>
 </header>
 
@@ -82,7 +84,19 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
     <div>
       <div class="biz">
         <div class="avatar">KN</div>
-        <div><b style="font-size:12px">{{ $usaha->nama ?? 'Kopi Nusantara' }}</b><br><span class="badge">✓ Terverifikasi</span></div>
+        <div><b style="font-size:12px">{{ $profile->business_name ?? $usaha->nama ?? 'Kopi Nusantara' }}</b><br>
+          @if(isset($profile->verification_status))
+            @if($profile->verification_status->value === 'verified')
+              <span class="badge">✓ Terverifikasi</span>
+            @elseif($profile->verification_status->value === 'rejected')
+              <span class="badge badge-danger">Ditolak</span>
+            @else
+              <span class="badge badge-warning">Menunggu Pemeriksaan</span>
+            @endif
+          @else
+            <span class="badge">✓ Terverifikasi</span>
+          @endif
+        </div>
       </div>
       <nav class="nav">
         <a href="#" class="active" aria-current="page">Profil Usaha</a>
@@ -105,6 +119,16 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
       <div class="alert alert-success">{{ session('success') }}</div>
     @endif
 
+    {{-- Alert / Informasi jika verifikasi ditolak beserta alasannya --}}
+    @if(isset($profile->verification_status) && $profile->verification_status->value === 'rejected')
+      <div class="alert alert-error">
+        Verifikasi UMKM <strong>Ditolak</strong>. 
+        @if(!empty($profile->rejection_reason))
+          <br>Alasan: {{ $profile->rejection_reason }}
+        @endif
+      </div>
+    @endif
+
     @if ($errors->any())
       <div class="alert alert-error">
         <ul>
@@ -123,7 +147,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
           <h2>Informasi Usaha</h2>
           <div class="row">
             <div><label for="nama">Nama usaha *</label>
-              <input id="nama" name="nama" value="{{ old('nama', 'Kopi Nusantara') }}" required></div>
+              <input id="nama" name="nama" value="{{ old('nama', $profile->business_name ?? 'Kopi Nusantara') }}" required></div>
             <div><label for="bidang">Bidang usaha *</label>
               <select id="bidang" name="bidang">
                 <option>Kuliner &amp; Minuman</option>
@@ -148,7 +172,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
           <h2>Informasi Legalitas Usaha</h2>
           <div class="row">
             <div><label for="nib">Nomor Induk Berusaha (NIB)</label>
-              <input id="nib" name="nib" value="{{ old('nib', '9120304567812') }}">
+              <input id="nib" name="nib" value="{{ old('nib', $profile->nib ?? '9120304567812') }}">
               <div class="hint">13 digit NIB dari sistem OSS. Isi NIB dan/atau tautan informasi usaha.</div></div>
             <div><label for="tautan">Tautan informasi usaha</label>
               <input id="tautan" name="tautan" value="{{ old('tautan', 'instagram.com/kopinusantara.bdg') }}"></div>
@@ -168,7 +192,17 @@ input:focus,select:focus,textarea:focus{outline:2px solid #93C5FD;border-color:#
       <div class="col-side">
         <section class="card">
           <h2>Status Verifikasi</h2>
-          <span class="badge">Terverifikasi</span> <span class="small">sejak 28 Okt 2026</span>
+          <span class="badge">
+            @if(isset($profile->verification_status))
+              @if($profile->verification_status->value === 'verified') Terverifikasi
+              @elseif($profile->verification_status->value === 'rejected') Ditolak
+              @else Menunggu Pemeriksaan
+              @endif
+            @else
+              Terverifikasi
+            @endif
+          </span> 
+          <span class="small">sejak 28 Okt 2026</span>
           <div class="timeline">
             <div class="step"><b>Profil diajukan untuk verifikasi</b><small>27 Okt 2026, 09.40</small></div>
             <div class="step"><b>Diperiksa admin</b><small>27 Okt 2026, 15.12</small><small style="color:#374151">NIB dan tautan usaha sesuai dengan nama usaha.</small></div>

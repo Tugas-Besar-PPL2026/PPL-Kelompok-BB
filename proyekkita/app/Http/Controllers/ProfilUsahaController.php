@@ -8,7 +8,10 @@ class ProfilUsahaController extends Controller
 {
     public function edit()
     {
-        return view('profil-usaha');
+       
+        $profile = auth()->user()->umkmProfile ?? auth()->user(); 
+
+        return view('profil-usaha', compact('profile'));
     }
 
     public function update(Request $request)
@@ -24,7 +27,7 @@ class ProfilUsahaController extends Controller
             'tautan'    => 'nullable|string|max:255',
         ]);
 
-        // TODO: simpan $data ke database di commit berikutnya
+
 
         return back()->with('success', 'Profil usaha berhasil disimpan.');
     }
