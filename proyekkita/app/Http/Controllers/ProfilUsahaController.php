@@ -2,30 +2,45 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\UmkmProfileRequest;
+use App\Services\UmkmProfileService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class ProfilUsahaController extends Controller
 {
-    public function edit()
+    public function __construct(private UmkmProfileService $profiles) {}
+
+    public function edit(Request $request): View
     {
-        return view('profil-usaha');
+        $user = $request->user();
+        abort_unless($user?->isUmkm(), 403);
+
+        $profile = $user->umkmProfile;
+        $ratingCount = $user->receivedEvaluations()->count();
+        $distribution = $user->receivedEvaluations()
+            ->selectRaw('rating, count(*) as total')
+            ->groupBy('rating')
+            ->pluck('total', 'rating');
+
+        return view('umkm.profil.edit', [
+            'profile' => $profile,
+            'average' => $profile?->averageRating(),
+            'ratingCount' => $ratingCount,
+            'distribution' => $distribution,
+        ]);
     }
 
-    public function update(Request $request)
+    public function update(UmkmProfileRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'nama'      => 'required|string|max:100',
-            'bidang'    => 'required|string',
-            'deskripsi' => 'required|string',
-            'kontak'    => 'required|string|max:20',
-            'kota'      => 'required|string|max:50',
-            'alamat'    => 'required|string',
-            'nib'       => 'nullable|digits:13',
-            'tautan'    => 'nullable|string|max:255',
-        ]);
+        [, $reset] = $this->profiles->save($request->user(), $request->validated());
 
-        // TODO: simpan $data ke database di commit berikutnya
+        $message = 'Profil usaha berhasil disimpan.';
+        if ($reset) {
+            $message .= ' Status verifikasi kembali menjadi Menunggu Pemeriksaan.';
+        }
 
-        return back()->with('success', 'Profil usaha berhasil disimpan.');
+        return redirect()->route('umkm.profil.edit')->with('success', $message);
     }
 }
