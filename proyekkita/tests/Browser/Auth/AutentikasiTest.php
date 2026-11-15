@@ -202,7 +202,7 @@ class AutentikasiTest extends DuskTestCase
                 ->type('#email', 'rina@kopinusantara.test')
                 ->type('#password', 'rahasia123')
                 ->type('#password_confirmation', 'rahasia123')
-                ->check('#terms')
+                ->check('terms')
                 ->press('@daftar')
                 ->waitForLocation('/umkm/profil')
                 ->assertSee('Akun berhasil dibuat.');
@@ -227,7 +227,7 @@ class AutentikasiTest extends DuskTestCase
                 ->type('#email', 'fajar.pratama@gmail.com')
                 ->type('#password', 'rahasia123')
                 ->type('#password_confirmation', 'rahasia123')
-                ->check('#terms')
+                ->check('terms')
                 ->press('@daftar')
                 ->waitForLocation('/kandidat/profil')
                 ->assertSee('Akun berhasil dibuat.');
@@ -428,3 +428,4 @@ class AutentikasiTest extends DuskTestCase
         });
     }
 }
+
