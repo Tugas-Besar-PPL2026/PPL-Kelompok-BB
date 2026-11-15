@@ -97,6 +97,10 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::put('data-master/kategori/{category}', [MasterDataController::class, 'updateCategory'])->name('master.categories.update');
     Route::patch('data-master/kategori/{category}/status', [MasterDataController::class, 'toggleCategory'])->name('master.categories.toggle');
 
+    // PBI-07: keterampilan
+    Route::post('data-master/keterampilan', [MasterDataController::class, 'storeSkill'])->name('master.skills.store');
+    Route::put('data-master/keterampilan/{skill}', [MasterDataController::class, 'updateSkill'])->name('master.skills.update');
+    Route::patch('data-master/keterampilan/{skill}/status', [MasterDataController::class, 'toggleSkill'])->name('master.skills.toggle');
 
     Route::get('verifikasi', [UmkmVerificationController::class, 'index'])->name('verifikasi.index');
     Route::get('verifikasi/{profile}', [UmkmVerificationController::class, 'show'])
