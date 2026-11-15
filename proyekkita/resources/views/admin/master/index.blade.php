@@ -23,7 +23,7 @@
     {{-- Layout 2 Kolom Berdampingan Persis Mockup Figma --}}
     <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; align-items: start;">
 
-        {{-- KOLOM 1: KATEGORI PROYEK --}}
+        {{-- KOLOM 1: KATEGORI PROYEK (PBI-06) --}}
         <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; min-height: 520px;">
             <div>
                 <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid #f1f5f9;">
@@ -45,24 +45,10 @@
                         </thead>
                         <tbody style="font-size: 14px;">
                             @forelse($categories as $category)
-                                <tr style="border-bottom: 1px solid #f8fafc;">
+                                {{-- Baris Normal --}}
+                                <tr id="cat-row-{{ $category->id }}" style="border-bottom: 1px solid #f8fafc;">
                                     <td style="padding: 12px 0; font-weight: 500; color: #1e293b;">
-                                        <span id="cat-label-{{ $category->id }}">{{ $category->name }}</span>
-
-                                        <form id="cat-form-{{ $category->id }}"
-                                              action="{{ route('admin.master.categories.update', $category) }}"
-                                              method="POST"
-                                              style="display: none; align-items: center; gap: 8px; margin-top: 4px;">
-                                            @csrf
-                                            @method('PUT')
-                                            <input type="text"
-                                                   name="name"
-                                                   value="{{ $category->name }}"
-                                                   required
-                                                   style="border: 1px solid #60a5fa; border-radius: 4px; padding: 4px 8px; font-size: 12px; outline: none;">
-                                            <button type="submit" style="font-size: 12px; background: #2563eb; color: white; padding: 4px 8px; border-radius: 4px; border: none; cursor: pointer;">Simpan</button>
-                                            <button type="button" onclick="toggleEditCategory({{ $category->id }})" style="font-size: 12px; color: #64748b; background: none; border: none; cursor: pointer;">Batal</button>
-                                        </form>
+                                        {{ $category->name }}
                                     </td>
 
                                     <td style="padding: 12px 0; font-size: 12px; color: #64748b;">
@@ -73,7 +59,7 @@
                                         <form action="{{ route('admin.master.categories.toggle', $category) }}" method="POST" style="display: inline-flex; align-items: center; gap: 8px;">
                                             @csrf
                                             @method('PATCH')
-                                            <button type="submit" style="position: relative; display: inline-flex; height: 20px; width: 36px; cursor: pointer; border-radius: 9999px; border: none; background-color: {{ $category->is_active ? '#059669' : '#cbd5e1' }};">
+                                            <button type="submit" style="position: relative; display: inline-flex; height: 20px; width: 36px; cursor: pointer; border-radius: 9999px; border: none; background-color: {{ $category->is_active ? '#059669' : '#cbd5e1' }}; padding: 2px;">
                                                 <span style="display: inline-block; height: 16px; width: 16px; border-radius: 9999px; background-color: white; transform: translateX({{ $category->is_active ? '16px' : '0px' }}); transition: transform 0.2s;"></span>
                                             </button>
                                             <span style="font-size: 12px; color: {{ $category->is_active ? '#334155' : '#94a3b8' }};">{{ $category->is_active ? 'Aktif' : 'Nonaktif' }}</span>
@@ -81,7 +67,32 @@
                                     </td>
 
                                     <td style="padding: 12px 0; text-align: right;">
-                                        <button type="button" onclick="toggleEditCategory({{ $category->id }})" style="color: #475569; background: #f1f5f9; font-size: 12px; font-weight: 500; padding: 4px 10px; border-radius: 6px; border: none; cursor: pointer;">Ubah Nama</button>
+                                        <button type="button"
+                                                onclick="toggleEditCategory({{ $category->id }})"
+                                                title="Ubah Kategori"
+                                                style="display: inline-flex; align-items: center; justify-content: center; width: 30px; height: 30px; color: #475569; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; cursor: pointer;">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                                <path d="m15 5 4 4"/>
+                                            </svg>
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                {{-- Baris Form Edit (Muncul rapi menggantikan 1 baris penuh saat klik ikon pensil) --}}
+                                <tr id="cat-edit-{{ $category->id }}" style="display: none; border-bottom: 1px solid #f8fafc; background: #f8fafc;">
+                                    <td colspan="4" style="padding: 10px 8px;">
+                                        <form action="{{ route('admin.master.categories.update', $category) }}" method="POST" style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="text"
+                                                   name="name"
+                                                   value="{{ $category->name }}"
+                                                   required
+                                                   style="flex: 1; border: 1px solid #60a5fa; border-radius: 6px; padding: 6px 10px; font-size: 13px; background: #ffffff; outline: none;">
+                                            <button type="submit" style="font-size: 12px; font-weight: 500; background: #2563eb; color: white; padding: 6px 12px; border-radius: 6px; border: none; cursor: pointer;">Simpan</button>
+                                            <button type="button" onclick="toggleEditCategory({{ $category->id }})" style="font-size: 12px; font-weight: 500; color: #475569; background: #e2e8f0; padding: 6px 10px; border-radius: 6px; border: none; cursor: pointer;">Batal</button>
+                                        </form>
                                     </td>
                                 </tr>
                             @empty
@@ -115,14 +126,14 @@
 
 <script>
     function toggleEditCategory(id) {
-        const label = document.getElementById('cat-label-' + id);
-        const form = document.getElementById('cat-form-' + id);
-        if (form.style.display === 'none' || form.style.display === '') {
-            label.style.display = 'none';
-            form.style.display = 'flex';
+        const normalRow = document.getElementById('cat-row-' + id);
+        const editRow = document.getElementById('cat-edit-' + id);
+        if (editRow.style.display === 'none' || editRow.style.display === '') {
+            normalRow.style.display = 'none';
+            editRow.style.display = 'table-row';
         } else {
-            label.style.display = 'inline';
-            form.style.display = 'none';
+            normalRow.style.display = 'table-row';
+            editRow.style.display = 'none';
         }
     }
 </script>
