@@ -9,9 +9,13 @@ use App\Models\User;
 class UmkmProfileService
 {
     /**
-     * Menyimpan profil usaha milik $user.
-     * Aturan FR-02: profil Terverifikasi yang mengubah nama usaha / NIB / tautan kembali ke Menunggu Pemeriksaan.
-     * Profil Ditolak yang diperbaiki otomatis diajukan ulang (Menunggu Pemeriksaan).
+     * Menyimpan profil usaha milik $user (selalu milik pengguna itu sendiri, tidak pernah profil orang lain).
+     *
+     * Aturan FR-02:
+     * - Profil Terverifikasi yang mengubah nama usaha / NIB / tautan kembali ke Menunggu Pemeriksaan.
+     *   Mengubah kontak, kota, alamat, bidang, atau deskripsi saja tidak mengubah status.
+     * - Profil Ditolak yang diperbaiki (ada data yang berubah) otomatis diajukan ulang ke Menunggu Pemeriksaan
+     *   dan alasan penolakan lama dibersihkan.
      *
      * @return array{0: UmkmProfile, 1: bool} profil dan penanda apakah status direset
      */

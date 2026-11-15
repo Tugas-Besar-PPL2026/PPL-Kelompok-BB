@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
+/** [PBI-01 / FR-02] UMKM mengelola profil usaha dan melihat status verifikasi serta rating. */
 class ProfilUsahaController extends Controller
 {
     public function __construct(private UmkmProfileService $profiles) {}
@@ -34,6 +35,8 @@ class ProfilUsahaController extends Controller
 
     public function update(UmkmProfileRequest $request): RedirectResponse
     {
+        // Profil selalu diambil dari akun yang login, bukan dari input, sehingga tidak bisa mengubah profil UMKM lain.
+
         [, $reset] = $this->profiles->save($request->user(), $request->validated());
 
         $message = 'Profil usaha berhasil disimpan.';
