@@ -8,10 +8,12 @@ use App\Models\User;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsApplicationScenario;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 class PengajuanModerasiTest extends DuskTestCase
 {
     use BuildsApplicationScenario;
+    use UsesDuskTestDatabase;
 
     public function test_umkm_mengajukan_draf_untuk_moderasi_melalui_browser(): void
     {

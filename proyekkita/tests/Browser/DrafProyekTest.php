@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use Laravel\Dusk\Browser;
 use Tests\Concerns\BuildsApplicationScenario;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
  * PBI-9 - Membuat dan memperbarui draf proyek melalui browser: pengisian form, pesan error di layar,
@@ -17,6 +18,7 @@ use Tests\DuskTestCase;
 class DrafProyekTest extends DuskTestCase
 {
     use BuildsApplicationScenario;
+    use UsesDuskTestDatabase;
 
     public function test_umkm_membuat_draf_proyek_baru(): void
     {

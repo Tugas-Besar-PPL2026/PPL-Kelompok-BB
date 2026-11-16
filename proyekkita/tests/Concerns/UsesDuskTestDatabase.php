@@ -10,29 +10,56 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Pengaman database untuk Laravel Dusk (PBI-16, PBI-17, PBI-18).
+ * Pengaman database untuk Laravel Dusk.
  *
- * Masalah yang dicegah: test Dusk menulis data (user, proyek, lamaran) ke database yang dipakai server aplikasi.
- * Tanpa pengaman, data itu bisa tercampur dengan database development.
+ * Masalah yang dicegah: test Dusk menulis dan menghapus data di database yang dipakai untuk development.
  *
  * Yang dilakukan trait ini (otomatis sebelum setiap test):
  *  1. Menolak berjalan bila APP_ENV = production.
- *  2. Memaksa proses test memakai SATU file SQLite khusus: database/dusk.sqlite (bukan database/database.sqlite,
- *     bukan :memory:). File ini sudah ada di .gitignore dan aman dibuang kapan saja.
- *  3. Menjalankan migrate:fresh HANYA pada koneksi tersebut, sehingga setiap test mulai dari database kosong.
+ *  2. Memakai koneksi database dari .env.dusk.local:
+ *     - MySQL: nama database WAJIB mengandung kata "dusk" (contoh: proyekkita_dusk).
+ *     - SQLite: selalu dipaksa memakai file database/dusk.sqlite.
+ *     Selain itu test dihentikan, sehingga database development tidak pernah tersentuh.
+ *  3. Menjalankan migrate:fresh HANYA pada database Dusk tersebut, sehingga setiap test mulai dari database kosong.
  *  4. Sekali per kelas test, memastikan SERVER aplikasi yang diakses browser memakai database yang sama.
- *     Caranya: membuat user penanda ber-ID sangat besar di dusk.sqlite, lalu meminta browser login sebagai user itu.
- *     Jika server memakai database lain (misalnya database development), user itu tidak ditemukan dan test
- *     dihentikan sebelum ada data yang ditulis atau dihapus di database tersebut.
+ *     Caranya: membuat user penanda ber-ID sangat besar, lalu meminta browser login sebagai user itu.
+ *     Jika server memakai database lain, user itu tidak ditemukan dan test dihentikan.
  *
- * Server harus dijalankan dengan DB_DATABASE yang menunjuk ke file yang sama. Lihat
- * dokumentasi-pengujian/PANDUAN_MENJALANKAN_TEST.md.
- *
- * Batasan: pemeriksaan penanda berdasarkan ID user. Peluang database development kebetulan memiliki user dengan
+ * Batasan: pemeriksaan penanda berdasarkan ID user. Peluang database lain kebetulan memiliki user dengan
  * ID acak 900.000.000 sampai 999.999.999 dianggap dapat diabaikan.
  */
 trait UsesDuskTestDatabase
 {
+        /**
+     * Browser dengan jeda setelah setiap aksi (buka halaman, ketik, klik, pilih, centang).
+     * Lama jeda diatur lewat DUSK_JEDA (milidetik) di .env.dusk.local. Tanpa DUSK_JEDA, kecepatan normal.
+     */
+    protected function newBrowser($driver)
+    {
+        return new class($driver) extends Browser
+        {
+            public function visit($url) { return $this->jeda(parent::visit($url)); }
+            public function type($field, $value) { return $this->jeda(parent::type($field, $value)); }
+            public function select($field, $value = null) { return $this->jeda(parent::select($field, $value)); }
+            public function radio($field, $value) { return $this->jeda(parent::radio($field, $value)); }
+            public function check($field, $value = null) { return $this->jeda(parent::check($field, $value)); }
+            public function uncheck($field, $value = null) { return $this->jeda(parent::uncheck($field, $value)); }
+            public function press($button) { return $this->jeda(parent::press($button)); }
+            public function click($selector = null) { return $this->jeda(parent::click($selector)); }
+            public function clickAtXPath($expression) { return $this->jeda(parent::clickAtXPath($expression)); }
+
+            private function jeda($hasil)
+            {
+                $ms = (int) env('DUSK_JEDA', 0);
+
+                if ($ms > 0) {
+                    usleep($ms * 1000);
+                }
+
+                return $hasil;
+            }
+        };
+    }
     private static bool $duskServerVerified = false;
 
     /** Dipanggil otomatis oleh Laravel (setUp + nama trait) setelah aplikasi dibuat. */
@@ -43,28 +70,34 @@ trait UsesDuskTestDatabase
         }
         $this->bersihkanSesiBrowser();
 
-        $path = base_path('database'.DIRECTORY_SEPARATOR.'dusk.sqlite');
+        $koneksi = config('database.default');
 
-        if (! file_exists($path)) {
-            touch($path);
+        if ($koneksi === 'sqlite') {
+            $path = base_path('database'.DIRECTORY_SEPARATOR.'dusk.sqlite');
+
+            if (! file_exists($path)) {
+                touch($path);
+            }
+
+            config(['database.connections.sqlite.database' => $path]);
+            DB::purge('sqlite');
         }
 
-        config([
-            'database.default' => 'sqlite',
-            'database.connections.sqlite.database' => $path,
-        ]);
-        DB::purge('sqlite');
-
-        $aktif = DB::connection('sqlite')->getDatabaseName();
-        if (config('database.default') !== 'sqlite' || $aktif !== $path || basename($aktif) !== 'dusk.sqlite') {
-            throw new RuntimeException("Database test bukan database/dusk.sqlite (aktif: {$aktif}). Test dihentikan.");
+        $aktif = (string) DB::connection($koneksi)->getDatabaseName();
+        if (! str_contains(strtolower(basename($aktif)), 'dusk')) {
+            throw new RuntimeException(
+                "Database test harus database khusus Dusk (namanya mengandung kata 'dusk'). Aktif: {$aktif}. Test dihentikan."
+            );
         }
 
-        // Hanya menyentuh koneksi di atas (dusk.sqlite).
-        Artisan::call('migrate:fresh', ['--database' => 'sqlite', '--force' => true]);
+        // Hanya menyentuh database Dusk di atas.
+                // Hanya menyentuh database Dusk di atas.
+        // DUSK_SIMPAN_DATA=true di .env.dusk.local: data test sebelumnya tidak dihapus (hanya menjalankan migrasi baru).
+        $simpanData = filter_var(env('DUSK_SIMPAN_DATA', false), FILTER_VALIDATE_BOOL);
+        Artisan::call($simpanData ? 'migrate' : 'migrate:fresh', ['--database' => $koneksi, '--force' => true]);
 
         if (! self::$duskServerVerified) {
-            $this->pastikanServerMemakaiDatabaseDusk();
+            $this->pastikanServerMemakaiDatabaseDusk($aktif);
             self::$duskServerVerified = true;
         }
     }
@@ -80,7 +113,8 @@ trait UsesDuskTestDatabase
             $browser->driver->manage()->deleteAllCookies();
         });
     }
-    private function pastikanServerMemakaiDatabaseDusk(): void
+
+    private function pastikanServerMemakaiDatabaseDusk(string $database): void
     {
         $penanda = User::factory()->kandidat()->create(['id' => random_int(900000000, 999999999)]);
 
@@ -97,8 +131,8 @@ trait UsesDuskTestDatabase
             });
         } catch (Throwable $e) {
             throw new RuntimeException(
-                'Server aplikasi tidak memakai database/dusk.sqlite, atau server tidak dapat dijangkau (APP_URL). '
-                .'Test dihentikan agar tidak menyentuh database lain. Periksa PANDUAN_MENJALANKAN_TEST.md. '
+                "Server aplikasi tidak memakai database Dusk ({$database}), atau server tidak dapat dijangkau (APP_URL). "
+                .'Test dihentikan agar tidak menyentuh database lain. Periksa .env.dusk.local dan server yang sedang berjalan. '
                 .'Detail: '.$e->getMessage(),
                 0,
                 $e,
