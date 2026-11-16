@@ -1,12 +1,16 @@
+
 <?php
 
 namespace Tests\Concerns;
 
+use App\Enums\AgreementStatus;
 use App\Enums\ApplicationStatus;
-use App\Enums\ProjectStatus;
 use App\Enums\ModerationDecision;
+use App\Enums\ProjectStatus;
+use App\Models\Agreement;
 use App\Models\Application;
 use App\Models\Category;
+use App\Models\Evaluation;
 use App\Models\Project;
 use App\Models\ProjectModeration;
 use App\Models\Skill;
@@ -17,6 +21,9 @@ trait BuildsProjectCatalogScenario
 {
     use BuildsApplicationScenario;
 
+    /**
+     * Membuat kategori proyek untuk kebutuhan testing.
+     */
     protected function makeCategory(string $name): Category
     {
         return Category::firstOrCreate([
@@ -24,6 +31,9 @@ trait BuildsProjectCatalogScenario
         ]);
     }
 
+    /**
+     * Membuat keterampilan untuk kebutuhan testing.
+     */
     protected function makeSkill(string $name): Skill
     {
         return Skill::firstOrCreate([
@@ -31,6 +41,9 @@ trait BuildsProjectCatalogScenario
         ]);
     }
 
+    /**
+     * Membuat proyek untuk pengujian katalog proyek.
+     */
     protected function makeCatalogProject(
         string $title,
         array $overrides = [],
@@ -62,6 +75,9 @@ trait BuildsProjectCatalogScenario
         return $project;
     }
 
+    /**
+     * Membuat lamaran kandidat pada proyek tertentu.
+     */
     protected function makeApplicationFor(
         User $candidate,
         ApplicationStatus $status,
@@ -79,6 +95,45 @@ trait BuildsProjectCatalogScenario
         ], $overrides));
     }
 
+    /**
+     * Membuat evaluasi kandidat terhadap UMKM.
+     */
+    protected function makeEvaluationFor(
+        User $umkm,
+        int $rating
+    ): Evaluation {
+        $candidate = $this->makeKandidat();
+
+        $project = $this->makeProject([], $umkm->umkmProfile);
+
+        $application = $this->makeApplicationFor(
+            $candidate,
+            ApplicationStatus::Accepted,
+            ['project' => $project]
+        );
+
+        $agreement = Agreement::create([
+            'application_id' => $application->id,
+            'scope' => 'Pengerjaan proyek sesuai kebutuhan UMKM.',
+            'deliverables' => 'Hasil akhir proyek.',
+            'deadline' => now()->addDays(30)->toDateString(),
+            'total_compensation' => $project->total_compensation,
+            'revision_limit' => 2,
+            'status' => AgreementStatus::Completed,
+        ]);
+
+        return Evaluation::create([
+            'agreement_id' => $agreement->id,
+            'reviewer_id' => $candidate->id,
+            'reviewee_id' => $umkm->id,
+            'rating' => $rating,
+            'comment' => 'Evaluasi untuk kebutuhan pengujian.',
+        ]);
+    }
+
+    /**
+     * Membuat moderasi proyek untuk kebutuhan testing.
+     */
     protected function makeModeration(
         Project $project,
         ModerationDecision $decision,
