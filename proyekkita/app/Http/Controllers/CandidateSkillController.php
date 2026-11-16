@@ -23,11 +23,17 @@ class CandidateSkillController extends Controller
             'portfolios' => fn ($q) => $q->orderBy('portfolios.id'),
         ]);
 
+        $experiences = $profile?->experiences ?? collect();
+        $editingExp = $request->filled('ubah_pengalaman')
+            ? $experiences->firstWhere('id', (int) $request->query('ubah_pengalaman'))
+            : null;
+
         return view('kandidat.profil.edit', [
             'profile' => $profile,
             'skills' => Skill::active()->orderBy('id')->get(),
             'selectedSkills' => $profile?->skills ?? collect(),
-            'experiences' => $profile?->experiences ?? collect(),
+            'experiences' => $experiences,
+            'editingExp' => $editingExp,
             'portfolios' => $profile?->portfolios ?? collect(),
             'searchQuery' => (string) $request->query('q', ''),
         ]);
