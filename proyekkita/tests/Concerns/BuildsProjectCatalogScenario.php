@@ -1,17 +1,21 @@
+
 <?php
 
 namespace Tests\Concerns;
 
 use App\Enums\AgreementStatus;
 use App\Enums\ApplicationStatus;
+use App\Enums\ModerationDecision;
 use App\Enums\ProjectStatus;
 use App\Models\Agreement;
 use App\Models\Application;
 use App\Models\Category;
 use App\Models\Evaluation;
 use App\Models\Project;
+use App\Models\ProjectModeration;
 use App\Models\Skill;
 use App\Models\User;
+use App\Models\UmkmProfile;
 
 trait BuildsProjectCatalogScenario
 {
@@ -44,12 +48,13 @@ trait BuildsProjectCatalogScenario
         string $title,
         array $overrides = [],
         ?Category $category = null,
-        array $skills = []
+        array $skills = [],
+        ?UmkmProfile $umkmProfile = null
     ): Project {
-        $umkm = $this->makeUmkm()->umkmProfile;
+        $umkmProfile ??= $this->makeUmkm()->umkmProfile;
 
         $project = Project::create(array_merge([
-            'umkm_profile_id' => $umkm->id,
+            'umkm_profile_id' => $umkmProfile->id,
             'category_id' => $category?->id
                 ?? $this->makeCategory('Desain Grafis & Branding')->id,
             'title' => $title,
@@ -123,6 +128,22 @@ trait BuildsProjectCatalogScenario
             'reviewee_id' => $umkm->id,
             'rating' => $rating,
             'comment' => 'Evaluasi untuk kebutuhan pengujian.',
+        ]);
+    }
+
+    /**
+     * Membuat moderasi proyek untuk kebutuhan testing.
+     */
+    protected function makeModeration(
+        Project $project,
+        ModerationDecision $decision,
+        ?string $note = null
+    ): ProjectModeration {
+        return ProjectModeration::create([
+            'project_id' => $project->id,
+            'admin_id' => User::factory()->admin()->create()->id,
+            'decision' => $decision,
+            'note' => $note,
         ]);
     }
 }

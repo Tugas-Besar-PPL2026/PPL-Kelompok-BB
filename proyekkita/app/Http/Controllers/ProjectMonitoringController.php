@@ -21,6 +21,9 @@ class ProjectMonitoringController extends Controller
 
         // Profil dijamin ada oleh middleware umkm.profile (belum ada: diarahkan ke halaman profil, bukan 403).
         $umkm = $user->umkmProfile;
+        
+        // Tolak akses jika UMKM belum memiliki profil usaha
+        abort_if($umkm === null, 403, 'Profil usaha belum tersedia.');
 
         // Nilai status yang tidak dikenal dianggap tidak ada filter (tampil Semua).
         $status = ProjectStatus::tryFrom($request->string('status')->toString());
