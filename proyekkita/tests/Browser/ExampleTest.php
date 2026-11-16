@@ -14,8 +14,10 @@ class ExampleTest extends DuskTestCase
     public function test_basic_example(): void
     {
         $this->browse(function (Browser $browser) {
+            // Halaman utama sekarang adalah Landing Page ProyekKita (FR-01), bukan halaman bawaan Laravel.
             $browser->visit('/')
-                ->waitForText("Let's get started");
+                ->waitForText('Cara kerja ProyekKita')
+                ->assertSee('Cara kerja ProyekKita');
         });
     }
 }

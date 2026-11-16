@@ -1,6 +1,8 @@
 <?php
 
-// Import semua controller yang dibutuhkan disini
+//Import semua controller yang dibutuhkan disini
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CandidateExperienceController;
 use App\Http\Controllers\ProfilUsahaController;
 use App\Http\Controllers\CandidatePortfolioController;
 use App\Http\Controllers\CandidateSkillController;
@@ -19,12 +21,27 @@ use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
+// [FR-01] Halaman publik khusus tamu: landing, masuk, dan registrasi.
+// Pengguna yang sudah login diarahkan ke halaman awal sesuai peran (lihat redirectUsersTo di bootstrap/app.php).
+Route::middleware('guest')->group(function () {
+    Route::get('/', fn () => view('landing'))->name('landing');
+
+    Route::get('login', [AuthController::class, 'showLogin'])->name('login');
+    Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
+
+    // {role}: umkm | kandidat. Peran lain (termasuk admin) tidak cocok dengan route ini dan menghasilkan 404.
+    Route::get('daftar/{role}', [AuthController::class, 'showRegister'])
+        ->whereIn('role', ['umkm', 'kandidat'])
+        ->name('register');
+    Route::post('daftar/{role}', [AuthController::class, 'register'])
+        ->whereIn('role', ['umkm', 'kandidat'])
+        ->name('register.store');
 });
 
+Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+
 // Middleware untuk kandidat (Menggabungkan rute lama + rute PBI-02 data diri Anda)
-Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function () {
+Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat.')->group(function () {
     // PBI-02: kandidat mengelola data pribadi dan akademik (Milik Anda)
     Route::get('profil/data-diri', [CandidateProfileController::class, 'edit'])->name('profil.datadiri');
     Route::put('profil/data-diri', [CandidateProfileController::class, 'update'])->name('profil.datadiri.update');
@@ -36,6 +53,14 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
     Route::put('profil/keterampilan', [CandidateSkillController::class, 'update'])->name('profil.keterampilan.update');
     Route::delete('profil/keterampilan/{skill}', [CandidateSkillController::class, 'destroy'])->name('profil.keterampilan.destroy');
 
+    // PBI-04: kandidat mengelola pengalaman kerja pada profil
+    Route::get('profil/pengalaman', [CandidateExperienceController::class, 'edit'])->name('profil.pengalaman.edit');
+    Route::post('profil/pengalaman', [CandidateExperienceController::class, 'store'])->name('profil.pengalaman.store');
+    Route::put('profil/pengalaman/{experience}', [CandidateExperienceController::class, 'update'])->name('profil.pengalaman.update');
+    Route::delete('profil/pengalaman/{experience}', [CandidateExperienceController::class, 'destroy'])->name('profil.pengalaman.destroy');
+
+    // PBI-14: daftar proyek terbuka dan halaman detail proyek
+    //kerjakan disini untuk PBI 14
 
     Route::get('profil/portofolio', [CandidatePortfolioController::class, 'edit'])->name('profil.portofolio');
     Route::post('profil/portofolio', [CandidatePortfolioController::class, 'store'])->name('profil.portofolio.store');
@@ -64,18 +89,30 @@ Route::middleware('auth')->prefix('kandidat')->name('kandidat.')->group(function
 });
 
 // Middleware untuk UMKM
-Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
+Route::middleware(['auth', 'role:umkm'])->prefix('umkm')->name('umkm.')->group(function () {
     // PBI-01: UMKM mengelola profil usaha dan melihat status verifikasi
     Route::get('profil', [ProfilUsahaController::class, 'edit'])->name('profil.edit');
     Route::put('profil', [ProfilUsahaController::class, 'update'])->name('profil.update');
 
     // PBI-13: UMKM memantau daftar proyek, status, dan hasil moderasi
+    // Semua halaman proyek mensyaratkan profil usaha sudah diisi (belum diisi: peringatan + arahkan ke profil).
+    Route::middleware('umkm.profile')->group(function () {
+        Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
+
+        Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
+        Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
+        Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
+        Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
+    });
     Route::get('proyek', [ProjectMonitoringController::class, 'index'])->name('proyek.index');
 
+    //PBI-9-10-11: UMKM mengelola proyek (buat, ubah, tinjau, ajukan)
     Route::get('proyek/buat', [ProjectController::class, 'create'])->name('proyek.create');
     Route::post('proyek', [ProjectController::class, 'store'])->name('proyek.store');
     Route::get('proyek/{project}/ubah', [ProjectController::class, 'edit'])->name('proyek.edit');
     Route::put('proyek/{project}', [ProjectController::class, 'update'])->name('proyek.update');
+    Route::get('proyek/{project}/tinjau', [ProjectController::class, 'review'])->name('proyek.review');
+    Route::post('proyek/{project}/ajukan', [ProjectController::class, 'submit'])->name('proyek.submit');
 
 
     Route::get('seleksi', [CandidateSelectionController::class, 'index'])->name('seleksi.index');
@@ -92,7 +129,7 @@ Route::middleware('auth')->prefix('umkm')->name('umkm.')->group(function () {
 });
 
 // Middleware untuk admin
-Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('data-master', [MasterDataController::class, 'index'])->name('master.index');
     Route::post('data-master/kategori', [MasterDataController::class, 'storeCategory'])->name('master.categories.store');
     Route::put('data-master/kategori/{category}', [MasterDataController::class, 'updateCategory'])->name('master.categories.update');

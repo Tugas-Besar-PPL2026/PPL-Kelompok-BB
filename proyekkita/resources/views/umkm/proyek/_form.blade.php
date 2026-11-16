@@ -38,11 +38,10 @@
             <label>Keterampilan yang dibutuhkan <i>*</i></label>
             <div class="in picks @error('skills') err @enderror">
                 @foreach ($skills as $skill)
-                    <label class="pick" dusk="skill-{{ $skill->id }}"></label>
-                        <label class="pick">
-                            <input type="checkbox" name="skills[]" value="{{ $skill->id }}" @checked(in_array($skill->id, $picked))>
-                            <span>{{ $skill->name }}</span><i data-lucide="x" class="ic" width="12" height="12"></i>
-                        </label>
+                    <label class="pick" dusk="skill-{{ $skill->id }}">
+                        <input type="checkbox" name="skills[]" value="{{ $skill->id }}" @checked(in_array($skill->id, $picked))>
+                        <span>{{ $skill->name }}</span><i data-lucide="x" class="ic" width="12" height="12"></i>
+                    </label>
                 @endforeach
             </div>
             @error('skills') <div class="hint err">{{ $message }}</div> @else <div class="hint">Klik untuk memilih. Dipilih dari data master keterampilan.</div> @enderror
