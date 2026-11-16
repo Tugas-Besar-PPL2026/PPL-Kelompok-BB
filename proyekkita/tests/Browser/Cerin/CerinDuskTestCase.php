@@ -413,7 +413,7 @@ abstract class CerinDuskTestCase extends DuskTestCase
                     $browser->type('#pf_link', $pf['tautan']);
                 }
                 if (! empty($pf['berkas'])) {
-                    $browser->attach('#pf_file', __DIR__.'/fixtures/cv.pdf');
+                    $browser->attach('#pf_file', $this->berkasContoh());
                 }
                 $browser->click('#btn-submit-pf')->waitForText('Portofolio berhasil ditambahkan.', 20);
             }
@@ -424,6 +424,24 @@ abstract class CerinDuskTestCase extends DuskTestCase
 
             return $akun;
         });
+    }
+
+    /**
+     * Path absolut berkas contoh fixtures/cv.pdf dengan pemisah folder sesuai sistem operasi
+     * (ChromeDriver di Windows tidak menerima path campuran "\" dan "/").
+     */
+    protected function berkasContoh(): string
+    {
+        $path = realpath(__DIR__.DIRECTORY_SEPARATOR.'fixtures'.DIRECTORY_SEPARATOR.'cv.pdf');
+
+        if ($path === false || ! is_file($path)) {
+            throw new RuntimeException(
+                'Berkas contoh tidak ditemukan: '.__DIR__.DIRECTORY_SEPARATOR.'fixtures'.DIRECTORY_SEPARATOR.'cv.pdf'
+                .'. Pastikan folder fixtures ikut tersalin dari ZIP.'
+            );
+        }
+
+        return $path;
     }
 
     /** Pesan lamaran (minimal 50 karakter sesuai ApplicationRequest). */
@@ -624,6 +642,18 @@ abstract class CerinDuskTestCase extends DuskTestCase
         ))[0];
 
         return ['ada' => (bool) $h['ada'], 'teks' => (string) $h['teks'], 'tautan' => array_values($h['tautan'])];
+    }
+
+    /**
+     * Teks elemen dengan spasi dirapikan. Dipakai bila teks yang diperiksa memuat <b> yang ditampilkan sebagai blok
+     * oleh CSS (.al b {display:block}), sehingga teks tampil di dua baris walaupun satu kalimat.
+     */
+    protected function teksRapi(Browser $browser, string $selector): string
+    {
+        return (string) $browser->script(sprintf(
+            "const e = document.querySelector(%s); return e ? e.innerText.replace(/\\s+/g, ' ').trim() : '';",
+            json_encode($selector)
+        ))[0];
     }
 
     /** Screenshot bukti di tests/Browser/screenshots/. */
