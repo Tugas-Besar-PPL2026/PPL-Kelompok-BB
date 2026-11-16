@@ -4,11 +4,13 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+
+
 // Login development berdasarkan role
 $devLogin = function (string $email, string $redirectUrl) {
     $user = User::where('email', $email)->first();
 
-    if (! $user) {
+    if (!$user) {
         return response(
             'User tidak ditemukan. Jalankan php artisan migrate:fresh --seed terlebih dahulu.',
             404

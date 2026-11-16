@@ -16,8 +16,11 @@
             <p>Perubahan pada draf belum terlihat oleh kandidat sampai proyek diajukan dan disetujui admin.</p>
         </div>
         <div class="act">
-            <button type="submit" form="form-proyek" class="btn o">
+            <button type="submit" form="form-proyek" class="btn o" dusk="simpan-draf">
                 <i data-lucide="save" class="ic" width="16" height="16"></i>Simpan Perubahan
+            </button>
+            <button type="submit" form="form-proyek" name="lanjut_tinjau" value="1" class="btn p" dusk="tinjau-ajukan">
+                <i data-lucide="send" class="ic" width="16" height="16"></i>Tinjau &amp; Ajukan
             </button>
         </div>
     </div>

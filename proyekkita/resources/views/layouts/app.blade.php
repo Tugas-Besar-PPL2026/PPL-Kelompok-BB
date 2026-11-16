@@ -54,6 +54,9 @@
             @if (session('success'))
                 <div class="al ok mb16"><i data-lucide="circle-check" class="ic" width="19" height="19"></i><div>{{ session('success') }}</div></div>
             @endif
+            @if (session('warning'))
+                <div class="al warn mb16" dusk="peringatan"><i data-lucide="triangle-alert" class="ic" width="19" height="19"></i><div>{{ session('warning') }}</div></div>
+            @endif
             @if (session('error'))
                 <div class="al bad mb16"><i data-lucide="circle-alert" class="ic" width="19" height="19"></i><div>{{ session('error') }}</div></div>
             @endif
