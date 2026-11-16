@@ -24,6 +24,11 @@
         ['briefcase', 'Pengalaman kerja', $profile['experiences'] . ' pengalaman kerja', $profile['experiences'] > 0, false],
         ['folder', 'Portofolio', $profile['portfolios'] . ' portofolio', $profile['portfolios'] > 0, false],
     ];
+    $oldMessage = old('message');
+
+$messageValue = is_string($oldMessage)
+    ? $oldMessage
+    : ($existing?->message ?? '');
 @endphp
 
 <section class="card" id="lamar">
@@ -72,7 +77,7 @@
             <label for="message">Pesan lamaran <i>*</i></label>
             <div class="in ta @error('message') err @enderror">
                 <textarea id="message" name="message" rows="6" dusk="pesan-lamaran" @disabled(! $canApply)
-                    placeholder="Perkenalkan diri Anda dan jelaskan kemampuan yang sesuai dengan proyek ini.">{{ old('message', $existing?->message) }}</textarea>
+    placeholder="Perkenalkan diri Anda dan jelaskan kemampuan yang sesuai dengan proyek ini.">{{ $messageValue }}</textarea>
             </div>
             @error('message')
                 <div class="hint err" dusk="error-pesan">{{ $message }}</div>
