@@ -12,9 +12,13 @@ class PBI07TestCase14Test extends DuskTestCase
         $this->browse(function (Browser $browser) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertSee('Data master tidak dihapus')
                 ->assertMissing("@kartu-keterampilan input[name='_method'][value='DELETE']")
                 ->assertDontSeeIn('@kartu-keterampilan', 'Hapus');

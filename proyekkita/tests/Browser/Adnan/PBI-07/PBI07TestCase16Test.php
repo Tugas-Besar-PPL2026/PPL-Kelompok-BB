@@ -14,6 +14,7 @@ class PBI07TestCase16Test extends DuskTestCase
 
             $browser->visit('/admin/data-master')
                 ->waitForLocation('/login')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertPathIs('/login');
         });
     }

@@ -16,9 +16,13 @@ class PBI07TestCase3Test extends DuskTestCase
         $this->browse(function (Browser $browser) use (&$daftarSkill) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
-                ->waitForLocation('/admin/data-master');
+                ->pause((int) env('DUSK_JEDA', 1000))
+                ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000));
 
             foreach ($daftarSkill as $index => $nama) {
                 if (Skill::whereRaw('LOWER(name) = ?', [mb_strtolower($nama)])->exists()) {
@@ -27,8 +31,10 @@ class PBI07TestCase3Test extends DuskTestCase
                 }
 
                 $browser->type('@input-keterampilan-baru', $nama)
+                ->pause((int) env('DUSK_JEDA', 1000))
                     ->click('@tambah-keterampilan')
-                    ->pause(500)
+                ->pause((int) env('DUSK_JEDA', 1000))
+                    ->pause((int) env('DUSK_JEDA', 1000))
                     ->assertSeeIn('@kartu-keterampilan', $nama);
             }
         });

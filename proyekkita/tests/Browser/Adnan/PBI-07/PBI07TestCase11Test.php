@@ -15,13 +15,19 @@ class PBI07TestCase11Test extends DuskTestCase
         $this->browse(function (Browser $browser) use ($skill) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->click("@ubah-keterampilan-{$skill->id}")
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitFor("@simpan-ubah-keterampilan-{$skill->id}")
                 ->click("@simpan-ubah-keterampilan-{$skill->id}")
-                ->pause(500)
+                ->pause((int) env('DUSK_JEDA', 1000))
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertMissing("@galat-ubah-keterampilan-{$skill->id}")
                 ->assertSeeIn("@nama-keterampilan-{$skill->id}", $skill->name);
         });

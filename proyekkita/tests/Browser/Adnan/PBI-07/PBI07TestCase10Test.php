@@ -17,15 +17,22 @@ class PBI07TestCase10Test extends DuskTestCase
         $this->browse(function (Browser $browser) use ($skillSatu, $skillDua) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->click("@ubah-keterampilan-{$skillDua->id}")
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitFor("@input-ubah-keterampilan-{$skillDua->id}")
                 ->clear("@input-ubah-keterampilan-{$skillDua->id}")
                 ->type("@input-ubah-keterampilan-{$skillDua->id}", $skillSatu->name)
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->click("@simpan-ubah-keterampilan-{$skillDua->id}")
-                ->pause(500)
+                ->pause((int) env('DUSK_JEDA', 1000))
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertVisible("@galat-ubah-keterampilan-{$skillDua->id}")
                 ->assertSeeIn("@galat-ubah-keterampilan-{$skillDua->id}", 'sudah terdaftar');
         });

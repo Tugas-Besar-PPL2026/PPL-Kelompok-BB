@@ -15,10 +15,15 @@ class PBI07TestCase4Test extends DuskTestCase
         $this->browse(function (Browser $browser) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('@input-keterampilan-baru', '   ')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertDisabled('@tambah-keterampilan');
 
             // Uji validasi server dengan membuka disabled & required lewat JS
@@ -29,7 +34,8 @@ class PBI07TestCase4Test extends DuskTestCase
             ");
 
             $browser->click('@tambah-keterampilan')
-                ->pause(500)
+                ->pause((int) env('DUSK_JEDA', 1000))
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertVisible('@galat-tambah-keterampilan');
         });
 
