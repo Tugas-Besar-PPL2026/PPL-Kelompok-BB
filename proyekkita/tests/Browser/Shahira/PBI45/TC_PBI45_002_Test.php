@@ -24,6 +24,8 @@ use Tests\DuskTestCase;
 #[Group('TC-PBI45-002')]
 class TC_PBI45_002_Test extends DuskTestCase
 {
+
+
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
     use UsesDuskTestDatabase;
