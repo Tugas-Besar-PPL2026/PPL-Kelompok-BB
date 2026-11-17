@@ -2,7 +2,6 @@
 
 namespace Tests\Concerns;
 
-use App\Models\User;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Dusk\Browser;
@@ -10,9 +9,9 @@ use RuntimeException;
 use Throwable;
 
 /**
- * Pengaman database untuk Laravel Dusk.
+ * Pengaman database untuk Laravel Dusk (database test persistent).
  *
- * Masalah yang dicegah: test Dusk menulis dan menghapus data di database yang dipakai untuk development.
+ * Masalah yang dicegah: test Dusk menulis ke database yang dipakai untuk development.
  *
  * Yang dilakukan trait ini (otomatis sebelum setiap test):
  *  1. Menolak berjalan bila APP_ENV = production.
@@ -20,17 +19,21 @@ use Throwable;
  *     - MySQL: nama database WAJIB mengandung kata "dusk" (contoh: proyekkita_dusk).
  *     - SQLite: selalu dipaksa memakai file database/dusk.sqlite.
  *     Selain itu test dihentikan, sehingga database development tidak pernah tersentuh.
- *  3. Menjalankan migrate:fresh HANYA pada database Dusk tersebut, sehingga setiap test mulai dari database kosong.
- *  4. Sekali per kelas test, memastikan SERVER aplikasi yang diakses browser memakai database yang sama.
- *     Caranya: membuat user penanda ber-ID sangat besar, lalu meminta browser login sebagai user itu.
- *     Jika server memakai database lain, user itu tidak ditemukan dan test dihentikan.
+ *  3. Menjalankan "migrate" biasa saja (menambah tabel/kolom baru). TIDAK pernah menjalankan migrate:fresh,
+ *     truncate, atau menghapus data: database test bersifat persistent dan dipakai ulang antar-run.
+ *  4. Sekali per kelas test, memastikan SERVER aplikasi yang diakses browser memakai database yang sama,
+ *     tanpa factory, seeder, loginAs(), atau menulis data:
+ *     - akun Admin (DUSK_ADMIN_EMAIL) dibaca dari database test (read-only), lalu
+ *     - browser login lewat form /login dengan DUSK_ADMIN_EMAIL dan DUSK_ADMIN_PASSWORD.
+ *     Jika akun tidak ada di database test atau server menolak login, test dihentikan.
+ *     Bila DUSK_ADMIN_EMAIL/DUSK_ADMIN_PASSWORD tidak diisi, pemeriksaan ini dilewati.
  *
- * Batasan: pemeriksaan penanda berdasarkan ID user. Peluang database lain kebetulan memiliki user dengan
- * ID acak 900.000.000 sampai 999.999.999 dianggap dapat diabaikan.
+ * Batasan pemeriksaan server: database lain yang kebetulan memiliki akun Admin dengan email dan password yang sama
+ * akan lolos. Helper E2E (AlurE2EProyekKita) menambah pemeriksaan kedua saat akun baru didaftarkan lewat UI.
  */
 trait UsesDuskTestDatabase
 {
-        /**
+    /**
      * Browser dengan jeda setelah setiap aksi (buka halaman, ketik, klik, pilih, centang).
      * Lama jeda diatur lewat DUSK_JEDA (milidetik) di .env.dusk.local. Tanpa DUSK_JEDA, kecepatan normal.
      */
@@ -60,6 +63,7 @@ trait UsesDuskTestDatabase
             }
         };
     }
+
     private static bool $duskServerVerified = false;
 
     /** Dipanggil otomatis oleh Laravel (setUp + nama trait) setelah aplikasi dibuat. */
@@ -68,6 +72,8 @@ trait UsesDuskTestDatabase
         if (app()->environment('production')) {
             throw new RuntimeException('Test Dusk tidak boleh dijalankan di environment production.');
         }
+
+        $this->siapkanPengaturanBrowser();
         $this->bersihkanSesiBrowser();
 
         $koneksi = config('database.default');
@@ -90,11 +96,8 @@ trait UsesDuskTestDatabase
             );
         }
 
-        // Hanya menyentuh database Dusk di atas.
-                // Hanya menyentuh database Dusk di atas.
-        // DUSK_SIMPAN_DATA=true di .env.dusk.local: data test sebelumnya tidak dihapus (hanya menjalankan migrasi baru).
-        $simpanData = filter_var(env('DUSK_SIMPAN_DATA', false), FILTER_VALIDATE_BOOL);
-        Artisan::call($simpanData ? 'migrate' : 'migrate:fresh', ['--database' => $koneksi, '--force' => true]);
+        // Hanya menyentuh database Dusk di atas, dan hanya migrasi baru (data lama tidak dihapus).
+        Artisan::call('migrate', ['--database' => $koneksi, '--force' => true]);
 
         if (! self::$duskServerVerified) {
             $this->pastikanServerMemakaiDatabaseDusk($aktif);
@@ -102,12 +105,21 @@ trait UsesDuskTestDatabase
         }
     }
 
-    private function bersihkanSesiBrowser(): void
+    /**
+     * Trait ini berjalan di tahap setUp awal, sebelum DuskTestCase menetapkan pengaturan Browser.
+     * Tetapkan sendiri dengan nilai yang sama agar pembukaan browser di sini tidak gagal.
+     */
+    private function siapkanPengaturanBrowser(): void
     {
         Browser::$baseUrl = method_exists($this, 'baseUrl')
             ? $this->baseUrl()
             : rtrim((string) config('app.url'), '/');
+        Browser::$storeScreenshotsAt = base_path('tests/Browser/screenshots');
+        Browser::$storeConsoleLogAt = base_path('tests/Browser/console');
+    }
 
+    private function bersihkanSesiBrowser(): void
+    {
         $this->browse(function (Browser $browser) {
             $browser->visit('/');
             $browser->driver->manage()->deleteAllCookies();
@@ -116,17 +128,34 @@ trait UsesDuskTestDatabase
 
     private function pastikanServerMemakaiDatabaseDusk(string $database): void
     {
-        $penanda = User::factory()->kandidat()->create(['id' => random_int(900000000, 999999999)]);
+        $email = env('DUSK_ADMIN_EMAIL');
+        $sandi = env('DUSK_ADMIN_PASSWORD');
 
-        // Trait ini berjalan di tahap setUp awal, sebelum DuskTestCase menetapkan pengaturan Browser.
-        // Tetapkan sendiri dengan nilai yang sama agar pemeriksaan ini tidak gagal karena baseUrl kosong.
-        Browser::$baseUrl = method_exists($this, 'baseUrl') ? $this->baseUrl() : rtrim((string) config('app.url'), '/');
-        Browser::$storeScreenshotsAt = base_path('tests/Browser/screenshots');
-        Browser::$storeConsoleLogAt = base_path('tests/Browser/console');
+        if (! is_string($email) || $email === '' || ! is_string($sandi) || $sandi === '') {
+            return;
+        }
+
+        // Read-only: akun Admin harus ada di database Dusk.
+        if (! DB::table('users')->where('email', mb_strtolower($email))->exists()) {
+            throw new RuntimeException(
+                "Akun Admin {$email} tidak ditemukan di database Dusk ({$database}). "
+                .'Buat akun Admin sekali di database test, atau periksa DUSK_ADMIN_EMAIL di .env.dusk.local.'
+            );
+        }
 
         try {
-            $this->browse(function (Browser $browser) use ($penanda) {
-                $browser->loginAs($penanda)->assertAuthenticatedAs($penanda);
+            $this->browse(function (Browser $browser) use ($email, $sandi) {
+                $browser->visit('/login')
+                    ->waitFor('@masuk')
+                    ->type('email', $email)
+                    ->type('password', $sandi)
+                    ->press('@masuk')
+                    ->waitUntil("window.location.pathname !== '/login' || document.querySelector('[dusk=\"galat-login\"]') !== null");
+
+                if (parse_url($browser->driver->getCurrentURL(), PHP_URL_PATH) === '/login') {
+                    throw new RuntimeException('Server menolak login Admin dari database Dusk.');
+                }
+
                 $browser->driver->manage()->deleteAllCookies();
             });
         } catch (Throwable $e) {
@@ -137,8 +166,6 @@ trait UsesDuskTestDatabase
                 0,
                 $e,
             );
-        } finally {
-            $penanda->delete();
         }
     }
 }

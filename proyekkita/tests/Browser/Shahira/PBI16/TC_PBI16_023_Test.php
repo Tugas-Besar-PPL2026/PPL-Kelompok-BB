@@ -10,7 +10,7 @@ use Tests\DuskTestCase;
 use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
- * TC-PBI16-024 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
+ * TC-PBI16-023 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
  * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/factory/seeder/SQL):
  *   1. Login UMKM, buat proyek lewat UI.  2. Logout UMKM.
@@ -20,24 +20,24 @@ use Tests\Concerns\UsesDuskTestDatabase;
  */
 #[Group('e2e-lamaran')]
 #[Group('pbi16')]
-#[Group('TC-PBI16-024')]
-class TC_PBI16_024_Test extends DuskTestCase
+#[Group('TC-PBI16-023')]
+class TC_PBI16_023_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
     use UsesDuskTestDatabase;
 
     /**
-     * TC-PBI16-024 - Tamu (belum login) tidak dapat mengirim lamaran.
+     * TC-PBI16-023 - Tamu (belum login) tidak dapat mengirim lamaran.
      *
      * Aktor uji pada Excel adalah tamu, sehingga setelah Admin logout tidak ada login.
      */
-    public function test_TC_PBI16_024_tamu_tidak_dapat_mengirim_lamaran(): void
+    public function test_TC_PBI16_023_tamu_tidak_dapat_mengirim_lamaran(): void
     {
         $this->browse(function (Browser $browser) {
             // Prasyarat akun lewat UI: master data dan UMKM terverifikasi.
             $this->pastikanUmkmTerverifikasi($browser);
-            $judul = "Dusk PBI16-024 {$this->kodeUnik()}";
+            $judul = "Dusk PBI16-023 {$this->kodeUnik()}";
 
             // Persiapan 1: login UMKM dan buat proyek lewat UI (Buat Proyek -> Tinjau & Ajukan -> ajukan ke moderasi).
             $this->masukSebagaiUmkm($browser);
