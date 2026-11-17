@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CandidateProfileRequest;
+use App\Models\CandidateProfile;
+use App\Models\User;
 use App\Services\CandidateProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,7 +34,24 @@ class CandidateProfileController extends Controller
             'experiences' => $profile?->experiences ?? collect(),
             'portfolios' => $profile?->portfolios ?? collect(),
             'navInitials' => $navInitials, // <--- Ditambahkan di sini agar tidak error
+            // Nilai awal isian Data Diri. Profil yang sudah tersimpan selalu diutamakan; nama dari registrasi
+            // (users.name) hanya dipakai sebagai prefill bila profil belum ada. Tidak ada data yang ditulis di sini.
+            'prefill' => $this->prefill($user, $profile),
         ]);
+    }
+
+    /**
+     * Pemetaan data registrasi ke isian profil kandidat:
+     * users.name -> candidate_profiles.full_name (keduanya maksimal 100 karakter).
+     * Email dan kata sandi tetap hanya di tabel users dan tidak diduplikasi ke profil.
+     *
+     * @return array{full_name: string}
+     */
+    private function prefill(User $user, ?CandidateProfile $profile): array
+    {
+        return [
+            'full_name' => filled($profile?->full_name) ? $profile->full_name : (string) $user->name,
+        ];
     }
 
     public function update(CandidateProfileRequest $request): RedirectResponse
