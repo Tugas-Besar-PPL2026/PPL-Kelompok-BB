@@ -8,6 +8,7 @@ use Tests\DuskTestCase;
 
 class PBI06TestCase7Test extends DuskTestCase
 {
+
     public function test_tc_pbi6_007_ubah_nama_kategori(): void
     {
         $category = Category::whereNotIn('name', [
@@ -21,15 +22,22 @@ class PBI06TestCase7Test extends DuskTestCase
         $this->browse(function (Browser $browser) use ($category, $namaBaru) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->click("#cat-row-{$category->id} button[title='Ubah Kategori']")
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitFor("#cat-edit-{$category->id}")
                 ->clear("#cat-edit-{$category->id} input[name='name']")
                 ->type("#cat-edit-{$category->id} input[name='name']", $namaBaru)
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->click("#cat-edit-{$category->id} button[type='submit']")
-                ->pause(500)
+                ->pause((int) env('DUSK_JEDA', 1000))
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertSee($namaBaru);
         });
 
