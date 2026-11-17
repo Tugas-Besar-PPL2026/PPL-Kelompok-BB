@@ -51,6 +51,39 @@ abstract class CerinDuskTestCase extends DuskTestCase
         $this->stempel = now()->format('YmdHis');
     }
 
+    /**
+     * Browser dengan jeda setelah setiap aksi (buka halaman, ketik, klik, pilih, centang), agar jalannya test mudah
+     * diamati. Lama jeda diatur lewat DUSK_JEDA (milidetik) di .env.dusk.local; tanpa DUSK_JEDA kecepatan normal.
+     * Mengikuti cara kelompok (tests/Concerns/UsesDuskTestDatabase.php) tanpa memakai trait tersebut.
+     */
+    protected function newBrowser($driver)
+    {
+        return new class($driver) extends Browser
+        {
+            public function visit($url) { return $this->jeda(parent::visit($url)); }
+            public function type($field, $value) { return $this->jeda(parent::type($field, $value)); }
+            public function select($field, $value = null) { return $this->jeda(parent::select($field, $value)); }
+            public function radio($field, $value) { return $this->jeda(parent::radio($field, $value)); }
+            public function check($field, $value = null) { return $this->jeda(parent::check($field, $value)); }
+            public function uncheck($field, $value = null) { return $this->jeda(parent::uncheck($field, $value)); }
+            public function press($button) { return $this->jeda(parent::press($button)); }
+            public function click($selector = null) { return $this->jeda(parent::click($selector)); }
+            public function clickLink($link, $element = 'a') { return $this->jeda(parent::clickLink($link, $element)); }
+            public function attach($field, $path) { return $this->jeda(parent::attach($field, $path)); }
+
+            private function jeda($hasil)
+            {
+                $ms = (int) env('DUSK_JEDA', 0);
+
+                if ($ms > 0) {
+                    usleep($ms * 1000);
+                }
+
+                return $hasil;
+            }
+        };
+    }
+
     /* =========================================================================================
      |  Pengaman database & konfigurasi
      * ========================================================================================= */
