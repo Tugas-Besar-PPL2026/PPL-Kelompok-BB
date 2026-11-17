@@ -10,7 +10,7 @@ use Tests\DuskTestCase;
 use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
- * TC-PBI16-021 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
+ * TC-PBI16-020 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
  * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/factory/seeder/SQL):
  *   1. Login UMKM, buat proyek lewat UI.  2. Logout UMKM.
@@ -20,23 +20,23 @@ use Tests\Concerns\UsesDuskTestDatabase;
  */
 #[Group('e2e-lamaran')]
 #[Group('pbi16')]
-#[Group('TC-PBI16-021')]
-class TC_PBI16_021_Test extends DuskTestCase
+#[Group('TC-PBI16-020')]
+class TC_PBI16_020_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
     use UsesDuskTestDatabase;
 
     /**
-     * TC-PBI16-021 - Pengguna login tanpa profil kandidat tidak dapat melamar.
+     * TC-PBI16-020 - Pengguna login tanpa profil kandidat tidak dapat melamar.
      */
-    public function test_TC_PBI16_021_kandidat_tanpa_profil_tidak_dapat_melamar(): void
+    public function test_TC_PBI16_020_kandidat_tanpa_profil_tidak_dapat_melamar(): void
     {
         $this->browse(function (Browser $browser) {
             // Prasyarat akun lewat UI (dipakai ulang bila sudah ada): master data, UMKM terverifikasi, akun kandidat.
             $this->pastikanUmkmTerverifikasi($browser);
-            $kandidat = $this->siapkanKandidat($browser, 'TC16021', 'tanpa-profil');
-            $judul = "Dusk PBI16-021 {$this->kodeUnik()}";
+            $kandidat = $this->siapkanKandidat($browser, 'TC16020', 'tanpa-profil');
+            $judul = "Dusk PBI16-020 {$this->kodeUnik()}";
 
             // Persiapan 1: login UMKM dan buat proyek lewat UI (Buat Proyek -> Tinjau & Ajukan -> ajukan ke moderasi).
             $this->masukSebagaiUmkm($browser);

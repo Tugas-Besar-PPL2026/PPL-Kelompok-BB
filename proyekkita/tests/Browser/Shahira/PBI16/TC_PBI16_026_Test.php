@@ -11,7 +11,7 @@ use Tests\DuskTestCase;
 use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
- * TC-PBI16-027 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
+ * TC-PBI16-026 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
  * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/factory/seeder/SQL):
  *   1. Login UMKM, buat proyek lewat UI.  2. Logout UMKM.
@@ -21,30 +21,30 @@ use Tests\Concerns\UsesDuskTestDatabase;
  */
 #[Group('e2e-lamaran')]
 #[Group('pbi16')]
-#[Group('TC-PBI16-027')]
-class TC_PBI16_027_Test extends DuskTestCase
+#[Group('TC-PBI16-026')]
+class TC_PBI16_026_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
     use UsesDuskTestDatabase;
 
     /**
-     * TC-PBI16-027 - Tenggat lewat setelah halaman dibuka, lalu form dikirim.
+     * TC-PBI16-026 - Tenggat lewat setelah halaman dibuka, lalu form dikirim.
      *
      * Kendala: aplikasi belum memiliki fitur menutup proyek di UI dan tenggat wajib "after:today",
      * sehingga kondisi ini disimulasikan dengan mengubah SATU kolom pada proyek yang dibuat & disetujui lewat UI.
      * Dilewati secara default; aktifkan dengan DUSK_IZINKAN_SIMULASI_DB=true bila diizinkan dosen.
      */
     #[Group('butuh-simulasi-db')]
-    public function test_TC_PBI16_027_tenggat_lewat_setelah_halaman_dibuka(): void
+    public function test_TC_PBI16_026_tenggat_lewat_setelah_halaman_dibuka(): void
     {
-        $this->butuhSimulasiDb('TC-PBI16-027');
+        $this->butuhSimulasiDb('TC-PBI16-026');
 
         $this->browse(function (Browser $browser) {
             // Prasyarat akun lewat UI (dipakai ulang bila sudah ada): master data, UMKM terverifikasi, akun kandidat.
             $this->pastikanUmkmTerverifikasi($browser);
-            $kandidat = $this->siapkanKandidat($browser, 'TC16027');
-            $judul = "Dusk PBI16-027 {$this->kodeUnik()}";
+            $kandidat = $this->siapkanKandidat($browser, 'TC16026');
+            $judul = "Dusk PBI16-026 {$this->kodeUnik()}";
 
             // Persiapan 1: login UMKM dan buat proyek lewat UI (Buat Proyek -> Tinjau & Ajukan -> ajukan ke moderasi).
             $this->masukSebagaiUmkm($browser);
