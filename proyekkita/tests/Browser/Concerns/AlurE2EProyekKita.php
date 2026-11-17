@@ -420,11 +420,8 @@ trait AlurE2EProyekKita
         $browser->waitFor('@tinjau-ajukan')
             ->script("
                 const tombol = document.querySelector('[dusk=\"tinjau-ajukan\"]');
-                tombol.scrollIntoView({
-                    behavior: 'instant',
-                    block: 'center',
-                    inline: 'center'
-                });
+                const posisi = tombol.getBoundingClientRect().top + window.scrollY - 100;
+                window.scrollTo(0, posisi);
             ");
 
         $browser->pause(500)
