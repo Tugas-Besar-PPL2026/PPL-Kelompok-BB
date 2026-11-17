@@ -16,10 +16,15 @@ class PBI07TestCase6Test extends DuskTestCase
         $this->browse(function (Browser $browser) use ($skillAktif) {
             $browser->visit('/login')
                 ->type('email', 'admin@proyekkita.test')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->press('Masuk')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->waitForLocation('/admin/data-master')
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('@input-keterampilan-baru', mb_strtolower($skillAktif->name))
+                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertVisible('@galat-tambah-keterampilan')
                 ->assertSeeIn('@galat-tambah-keterampilan', 'sudah terdaftar')
                 ->assertDisabled('@tambah-keterampilan');
