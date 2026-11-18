@@ -75,7 +75,7 @@ Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat
     Route::get('proyek/{project}', [ProjectDiscoveryController::class, 'show'])
         ->name('proyek.show');
 
-
+    //PBI-16: kandidat mengajukan lamaran ke proyek terbuka
     Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])
         ->name('proyek.lamaran.store');
 
