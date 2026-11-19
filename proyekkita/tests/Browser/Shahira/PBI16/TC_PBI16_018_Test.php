@@ -24,8 +24,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_018_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI16-018 - Lamaran bersamaan (race) tetap menghasilkan satu lamaran.

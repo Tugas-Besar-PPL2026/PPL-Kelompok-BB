@@ -26,9 +26,10 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_006_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI17-006 - Catatan berisi HTML ditampilkan sebagai teks.

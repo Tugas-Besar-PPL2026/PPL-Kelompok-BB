@@ -26,9 +26,10 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_021_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI17-021 - Tombol 'Detail Proyek' membuka proyek yang benar.

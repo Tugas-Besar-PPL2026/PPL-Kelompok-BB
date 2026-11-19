@@ -26,9 +26,10 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_015_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI17-015 - Pagination: 10 per halaman, navigasi berfungsi, filter terbawa, tepat 10 tanpa pager.

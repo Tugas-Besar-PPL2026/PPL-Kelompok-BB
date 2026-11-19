@@ -24,8 +24,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_003_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI16-003 - Batas bawah pesan: 49 karakter ditolak, 50 karakter diterima.

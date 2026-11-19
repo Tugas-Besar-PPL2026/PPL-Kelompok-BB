@@ -27,9 +27,10 @@ use Tests\DuskTestCase;
 class TC_PBI18_006_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI18-006 - Data lamaran tetap tersimpan setelah pembatalan.

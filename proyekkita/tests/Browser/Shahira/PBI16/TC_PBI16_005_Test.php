@@ -24,8 +24,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_005_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI16-005 - Karakter multibyte dihitung per karakter, bukan per byte.

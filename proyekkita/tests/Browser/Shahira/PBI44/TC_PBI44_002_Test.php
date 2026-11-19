@@ -10,7 +10,7 @@ use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 /**
- * TC-PBI44-002 (sheet PBI-44, Test_Case_ProyekKita_Revisi_PBI16-18_PBI43-45.xlsx).
+ * TC-PBI44-002 (sheet PBI-44, Test_Case_Kelompok_BB_SI4801_1.xlsx).
  *
  * E2E Laravel Dusk: registrasi, login, dan logout dilakukan lewat UI Chrome. Tanpa loginAs/actingAs,
  * tanpa manipulasi session/cookie untuk melewati login, tanpa factory/seeder/SQL tulis.
@@ -25,35 +25,37 @@ use Tests\DuskTestCase;
 class TC_PBI44_002_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI44-002 - Login gagal karena password salah.
+     * TC-PBI44-002 - Login berhasil sebagai UMKM yang belum terverifikasi dan diarahkan ke halaman awal UMKM.
      */
-    public function test_TC_PBI44_002_login_gagal_password_salah(): void
+    public function test_TC_PBI44_002_login_umkm_berhasil(): void
     {
         $this->browse(function (Browser $browser) {
-            // Precondition: akun Kandidat terdaftar lewat halaman registrasi, lalu logout.
-            $email = "rina.auth.{$this->kodeUnik()}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Kandidat', $email, 'Rahasia123');
+            // Precondition: akun UMKM dibuat lewat halaman registrasi lalu logout.
+            $email = "budi.login.{$this->kodeUnik()}@proyekkita.test";
+            $this->daftar($browser, 'umkm', 'Kopi Budi Login', $email, 'Rahasia123');
             $this->keluar($browser);
 
-            // Langkah 1-4: buka /login, isi Email terdaftar dan Kata sandi salah, klik 'Masuk'.
-            $this->isiFormLogin($browser, $email, 'SalahSandi99');
+            // Langkah 1-3: buka /login, isi Email dan Kata sandi, klik 'Masuk'.
+            $this->isiFormLogin($browser, $email, 'Rahasia123');
 
-            // Langkah 5: tetap di /login dengan pesan kredensial salah; Email tetap terisi, Kata sandi kosong.
-            $browser->waitFor('@galat-login')
-                ->assertPathIs('/login')
-                ->assertSeeIn('@galat-login', 'Email atau kata sandi salah. Periksa kembali lalu coba lagi.')
-                ->assertInputValue('email', $email)
-                ->assertInputValue('password', '');
+            // Langkah 4: halaman tujuan dan menu samping sesuai peran.
+            $browser->waitForLocation('/umkm/profil')
+                ->assertPathIs('/umkm/profil')
+                ->assertSeeIn('h1', 'Profil Usaha')
+                ->assertSeeIn('@status-verifikasi', 'Belum diisi')
+                ->assertSeeIn('aside.side', 'Keluar')
+                ->assertSeeIn('aside.side', 'Proyek Saya')
+                ->assertSeeIn('aside.side', 'Seleksi Kandidat')
+                ->assertDontSeeIn('aside.side', 'Lamaran Saya')
+                ->assertDontSeeIn('aside.side', 'Moderasi Proyek');
 
-            // Langkah 6: buka /kandidat/profil -> dialihkan kembali ke /login (tidak login).
-            $browser->visit('/kandidat/profil')
-                ->waitForLocation('/login')
-                ->assertPathIs('/login')
-                ->assertPresent('@masuk');
+            // Langkah 5: /login khusus tamu, pengguna yang sudah login dialihkan ke halaman awalnya.
+            $browser->visit('/login')->waitForLocation('/umkm/profil')->assertPathIs('/umkm/profil');
         });
     }
 

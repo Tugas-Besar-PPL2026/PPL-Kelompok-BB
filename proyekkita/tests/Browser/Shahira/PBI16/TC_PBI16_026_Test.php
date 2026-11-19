@@ -25,8 +25,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_026_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI16-026 - Tenggat lewat setelah halaman dibuka, lalu form dikirim.

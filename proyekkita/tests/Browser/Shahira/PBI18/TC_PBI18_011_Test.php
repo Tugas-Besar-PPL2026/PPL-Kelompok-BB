@@ -28,9 +28,10 @@ use Tests\DuskTestCase;
 class TC_PBI18_011_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI18-011 - Lamaran tidak ditemukan atau ID tidak valid menghasilkan 404.

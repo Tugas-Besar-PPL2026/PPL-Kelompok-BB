@@ -26,8 +26,9 @@ use Tests\DuskTestCase;
 class TC_PBI43_002_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
      * TC-PBI43-002 - Registrasi berhasil sebagai UMKM dan Nama UMKM otomatis terisi di Profil Usaha.

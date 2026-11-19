@@ -24,8 +24,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_020_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI16-020 - Pengguna login tanpa profil kandidat tidak dapat melamar.

@@ -25,27 +25,22 @@ use Tests\DuskTestCase;
 class TC_PBI43_013_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-013 - Registrasi ditolak saat Email sudah dipakai akun lain.
+     * TC-PBI43-013 - Registrasi ditolak saat Konfirmasi kata sandi kosong tetapi Kata sandi diisi.
      */
-    public function test_TC_PBI43_013_email_sudah_terdaftar(): void
+    public function test_TC_PBI43_013_konfirmasi_kosong_kata_sandi_diisi(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
-            // Precondition: akun Kandidat dengan email ini sudah dibuat lewat registrasi, lalu logout.
-            $emailTerdaftar = "rina.terdaftar.{$kode}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Terdaftar', $emailTerdaftar, 'Rahasia123');
-            $this->keluar($browser);
-            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count());
-
             $isian = [
-                'name' => 'Rina Duplikat',
-                'email' => $emailTerdaftar,
+                'name' => 'Rina Validasi',
+                'email' => "rina.validasi.{$kode}@proyekkita.test",
                 'password' => 'Rahasia123',
-                'password_confirmation' => 'Rahasia123',
+                'password_confirmation' => '',
                 'terms' => true,
             ];
             $jumlahUserSebelum = DB::table('users')->count();
@@ -56,17 +51,14 @@ class TC_PBI43_013_Test extends DuskTestCase
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
             $this->isiFormRegistrasi($browser, $isian)
                 ->press('@daftar')
-                ->waitFor('@galat-email');
+                ->waitFor('@galat-password');
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
             $browser->assertPathIs('/daftar/kandidat')
-                ->assertSeeIn('@galat-email', 'Email sudah terdaftar. Gunakan email lain atau masuk.')
-                ->assertInputValue('name', 'Rina Duplikat')
-                ->assertInputValue('email', $emailTerdaftar)
+                ->assertSeeIn('@galat-password', 'Konfirmasi kata sandi tidak sama.')
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.
-            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count(), 'Jumlah akun dengan email tersebut harus tetap 1.');
             $this->assertSame($jumlahUserSebelum, DB::table('users')->count(), 'Tidak boleh ada akun baru.');
             $this->assertBelumLogin($browser);
         });

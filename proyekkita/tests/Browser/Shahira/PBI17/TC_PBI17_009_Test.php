@@ -26,9 +26,10 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_009_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI17-009 - Riwayat dapat dibuka/ditutup; terbuka otomatis untuk lamaran aktif dengan lebih dari 1 entri.

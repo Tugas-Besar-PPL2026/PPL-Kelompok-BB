@@ -25,33 +25,65 @@ use Tests\DuskTestCase;
 class TC_PBI43_004_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-004 - Nama lengkap sepanjang batas maksimum (100 karakter) diterima dan terisi utuh di Data Diri.
+     * TC-PBI43-004 - Registrasi Kandidat ditolak saat seluruh field kosong dan syarat tidak dicentang.
      */
-    public function test_TC_PBI43_004_nama_lengkap_100_karakter_diterima(): void
+    public function test_TC_PBI43_004_seluruh_field_kandidat_kosong(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
-            $email = "nama.batas.kandidat.{$kode}@proyekkita.test";
+            $isian = [
+                'name' => '',
+                'email' => '',
+                'password' => '',
+                'password_confirmation' => '',
+                'terms' => false,
+            ];
+            $jumlahUserSebelum = DB::table('users')->count();
 
-            // Langkah 1-2: kolom nama hanya menerima 100 karakter.
-            $browser->visit('/daftar/kandidat')
-                ->waitFor('@daftar')
-                ->type('name', str_repeat('K', 101));
-            $this->assertSame(100, mb_strlen((string) $browser->inputValue('name')), 'Kolom nama harus dibatasi 100 karakter.');
+            // Langkah 1: buka /daftar/kandidat.
+            $browser->visit('/daftar/kandidat')->waitFor('@daftar');
 
-            // Langkah 3-4: registrasi dengan nama 101 karakter (yang masuk ke form 100 karakter).
-            $this->daftar($browser, 'kandidat', str_repeat('K', 101), $email, 'Rahasia123');
+            // Langkah 2-3: isi form sesuai input, klik tombol daftar.
+            $this->isiFormRegistrasi($browser, $isian)
+                ->press('@daftar')
+                ->waitFor('@galat-name');
 
-            // Langkah 5: nama di profil terisi utuh 100 karakter.
-            $this->klikTautan($browser, 'Data Diri')
-                ->assertInputValue('@nama-lengkap', str_repeat('K', 100));
+            // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
+            $browser->assertPathIs('/daftar/kandidat')
+                ->assertSeeIn('@galat-name', 'Nama lengkap wajib diisi.')
+                ->assertSeeIn('@galat-email', 'Email wajib diisi.')
+                ->assertSeeIn('@galat-password', 'Kata sandi wajib diisi.')
+                ->assertSeeIn('@galat-terms', 'Anda harus menyetujui syarat dan ketentuan penggunaan ProyekKita.')
+                ->assertDontSee('Akun berhasil dibuat.');
 
-            // Verifikasi database (read-only): nama akun tepat 100 karakter.
-            $this->assertSame(str_repeat('K', 100), DB::table('users')->where('email', $email)->value('name'));
+            // Tidak ada akun baru yang dibuat dan pengguna tidak login.
+            $this->assertSame($jumlahUserSebelum, DB::table('users')->count(), 'Tidak boleh ada akun baru.');
+            $this->assertBelumLogin($browser);
         });
+    }
+
+    /** Mengisi form registrasi: string kosong berarti kolom dikosongkan; terms true berarti dicentang. */
+    private function isiFormRegistrasi(Browser $browser, array $isian): Browser
+    {
+        foreach (['name', 'email', 'password', 'password_confirmation'] as $field) {
+            $isian[$field] === '' ? $browser->clear($field) : $browser->type($field, $isian[$field]);
+        }
+        $isian['terms'] ? $browser->check('terms') : $browser->uncheck('terms');
+
+        return $browser;
+    }
+
+    /** Verifikasi pengguna TIDAK login: halaman terproteksi mengalihkan tamu ke /login. */
+    private function assertBelumLogin(Browser $browser): void
+    {
+        $browser->visit('/kandidat/profil')
+            ->waitForLocation('/login')
+            ->assertPathIs('/login')
+            ->assertPresent('@masuk');
     }
 }

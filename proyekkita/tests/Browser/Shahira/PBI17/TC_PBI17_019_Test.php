@@ -26,9 +26,10 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_019_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI17-019 - Lamaran yang dikirim lewat PBI-16 langsung muncul di Lamaran Saya.

@@ -25,24 +25,21 @@ use Tests\DuskTestCase;
 class TC_PBI43_012_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-012 - Registrasi ditolak saat Email berformat benar tetapi lebih dari 150 karakter.
+     * TC-PBI43-012 - Registrasi ditolak saat Kata sandi kosong tetapi Konfirmasi kata sandi diisi.
      */
-    public function test_TC_PBI43_012_email_melebihi_150_karakter(): void
+    public function test_TC_PBI43_012_kata_sandi_kosong_konfirmasi_diisi(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
-            // 64 + 1 + 63 + 1 + 17 + 5 = 151 karakter; tiap bagian masih dalam batas format email.
-            $emailPanjang = str_repeat('a', 64).'@'.str_repeat('b', 63).'.'.str_repeat('c', 17).'.test';
-            $this->assertSame(151, strlen($emailPanjang));
-
             $isian = [
                 'name' => 'Rina Validasi',
-                'email' => $emailPanjang,
-                'password' => 'Rahasia123',
+                'email' => "rina.validasi.{$kode}@proyekkita.test",
+                'password' => '',
                 'password_confirmation' => 'Rahasia123',
                 'terms' => true,
             ];
@@ -54,11 +51,11 @@ class TC_PBI43_012_Test extends DuskTestCase
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
             $this->isiFormRegistrasi($browser, $isian)
                 ->press('@daftar')
-                ->waitFor('@galat-email');
+                ->waitFor('@galat-password');
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
             $browser->assertPathIs('/daftar/kandidat')
-                ->assertSeeIn('@galat-email', 'Email maksimal 150 karakter.')
+                ->assertSeeIn('@galat-password', 'Kata sandi wajib diisi.')
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.

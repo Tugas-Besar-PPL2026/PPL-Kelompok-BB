@@ -25,48 +25,43 @@ use Tests\DuskTestCase;
 class TC_PBI43_015_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-015 - Registrasi UMKM ditolak saat Email sudah dipakai akun Kandidat.
+     * TC-PBI43-015 - Registrasi ditolak saat syarat dan ketentuan tidak dicentang dan data lain valid.
      */
-    public function test_TC_PBI43_015_email_sudah_dipakai_akun_peran_lain(): void
+    public function test_TC_PBI43_015_syarat_dan_ketentuan_tidak_dicentang(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
-            // Precondition: akun Kandidat dengan email ini sudah dibuat lewat registrasi, lalu logout.
-            $emailTerdaftar = "rina.lintas.{$kode}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Terdaftar', $emailTerdaftar, 'Rahasia123');
-            $this->keluar($browser);
-            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count());
-
             $isian = [
-                'name' => 'Kopi Lintas Peran',
-                'email' => $emailTerdaftar,
+                'name' => 'Rina Validasi',
+                'email' => "rina.validasi.{$kode}@proyekkita.test",
                 'password' => 'Rahasia123',
                 'password_confirmation' => 'Rahasia123',
-                'terms' => true,
+                'terms' => false,
             ];
             $jumlahUserSebelum = DB::table('users')->count();
 
-            // Langkah 1: buka /daftar/umkm.
-            $browser->visit('/daftar/umkm')->waitFor('@daftar');
+            // Langkah 1: buka /daftar/kandidat.
+            $browser->visit('/daftar/kandidat')->waitFor('@daftar');
 
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
             $this->isiFormRegistrasi($browser, $isian)
                 ->press('@daftar')
-                ->waitFor('@galat-email');
+                ->waitFor('@galat-terms');
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
-            $browser->assertPathIs('/daftar/umkm')
-                ->assertSeeIn('@galat-email', 'Email sudah terdaftar. Gunakan email lain atau masuk.')
+            $browser->assertPathIs('/daftar/kandidat')
+                ->assertSeeIn('@galat-terms', 'Anda harus menyetujui syarat dan ketentuan penggunaan ProyekKita.')
+                ->assertInputValue('name', $isian['name'])
+                ->assertInputValue('email', $isian['email'])
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.
-            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count(), 'Jumlah akun dengan email tersebut harus tetap 1.');
             $this->assertSame($jumlahUserSebelum, DB::table('users')->count(), 'Tidak boleh ada akun baru.');
-            $this->assertSame('kandidat', DB::table('users')->where('email', $emailTerdaftar)->value('role'));
             $this->assertBelumLogin($browser);
         });
     }

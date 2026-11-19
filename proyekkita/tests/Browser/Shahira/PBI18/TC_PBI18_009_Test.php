@@ -27,9 +27,10 @@ use Tests\DuskTestCase;
 class TC_PBI18_009_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI18-009 - Lamaran yang sudah dibatalkan tidak dapat dibatalkan lagi (diulang tercatat sekali).

@@ -27,9 +27,10 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_001_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI17-001 - Daftar menampilkan lamaran beserta informasi proyek dan UMKM.

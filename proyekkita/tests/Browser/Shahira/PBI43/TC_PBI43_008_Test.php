@@ -25,19 +25,20 @@ use Tests\DuskTestCase;
 class TC_PBI43_008_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-008 - Registrasi Kandidat ditolak saat Nama lengkap kosong dan field lain valid.
+     * TC-PBI43-008 - Registrasi ditolak saat Email tidak memakai format email yang benar.
      */
-    public function test_TC_PBI43_008_nama_lengkap_kosong(): void
+    public function test_TC_PBI43_008_format_email_tidak_valid(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
             $isian = [
-                'name' => '',
-                'email' => "rina.validasi.{$kode}@proyekkita.test",
+                'name' => 'Rina Validasi',
+                'email' => 'rina.proyekkita',
                 'password' => 'Rahasia123',
                 'password_confirmation' => 'Rahasia123',
                 'terms' => true,
@@ -50,12 +51,12 @@ class TC_PBI43_008_Test extends DuskTestCase
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
             $this->isiFormRegistrasi($browser, $isian)
                 ->press('@daftar')
-                ->waitFor('@galat-name');
+                ->waitFor('@galat-email');
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
             $browser->assertPathIs('/daftar/kandidat')
-                ->assertSeeIn('@galat-name', 'Nama lengkap wajib diisi.')
-                ->assertInputValue('email', $isian['email'])
+                ->assertSeeIn('@galat-email', 'Format email tidak valid.')
+                ->assertInputValue('email', 'rina.proyekkita')
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.

@@ -25,19 +25,26 @@ use Tests\DuskTestCase;
 class TC_PBI43_010_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+    //  
 
     /**
-     * TC-PBI43-010 - Registrasi ditolak saat Email kosong dan field lain valid.
+     * TC-PBI43-010 - Registrasi ditolak saat Email terdaftar ditulis dengan huruf besar dan spasi di awal.
      */
-    public function test_TC_PBI43_010_email_kosong(): void
+    public function test_TC_PBI43_010_email_terdaftar_huruf_besar_dan_spasi(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
+            // Precondition: akun Kandidat dengan email ini sudah dibuat lewat registrasi, lalu logout.
+            $emailTerdaftar = "rina.terdaftar.{$kode}@proyekkita.test";
+            $this->daftar($browser, 'kandidat', 'Rina Terdaftar', $emailTerdaftar, 'Rahasia123');
+            $this->keluar($browser);
+            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count());
+
             $isian = [
-                'name' => 'Rina Validasi',
-                'email' => '',
+                'name' => 'Rina Duplikat',
+                'email' => '  '.mb_strtoupper($emailTerdaftar),
                 'password' => 'Rahasia123',
                 'password_confirmation' => 'Rahasia123',
                 'terms' => true,
@@ -54,11 +61,12 @@ class TC_PBI43_010_Test extends DuskTestCase
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
             $browser->assertPathIs('/daftar/kandidat')
-                ->assertSeeIn('@galat-email', 'Email wajib diisi.')
-                ->assertInputValue('name', $isian['name'])
+                ->assertSeeIn('@galat-email', 'Email sudah terdaftar. Gunakan email lain atau masuk.')
+                ->assertInputValue('email', mb_strtoupper($emailTerdaftar))
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.
+            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count(), 'Jumlah akun dengan email tersebut harus tetap 1.');
             $this->assertSame($jumlahUserSebelum, DB::table('users')->count(), 'Tidak boleh ada akun baru.');
             $this->assertBelumLogin($browser);
         });

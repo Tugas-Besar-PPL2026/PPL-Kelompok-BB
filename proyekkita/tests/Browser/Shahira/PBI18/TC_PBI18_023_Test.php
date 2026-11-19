@@ -27,9 +27,10 @@ use Tests\DuskTestCase;
 class TC_PBI18_023_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI18-023 - ID lamaran numerik melebihi batas integer menghasilkan 404 (verifikasi dugaan B2).

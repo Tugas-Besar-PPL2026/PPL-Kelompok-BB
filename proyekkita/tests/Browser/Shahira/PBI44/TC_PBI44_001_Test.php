@@ -10,7 +10,7 @@ use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 /**
- * TC-PBI44-001 (sheet PBI-44, Test_Case_ProyekKita_Revisi_PBI16-18_PBI43-45.xlsx).
+ * TC-PBI44-001 (sheet PBI-44, Test_Case_Kelompok_BB_SI4801_1.xlsx).
  *
  * E2E Laravel Dusk: registrasi, login, dan logout dilakukan lewat UI Chrome. Tanpa loginAs/actingAs,
  * tanpa manipulasi session/cookie untuk melewati login, tanpa factory/seeder/SQL tulis.
@@ -25,56 +25,36 @@ use Tests\DuskTestCase;
 class TC_PBI44_001_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI44-001 - Login berhasil dengan kredensial valid untuk setiap peran (Kandidat, UMKM, Admin).
+     * TC-PBI44-001 - Login berhasil sebagai Kandidat dan diarahkan ke halaman awal Kandidat.
      */
-    public function test_TC_PBI44_001_login_berhasil_setiap_peran(): void
+    public function test_TC_PBI44_001_login_kandidat_berhasil(): void
     {
         $this->browse(function (Browser $browser) {
-            // Precondition: akun Kandidat dan UMKM dibuat lewat halaman registrasi lalu logout.
-            // Akun Admin sudah disiapkan satu kali di database test (Admin tidak dapat mendaftar lewat aplikasi).
-            $kode = $this->kodeUnik();
-            $kandidat = "rina.auth.{$kode}@proyekkita.test";
-            $umkm = "budi.auth.{$kode}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Kandidat', $kandidat, 'Rahasia123');
-            $this->keluar($browser);
-            $this->daftar($browser, 'umkm', 'Budi UMKM', $umkm, 'Rahasia123');
+            // Precondition: akun Kandidat dibuat lewat halaman registrasi lalu logout.
+            $email = "rina.login.{$this->kodeUnik()}@proyekkita.test";
+            $this->daftar($browser, 'kandidat', 'Rina Kandidat', $email, 'Rahasia123');
             $this->keluar($browser);
 
-            // Halaman tujuan, judul, menu milik peran, dan menu yang TIDAK boleh tampil (milik peran lain).
-            $peran = [
-                'Kandidat' => [$kandidat, 'Rahasia123', '/kandidat/profil', 'Profil & Portofolio', ['Eksplor Proyek', 'Lamaran Saya'], ['Seleksi Kandidat', 'Moderasi Proyek']],
-                'UMKM' => [$umkm, 'Rahasia123', '/umkm/profil', 'Profil Usaha', ['Proyek Saya', 'Seleksi Kandidat'], ['Lamaran Saya', 'Moderasi Proyek']],
-                'Admin' => [$this->emailAdmin(), $this->sandiAdmin(), '/admin/data-master', 'Data Master', ['Verifikasi UMKM', 'Moderasi Proyek'], ['Lamaran Saya', 'Seleksi Kandidat']],
-            ];
+            // Langkah 1-3: buka /login, isi Email dan Kata sandi, klik 'Masuk'.
+            $this->isiFormLogin($browser, $email, 'Rahasia123');
 
-            foreach ($peran as $nama => [$email, $sandi, $tujuan, $judul, $menuAda, $menuTidakAda]) {
-                // Langkah 1-3: buka /login, isi Email dan Kata sandi, klik 'Masuk'.
-                $this->isiFormLogin($browser, $email, $sandi);
+            // Langkah 4: halaman tujuan dan menu samping sesuai peran.
+            $browser->waitForLocation('/kandidat/profil')
+                ->assertPathIs('/kandidat/profil')
+                ->assertSeeIn('h1', 'Profil & Portofolio')
+                ->assertSeeIn('aside.side', 'Keluar')
+                ->assertSeeIn('aside.side', 'Eksplor Proyek')
+                ->assertSeeIn('aside.side', 'Lamaran Saya')
+                ->assertDontSeeIn('aside.side', 'Seleksi Kandidat')
+                ->assertDontSeeIn('aside.side', 'Moderasi Proyek');
 
-                // Langkah 4: halaman tujuan dan menu samping sesuai peran.
-                $browser->waitForLocation($tujuan)
-                    ->assertPathIs($tujuan)
-                    ->assertSeeIn('h1', $judul)
-                    ->assertSeeIn('aside.side', 'Keluar');
-                foreach ($menuAda as $menu) {
-                    $browser->assertSeeIn('aside.side', $menu);
-                }
-                foreach ($menuTidakAda as $menu) {
-                    $browser->assertDontSeeIn('aside.side', $menu);
-                }
-
-                // Status login: /login khusus tamu, pengguna login dialihkan ke halaman awalnya.
-                $browser->visit('/login')->waitForLocation($tujuan)->assertPathIs($tujuan);
-
-                // Langkah 5: klik 'Keluar' (kecuali Admin, langkah terakhir pada Excel).
-                if ($nama !== 'Admin') {
-                    $browser->press('Keluar')->waitForLocation('/');
-                }
-            }
+            // Langkah 5: /login khusus tamu, pengguna yang sudah login dialihkan ke halaman awalnya.
+            $browser->visit('/login')->waitForLocation('/kandidat/profil')->assertPathIs('/kandidat/profil');
         });
     }
 

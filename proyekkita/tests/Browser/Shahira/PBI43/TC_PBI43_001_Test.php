@@ -26,8 +26,9 @@ use Tests\DuskTestCase;
 class TC_PBI43_001_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
      * TC-PBI43-001 - Registrasi berhasil sebagai Kandidat dan Nama lengkap otomatis terisi di profil Kandidat.

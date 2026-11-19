@@ -29,9 +29,10 @@ use Throwable;
 class TC_PBI18_015_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
     use PersiapanLamaranE2E;
-    use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI18-015 - Pembatalan atomik: status dan riwayat dikembalikan bila penulisan riwayat gagal.

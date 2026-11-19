@@ -25,39 +25,38 @@ use Tests\DuskTestCase;
 class TC_PBI43_007_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-007 - Registrasi UMKM ditolak saat seluruh field kosong dan syarat tidak dicentang.
+     * TC-PBI43-007 - Registrasi ditolak saat Email kosong dan field lain valid.
      */
-    public function test_TC_PBI43_007_seluruh_field_umkm_kosong(): void
+    public function test_TC_PBI43_007_email_kosong(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
             $isian = [
-                'name' => '',
+                'name' => 'Rina Validasi',
                 'email' => '',
-                'password' => '',
-                'password_confirmation' => '',
-                'terms' => false,
+                'password' => 'Rahasia123',
+                'password_confirmation' => 'Rahasia123',
+                'terms' => true,
             ];
             $jumlahUserSebelum = DB::table('users')->count();
 
-            // Langkah 1: buka /daftar/umkm.
-            $browser->visit('/daftar/umkm')->waitFor('@daftar');
+            // Langkah 1: buka /daftar/kandidat.
+            $browser->visit('/daftar/kandidat')->waitFor('@daftar');
 
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
             $this->isiFormRegistrasi($browser, $isian)
                 ->press('@daftar')
-                ->waitFor('@galat-name');
+                ->waitFor('@galat-email');
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
-            $browser->assertPathIs('/daftar/umkm')
-                ->assertSeeIn('@galat-name', 'Nama UMKM wajib diisi.')
+            $browser->assertPathIs('/daftar/kandidat')
                 ->assertSeeIn('@galat-email', 'Email wajib diisi.')
-                ->assertSeeIn('@galat-password', 'Kata sandi wajib diisi.')
-                ->assertSeeIn('@galat-terms', 'Anda harus menyetujui syarat dan ketentuan penggunaan ProyekKita.')
+                ->assertInputValue('name', $isian['name'])
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.

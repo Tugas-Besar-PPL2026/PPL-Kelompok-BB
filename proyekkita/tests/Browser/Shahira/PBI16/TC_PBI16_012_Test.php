@@ -25,8 +25,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_012_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+     
 
     /**
      * TC-PBI16-012 - Boundary tenggat: pada hari tenggat lamaran masih diterima.

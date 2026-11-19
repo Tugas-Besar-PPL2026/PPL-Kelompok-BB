@@ -25,21 +25,22 @@ use Tests\DuskTestCase;
 class TC_PBI43_011_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+      use MenjagaDatabaseE2E;
+//use UsesDuskTestDatabase;
+      
 
     /**
-     * TC-PBI43-011 - Registrasi ditolak saat Email tidak memakai format email yang benar.
+     * TC-PBI43-011 - Registrasi ditolak saat Kata sandi kurang dari 8 karakter.
      */
-    public function test_TC_PBI43_011_format_email_tidak_valid(): void
+    public function test_TC_PBI43_011_kata_sandi_kurang_dari_8_karakter(): void
     {
         $this->browse(function (Browser $browser) {
             $kode = $this->kodeUnik();
             $isian = [
                 'name' => 'Rina Validasi',
-                'email' => 'rina.proyekkita',
-                'password' => 'Rahasia123',
-                'password_confirmation' => 'Rahasia123',
+                'email' => "rina.validasi.{$kode}@proyekkita.test",
+                'password' => 'Abc1234',
+                'password_confirmation' => 'Abc1234',
                 'terms' => true,
             ];
             $jumlahUserSebelum = DB::table('users')->count();
@@ -50,12 +51,13 @@ class TC_PBI43_011_Test extends DuskTestCase
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
             $this->isiFormRegistrasi($browser, $isian)
                 ->press('@daftar')
-                ->waitFor('@galat-email');
+                ->waitFor('@galat-password');
 
             // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
             $browser->assertPathIs('/daftar/kandidat')
-                ->assertSeeIn('@galat-email', 'Format email tidak valid.')
-                ->assertInputValue('email', 'rina.proyekkita')
+                ->assertSeeIn('@galat-password', 'Kata sandi minimal 8 karakter.')
+                ->assertInputValue('password', '')
+                ->assertInputValue('password_confirmation', '')
                 ->assertDontSee('Akun berhasil dibuat.');
 
             // Tidak ada akun baru yang dibuat dan pengguna tidak login.
