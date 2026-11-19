@@ -14,7 +14,8 @@
     $checks = [
         ['ok' => $profile['eligible'], 'yes' => 'Profil Anda memenuhi syarat melamar', 'no' => 'Profil Anda belum memenuhi syarat melamar'],
         ['ok' => $apply['closedReason'] === null, 'yes' => 'Proyek masih menerima lamaran', 'no' => $apply['closedReason'] ?? ''],
-        ['ok' => $existing === null, 'yes' => 'Anda belum melamar proyek ini', 'no' => $existing?->status === \App\Enums\ApplicationStatus::Cancelled ? 'Lamaran Anda pada proyek ini sudah dibatalkan' : 'Anda sudah melamar proyek ini'],
+        // Lamaran yang sudah terkirim ditampilkan sebagai centang (bukan kegagalan); hanya lamaran yang dibatalkan tetap bertanda silang.
+        ['ok' => $existing?->status !== \App\Enums\ApplicationStatus::Cancelled, 'yes' => $existing === null ? 'Anda belum melamar proyek ini' : 'Anda sudah mengirim lamaran untuk proyek ini', 'no' => 'Lamaran Anda pada proyek ini sudah dibatalkan'],
     ];
 
     // Komponen profil yang dilampirkan otomatis: [ikon, label, keterangan, sudah terisi, wajib]
@@ -24,11 +25,6 @@
         ['briefcase', 'Pengalaman kerja', $profile['experiences'] . ' pengalaman kerja', $profile['experiences'] > 0, false],
         ['folder', 'Portofolio', $profile['portfolios'] . ' portofolio', $profile['portfolios'] > 0, false],
     ];
-    $oldMessage = old('message');
-
-$messageValue = is_string($oldMessage)
-    ? $oldMessage
-    : ($existing?->message ?? '');
 @endphp
 
 <section class="card" id="lamar">
@@ -77,7 +73,7 @@ $messageValue = is_string($oldMessage)
             <label for="message">Pesan lamaran <i>*</i></label>
             <div class="in ta @error('message') err @enderror">
                 <textarea id="message" name="message" rows="6" dusk="pesan-lamaran" @disabled(! $canApply)
-    placeholder="Perkenalkan diri Anda dan jelaskan kemampuan yang sesuai dengan proyek ini.">{{ $messageValue }}</textarea>
+                    placeholder="Perkenalkan diri Anda dan jelaskan kemampuan yang sesuai dengan proyek ini.">{{ old('message', $existing?->message) }}</textarea>
             </div>
             @error('message')
                 <div class="hint err" dusk="error-pesan">{{ $message }}</div>

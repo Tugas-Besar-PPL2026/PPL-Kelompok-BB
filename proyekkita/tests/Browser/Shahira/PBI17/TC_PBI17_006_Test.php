@@ -8,6 +8,7 @@ use Tests\Browser\Concerns\AlurE2EProyekKita;
 use Tests\Browser\Concerns\MenjagaDatabaseE2E;
 use Tests\Browser\Concerns\PersiapanLamaranE2E;
 use Tests\DuskTestCase;
+use Tests\Concerns\UsesDuskTestDatabase;
 
 /**
  * TC-PBI17-006 (sheet PBI-17, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
@@ -27,6 +28,7 @@ class TC_PBI17_006_Test extends DuskTestCase
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
     use PersiapanLamaranE2E;
+    use UsesDuskTestDatabase;
 
     /**
      * TC-PBI17-006 - Catatan berisi HTML ditampilkan sebagai teks.
