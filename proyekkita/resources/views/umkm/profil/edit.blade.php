@@ -85,7 +85,7 @@
                         <div class="fl">
                             <label for="business_name">Nama usaha <i>*</i></label>
                             <div class="in @error('business_name') err @enderror">
-                                <input id="business_name" name="business_name" dusk="nama-usaha" maxlength="150" value="{{ old('business_name', $profile?->business_name) }}">
+                                <input id="business_name" name="business_name" dusk="nama-usaha" maxlength="150" value="{{ old('business_name', $prefill['business_name'] ?? $profile?->business_name) }}">
                             </div>
                             @error('business_name') <div class="hint err" dusk="galat-nama-usaha">{{ $message }}</div> @enderror
                         </div>

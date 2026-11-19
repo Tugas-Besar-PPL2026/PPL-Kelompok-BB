@@ -49,12 +49,19 @@
                 @csrf
 
                 <div class="pk-field">
-                    <label for="name">{{ $isUmkm ? 'Nama penanggung jawab' : 'Nama lengkap' }} <span class="req">*</span></label>
+                    {{-- UMKM: users.name diisi Nama UMKM dan dipakai sebagai nilai awal Nama usaha di Profil Usaha. --}}
+                    <label for="name">{{ $isUmkm ? 'Nama UMKM' : 'Nama lengkap' }} <span class="req">*</span></label>
                     <div class="pk-input {{ $errors->has('name') ? 'is-invalid' : '' }}">
-                        <i data-lucide="user" class="ic" width="17" height="17"></i>
-                        <input id="name" name="name" type="text" value="{{ old('name') }}" autocomplete="name" maxlength="100" required>
+                        <i data-lucide="{{ $isUmkm ? 'store' : 'user' }}" class="ic" width="17" height="17"></i>
+                        <input id="name" name="name" type="text" value="{{ old('name') }}" autocomplete="{{ $isUmkm ? 'organization' : 'name' }}" maxlength="100" required>
                     </div>
-                    @error('name')<p class="pk-err" dusk="galat-name">{{ $message }}</p>@enderror
+                    @error('name')
+                        <p class="pk-err" dusk="galat-name">{{ $message }}</p>
+                    @else
+                        @if ($isUmkm)
+                            <p class="pk-help">Nama ini otomatis terisi sebagai Nama usaha di Profil Usaha.</p>
+                        @endif
+                    @enderror
                 </div>
 
                 <div class="pk-field">

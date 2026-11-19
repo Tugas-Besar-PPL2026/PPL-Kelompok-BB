@@ -1,0 +1,93 @@
+<?php
+
+namespace Tests\Browser\PBI43;
+
+use Illuminate\Support\Facades\DB;
+use Laravel\Dusk\Browser;
+use PHPUnit\Framework\Attributes\Group;
+use Tests\Browser\Concerns\AlurE2EProyekKita;
+use Tests\Browser\Concerns\MenjagaDatabaseE2E;
+use Tests\Concerns\UsesDuskTestDatabase;
+use Tests\DuskTestCase;
+
+/**
+ * TC-PBI43-015 (sheet PBI-43, Test_Case_Kelompok_BB_SI4801_1.xlsx).
+ *
+ * E2E Laravel Dusk: registrasi, login, dan logout dilakukan lewat UI Chrome. Tanpa loginAs/actingAs,
+ * tanpa manipulasi session/cookie untuk melewati login, tanpa factory/seeder/SQL tulis.
+ * Akun Kandidat/UMKM dibuat lewat halaman registrasi dengan email unik per run.
+ * Status login diverifikasi lewat perilaku aplikasi: /login khusus tamu (pengguna login dialihkan ke halaman
+ * awalnya), halaman terproteksi mengalihkan tamu ke /login. Database hanya dibaca untuk verifikasi tambahan.
+ */
+#[Group('e2e-auth')]
+#[Group('pbi43')]
+#[Group('TC-PBI43-015')]
+class TC_PBI43_015_Test extends DuskTestCase
+{
+    use AlurE2EProyekKita;
+    use MenjagaDatabaseE2E;
+    use UsesDuskTestDatabase;
+
+    /**
+     * TC-PBI43-015 - Registrasi UMKM ditolak saat Email sudah dipakai akun Kandidat.
+     */
+    public function test_TC_PBI43_015_email_sudah_dipakai_akun_peran_lain(): void
+    {
+        $this->browse(function (Browser $browser) {
+            $kode = $this->kodeUnik();
+            // Precondition: akun Kandidat dengan email ini sudah dibuat lewat registrasi, lalu logout.
+            $emailTerdaftar = "rina.lintas.{$kode}@proyekkita.test";
+            $this->daftar($browser, 'kandidat', 'Rina Terdaftar', $emailTerdaftar, 'Rahasia123');
+            $this->keluar($browser);
+            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count());
+
+            $isian = [
+                'name' => 'Kopi Lintas Peran',
+                'email' => $emailTerdaftar,
+                'password' => 'Rahasia123',
+                'password_confirmation' => 'Rahasia123',
+                'terms' => true,
+            ];
+            $jumlahUserSebelum = DB::table('users')->count();
+
+            // Langkah 1: buka /daftar/umkm.
+            $browser->visit('/daftar/umkm')->waitFor('@daftar');
+
+            // Langkah 2-3: isi form sesuai input, klik tombol daftar.
+            $this->isiFormRegistrasi($browser, $isian)
+                ->press('@daftar')
+                ->waitFor('@galat-email');
+
+            // Langkah 4: ditolak, tetap di halaman registrasi dengan pesan validasi yang sesuai.
+            $browser->assertPathIs('/daftar/umkm')
+                ->assertSeeIn('@galat-email', 'Email sudah terdaftar. Gunakan email lain atau masuk.')
+                ->assertDontSee('Akun berhasil dibuat.');
+
+            // Tidak ada akun baru yang dibuat dan pengguna tidak login.
+            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count(), 'Jumlah akun dengan email tersebut harus tetap 1.');
+            $this->assertSame($jumlahUserSebelum, DB::table('users')->count(), 'Tidak boleh ada akun baru.');
+            $this->assertSame('kandidat', DB::table('users')->where('email', $emailTerdaftar)->value('role'));
+            $this->assertBelumLogin($browser);
+        });
+    }
+
+    /** Mengisi form registrasi: string kosong berarti kolom dikosongkan; terms true berarti dicentang. */
+    private function isiFormRegistrasi(Browser $browser, array $isian): Browser
+    {
+        foreach (['name', 'email', 'password', 'password_confirmation'] as $field) {
+            $isian[$field] === '' ? $browser->clear($field) : $browser->type($field, $isian[$field]);
+        }
+        $isian['terms'] ? $browser->check('terms') : $browser->uncheck('terms');
+
+        return $browser;
+    }
+
+    /** Verifikasi pengguna TIDAK login: halaman terproteksi mengalihkan tamu ke /login. */
+    private function assertBelumLogin(Browser $browser): void
+    {
+        $browser->visit('/kandidat/profil')
+            ->waitForLocation('/login')
+            ->assertPathIs('/login')
+            ->assertPresent('@masuk');
+    }
+}
