@@ -3,10 +3,13 @@
 namespace Tests\Browser\Adnan\PBI07;
 
 use Laravel\Dusk\Browser;
+use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 class PBI07TestCase16Test extends DuskTestCase
 {
+    use UsesDuskTestDatabase;
+
     public function test_tc_pbi7_016_akses_tanpa_login(): void
     {
         $this->browse(function (Browser $browser) {
@@ -14,7 +17,6 @@ class PBI07TestCase16Test extends DuskTestCase
 
             $browser->visit('/admin/data-master')
                 ->waitForLocation('/login')
-                ->pause((int) env('DUSK_JEDA', 1000))
                 ->assertPathIs('/login');
         });
     }
