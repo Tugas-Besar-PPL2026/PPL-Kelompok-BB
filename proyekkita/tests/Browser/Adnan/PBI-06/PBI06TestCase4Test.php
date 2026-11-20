@@ -11,13 +11,9 @@ class PBI06TestCase4Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_004_tambah_kategori_nama_duplikat(): void
     {
-        Category::firstOrCreate(
-            ['name' => 'Teknologi & Web'],
-            ['is_active' => true]
-        );
-
         $jumlahAwal = Category::count();
 
         $this->browse(function (Browser $browser) {
@@ -28,7 +24,6 @@ class PBI06TestCase4Test extends DuskTestCase
                 ->waitForLocation('/admin/data-master')
                 ->type('input[id="name"]', 'Teknologi & Web')
                 ->press('+ Tambah')
-                ->waitForText('sudah terdaftar')
                 ->assertSee('sudah terdaftar');
         });
 

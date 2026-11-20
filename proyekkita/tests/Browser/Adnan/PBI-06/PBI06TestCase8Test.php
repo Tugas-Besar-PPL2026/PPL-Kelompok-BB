@@ -11,17 +11,10 @@ class PBI06TestCase8Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_008_ubah_nama_jadi_nama_kategori_lain(): void
     {
-        Category::firstOrCreate(
-            ['name' => 'Teknologi & Web'],
-            ['is_active' => true]
-        );
-
-        $category = Category::firstOrCreate(
-            ['name' => 'Riset Pasar & Konten'],
-            ['is_active' => true]
-        );
+        $category = Category::where('name', 'Riset Pasar & Konten')->firstOrFail();
 
         $this->browse(function (Browser $browser) use ($category) {
             $browser->visit('/login')
@@ -34,7 +27,6 @@ class PBI06TestCase8Test extends DuskTestCase
                 ->clear("#cat-edit-{$category->id} input[name='name']")
                 ->type("#cat-edit-{$category->id} input[name='name']", 'Teknologi & Web')
                 ->click("#cat-edit-{$category->id} button[type='submit']")
-                ->waitForText('sudah terdaftar')
                 ->assertSee('sudah terdaftar');
         });
 

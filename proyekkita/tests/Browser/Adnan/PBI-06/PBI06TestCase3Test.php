@@ -11,6 +11,7 @@ class PBI06TestCase3Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_003_tambah_kategori_nama_kosong(): void
     {
         $jumlahAwal = Category::count();
@@ -25,7 +26,6 @@ class PBI06TestCase3Test extends DuskTestCase
 
             $browser->type('input[id="name"]', '   ')
                 ->press('+ Tambah')
-                ->waitForText('Nama kategori wajib diisi')
                 ->assertSee('Nama kategori wajib diisi');
         });
 

@@ -10,6 +10,7 @@ class PBI06TestCase6Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_006_batas_panjang_nama_maksimal(): void
     {
         $teks100 = str_pad('Kat100_' . date('His') . '_', 100, 'x');
@@ -23,11 +24,9 @@ class PBI06TestCase6Test extends DuskTestCase
                 ->waitForLocation('/admin/data-master')
                 ->type('input[id="name"]', $teks100)
                 ->press('+ Tambah')
-                ->waitForText($teks100)
                 ->assertSee($teks100)
                 ->type('input[id="name"]', $teks101)
                 ->press('+ Tambah')
-                ->waitForText('100')
                 ->assertSee('100');
         });
 

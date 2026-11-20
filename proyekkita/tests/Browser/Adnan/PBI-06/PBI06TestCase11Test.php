@@ -11,12 +11,10 @@ class PBI06TestCase11Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_011_mengaktifkan_kembali_kategori(): void
     {
-        $category = Category::create([
-            'name' => 'Kategori Nonaktif ' . date('His'),
-            'is_active' => false,
-        ]);
+        $category = Category::where('is_active', false)->firstOrFail();
 
         $this->browse(function (Browser $browser) use ($category) {
             $browser->visit('/login')
@@ -26,7 +24,6 @@ class PBI06TestCase11Test extends DuskTestCase
                 ->waitForLocation('/admin/data-master')
                 ->assertSeeIn("#cat-row-{$category->id}", 'Nonaktif')
                 ->click("#cat-row-{$category->id} form button[type='submit']")
-                ->waitForTextIn("#cat-row-{$category->id}", 'Aktif')
                 ->assertSeeIn("#cat-row-{$category->id}", 'Aktif');
         });
 

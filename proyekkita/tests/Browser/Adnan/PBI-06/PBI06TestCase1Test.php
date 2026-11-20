@@ -11,12 +11,10 @@ class PBI06TestCase1Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_001_menampilkan_halaman_data_master(): void
     {
-        $kategoriPertama = Category::firstOrCreate(
-            ['name' => 'Teknologi & Web'],
-            ['is_active' => true]
-        );
+        $kategoriPertama = Category::firstOrFail();
 
         $this->browse(function (Browser $browser) use ($kategoriPertama) {
             $browser->visit('/login')

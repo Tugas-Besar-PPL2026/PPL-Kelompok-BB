@@ -10,6 +10,7 @@ class PBI06TestCase13Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_013_akses_ditolak_oleh_non_admin(): void
     {
         $emailUmkm = 'umkm.pbi6.' . date('His') . '@proyekkita.test';
@@ -24,7 +25,6 @@ class PBI06TestCase13Test extends DuskTestCase
                 ->type('password_confirmation', 'password123')
                 ->check('terms')
                 ->click('@daftar')
-                ->waitUntil("window.location.pathname !== '/register'")
                 ->visit('/admin/data-master')
                 ->assertSee('403');
         });

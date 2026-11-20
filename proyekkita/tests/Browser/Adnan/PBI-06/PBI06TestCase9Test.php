@@ -11,12 +11,10 @@ class PBI06TestCase9Test extends DuskTestCase
 {
     use UsesDuskTestDatabase;
 
+
     public function test_tc_pbi6_009_simpan_edit_tanpa_mengubah_nama(): void
     {
-        $category = Category::firstOrCreate(
-            ['name' => 'Teknologi & Web'],
-            ['is_active' => true]
-        );
+        $category = Category::where('name', 'Teknologi & Web')->firstOrFail();
 
         $this->browse(function (Browser $browser) use ($category) {
             $browser->visit('/login')
@@ -27,7 +25,6 @@ class PBI06TestCase9Test extends DuskTestCase
                 ->click("#cat-row-{$category->id} button[title='Ubah Kategori']")
                 ->waitFor("#cat-edit-{$category->id}")
                 ->click("#cat-edit-{$category->id} button[type='submit']")
-                ->waitForText('Teknologi & Web')
                 ->assertDontSee('sudah terdaftar')
                 ->assertSee('Teknologi & Web');
         });
