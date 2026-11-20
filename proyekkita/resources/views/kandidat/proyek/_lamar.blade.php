@@ -14,7 +14,8 @@
     $checks = [
         ['ok' => $profile['eligible'], 'yes' => 'Profil Anda memenuhi syarat melamar', 'no' => 'Profil Anda belum memenuhi syarat melamar'],
         ['ok' => $apply['closedReason'] === null, 'yes' => 'Proyek masih menerima lamaran', 'no' => $apply['closedReason'] ?? ''],
-        ['ok' => $existing === null, 'yes' => 'Anda belum melamar proyek ini', 'no' => $existing?->status === \App\Enums\ApplicationStatus::Cancelled ? 'Lamaran Anda pada proyek ini sudah dibatalkan' : 'Anda sudah melamar proyek ini'],
+        // Lamaran yang sudah terkirim ditampilkan sebagai centang (bukan kegagalan); hanya lamaran yang dibatalkan tetap bertanda silang.
+        ['ok' => $existing?->status !== \App\Enums\ApplicationStatus::Cancelled, 'yes' => $existing === null ? 'Anda belum melamar proyek ini' : 'Anda sudah mengirim lamaran untuk proyek ini', 'no' => 'Lamaran Anda pada proyek ini sudah dibatalkan'],
     ];
 
     // Komponen profil yang dilampirkan otomatis: [ikon, label, keterangan, sudah terisi, wajib]

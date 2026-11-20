@@ -12,6 +12,10 @@
     $dialogId = 'batal-lamaran-'.$application->id;
     $projectTitle = $application->project?->title;
     $activeFilter = request()->query('status');
+
+    if (! is_string($activeFilter)) {
+        $activeFilter = null;
+    }
 @endphp
 
 <button type="button" class="btn r sm" data-batal-open="{{ $dialogId }}" dusk="batalkan-lamaran-{{ $application->id }}">

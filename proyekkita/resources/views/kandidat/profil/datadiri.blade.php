@@ -42,7 +42,7 @@
                         <div class="fl">
                             <label for="full_name">Nama lengkap <i>*</i></label>
                             <div class="in @error('full_name') err @enderror">
-                                <input id="full_name" name="full_name" dusk="nama-lengkap" maxlength="100" value="{{ old('full_name', $profile?->full_name) }}">
+                                <input id="full_name" name="full_name" dusk="nama-lengkap" maxlength="100" value="{{ old('full_name', $prefill['full_name'] ?? $profile?->full_name) }}">
                             </div>
                             @error('full_name') <div class="hint err" dusk="galat-nama-lengkap">{{ $message }}</div> @enderror
                         </div>
