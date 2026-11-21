@@ -15,7 +15,12 @@ class CandidateExperienceRequest extends FormRequest
     {
         return [
             'work_type' => ['required', 'string', 'max:100'],
-            'duration' => ['required', 'string', 'max:50'],
+            'duration' => [
+                'required',
+                'string',
+                'max:50',
+                'regex:/^\s*[1-9]\d*(?:[.,]\d+)?\s*(?:tahun|thn|th|bulan|bln|minggu|mgg|hari|hr)(?:\s+[1-9]\d*(?:[.,]\d+)?\s*(?:tahun|thn|th|bulan|bln|minggu|mgg|hari|hr))*\s*$/iu',
+            ],
             'description' => ['nullable', 'string', 'max:2000'],
         ];
     }
@@ -26,6 +31,7 @@ class CandidateExperienceRequest extends FormRequest
             'required' => ':attribute wajib diisi.',
             'string' => ':attribute harus berupa teks.',
             'max' => ':attribute maksimal :max karakter.',
+            'duration.regex' => 'Format durasi tidak valid (contoh: 6 bulan, 1 tahun).',
         ];
     }
 

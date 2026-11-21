@@ -129,7 +129,7 @@ class SelectionPresenter
         }
 
         $parts = parse_url($link);
-        if ($parts === false || ! in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true) || empty($parts['host'])) {
+        if ($parts === false || ! in_array(strtolower($parts['scheme'] ?? ''), ['http', 'https'], true) || empty($parts['host']) || ! str_contains($parts['host'], '.')) {
             return null;
         }
 
