@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Middleware\EnsureUmkmProfileExists;
 use App\Http\Requests\UmkmProfileRequest;
+use App\Models\UmkmProfile;
+use App\Models\User;
 use App\Services\UmkmProfileService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,7 +33,24 @@ class ProfilUsahaController extends Controller
             'average' => $profile?->averageRating(),
             'ratingCount' => $ratingCount,
             'distribution' => $distribution,
+            // Nilai awal isian Profil Usaha. Profil yang sudah tersimpan selalu diutamakan; Nama UMKM dari registrasi
+            // (users.name) hanya dipakai sebagai prefill bila profil belum ada. Tidak ada data yang ditulis di sini.
+            'prefill' => $this->prefill($user, $profile),
         ]);
+    }
+
+    /**
+     * Pemetaan data registrasi ke isian profil UMKM (mekanisme sama dengan Nama lengkap kandidat):
+     * users.name (Nama UMKM, maks. 100 karakter) -> umkm_profiles.business_name (maks. 150 karakter).
+     * Email dan kata sandi tetap hanya di tabel users dan tidak diduplikasi ke profil.
+     *
+     * @return array{business_name: string}
+     */
+    private function prefill(User $user, ?UmkmProfile $profile): array
+    {
+        return [
+            'business_name' => filled($profile?->business_name) ? $profile->business_name : (string) $user->name,
+        ];
     }
 
     public function update(UmkmProfileRequest $request): RedirectResponse

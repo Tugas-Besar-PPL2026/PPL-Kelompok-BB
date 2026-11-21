@@ -6,7 +6,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use Laravel\Dusk\Browser;
 use RuntimeException;
-use Throwable;
 
 /**
  * Pengaman database untuk Laravel Dusk (database test persistent).
@@ -21,15 +20,10 @@ use Throwable;
  *     Selain itu test dihentikan, sehingga database development tidak pernah tersentuh.
  *  3. Menjalankan "migrate" biasa saja (menambah tabel/kolom baru). TIDAK pernah menjalankan migrate:fresh,
  *     truncate, atau menghapus data: database test bersifat persistent dan dipakai ulang antar-run.
- *  4. Sekali per kelas test, memastikan SERVER aplikasi yang diakses browser memakai database yang sama,
- *     tanpa factory, seeder, loginAs(), atau menulis data:
- *     - akun Admin (DUSK_ADMIN_EMAIL) dibaca dari database test (read-only), lalu
- *     - browser login lewat form /login dengan DUSK_ADMIN_EMAIL dan DUSK_ADMIN_PASSWORD.
- *     Jika akun tidak ada di database test atau server menolak login, test dihentikan.
- *     Bila DUSK_ADMIN_EMAIL/DUSK_ADMIN_PASSWORD tidak diisi, pemeriksaan ini dilewati.
  *
- * Batasan pemeriksaan server: database lain yang kebetulan memiliki akun Admin dengan email dan password yang sama
- * akan lolos. Helper E2E (AlurE2EProyekKita) menambah pemeriksaan kedua saat akun baru didaftarkan lewat UI.
+ * Server aplikasi yang dibuka browser harus memakai database yang sama (.env.dusk.local). Trait ini tidak lagi
+ * memeriksanya lewat login Admin di browser. Helper E2E (AlurE2EProyekKita) tetap memeriksa hal itu saat akun baru
+ * didaftarkan lewat UI.
  */
 trait UsesDuskTestDatabase
 {
@@ -64,8 +58,6 @@ trait UsesDuskTestDatabase
         };
     }
 
-    private static bool $duskServerVerified = false;
-
     /** Dipanggil otomatis oleh Laravel (setUp + nama trait) setelah aplikasi dibuat. */
     public function setUpUsesDuskTestDatabase(): void
     {
@@ -98,11 +90,6 @@ trait UsesDuskTestDatabase
 
         // Hanya menyentuh database Dusk di atas, dan hanya migrasi baru (data lama tidak dihapus).
         Artisan::call('migrate', ['--database' => $koneksi, '--force' => true]);
-
-        if (! self::$duskServerVerified) {
-            $this->pastikanServerMemakaiDatabaseDusk($aktif);
-            self::$duskServerVerified = true;
-        }
     }
 
     /**
@@ -124,48 +111,5 @@ trait UsesDuskTestDatabase
             $browser->visit('/');
             $browser->driver->manage()->deleteAllCookies();
         });
-    }
-
-    private function pastikanServerMemakaiDatabaseDusk(string $database): void
-    {
-        $email = env('DUSK_ADMIN_EMAIL');
-        $sandi = env('DUSK_ADMIN_PASSWORD');
-
-        if (! is_string($email) || $email === '' || ! is_string($sandi) || $sandi === '') {
-            return;
-        }
-
-        // Read-only: akun Admin harus ada di database Dusk.
-        if (! DB::table('users')->where('email', mb_strtolower($email))->exists()) {
-            throw new RuntimeException(
-                "Akun Admin {$email} tidak ditemukan di database Dusk ({$database}). "
-                .'Buat akun Admin sekali di database test, atau periksa DUSK_ADMIN_EMAIL di .env.dusk.local.'
-            );
-        }
-
-        try {
-            $this->browse(function (Browser $browser) use ($email, $sandi) {
-                $browser->visit('/login')
-                    ->waitFor('@masuk')
-                    ->type('email', $email)
-                    ->type('password', $sandi)
-                    ->press('@masuk')
-                    ->waitUntil("window.location.pathname !== '/login' || document.querySelector('[dusk=\"galat-login\"]') !== null");
-
-                if (parse_url($browser->driver->getCurrentURL(), PHP_URL_PATH) === '/login') {
-                    throw new RuntimeException('Server menolak login Admin dari database Dusk.');
-                }
-
-                $browser->driver->manage()->deleteAllCookies();
-            });
-        } catch (Throwable $e) {
-            throw new RuntimeException(
-                "Server aplikasi tidak memakai database Dusk ({$database}), atau server tidak dapat dijangkau (APP_URL). "
-                .'Test dihentikan agar tidak menyentuh database lain. Periksa .env.dusk.local dan server yang sedang berjalan. '
-                .'Detail: '.$e->getMessage(),
-                0,
-                $e,
-            );
-        }
     }
 }

@@ -25,11 +25,12 @@ use Illuminate\Support\Facades\Route;
 // Pengguna yang sudah login diarahkan ke halaman awal sesuai peran (lihat redirectUsersTo di bootstrap/app.php).
 Route::middleware('guest')->group(function () {
     Route::get('/', fn () => view('landing'))->name('landing');
-
+    //PBI-44: Login
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
 
     // {role}: umkm | kandidat. Peran lain (termasuk admin) tidak cocok dengan route ini dan menghasilkan 404.
+    // PBI-43: Registrasi
     Route::get('daftar/{role}', [AuthController::class, 'showRegister'])
         ->whereIn('role', ['umkm', 'kandidat'])
         ->name('register');
@@ -38,6 +39,7 @@ Route::middleware('guest')->group(function () {
         ->name('register.store');
 });
 
+//PBI-45: logout (POST) hanya untuk pengguna yang sudah login. Logout menghapus session dan cookie, lalu redirect ke landing.
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Middleware untuk kandidat (Menggabungkan rute lama + rute PBI-02 data diri Anda)
@@ -79,7 +81,7 @@ Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat
     Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])
         ->name('proyek.lamaran.store');
 
-
+    //PBI-17: kandidat memantau status lamaran yang diajukan
     Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
 
     // PBI-18: kandidat membatalkan lamaran

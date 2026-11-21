@@ -5,8 +5,12 @@
     Seluruh pemeriksaan di sini hanya untuk tampilan. Aturan sebenarnya dijalankan ulang di backend saat form dikirim.
 --}}
 @php
-    $profile = $apply['profile'];
     $existing = $apply['existing'];
+
+    $oldMessage = old('message', $existing?->message);
+    $messageValue = is_string($oldMessage) ? $oldMessage : '';
+
+    $profile = $apply['profile'];
     $canApply = $apply['canApply'];
     $minChars = \App\Http\Requests\ApplicationRequest::MIN_MESSAGE;
     $profilUrl = Route::has('kandidat.profil.edit') ? route('kandidat.profil.edit') : '#';
@@ -73,7 +77,7 @@
             <label for="message">Pesan lamaran <i>*</i></label>
             <div class="in ta @error('message') err @enderror">
                 <textarea id="message" name="message" rows="6" dusk="pesan-lamaran" @disabled(! $canApply)
-                    placeholder="Perkenalkan diri Anda dan jelaskan kemampuan yang sesuai dengan proyek ini.">{{ old('message', $existing?->message) }}</textarea>
+                    placeholder="Perkenalkan diri Anda dan jelaskan kemampuan yang sesuai dengan proyek ini.">{{ $messageValue }}</textarea>
             </div>
             @error('message')
                 <div class="hint err" dusk="error-pesan">{{ $message }}</div>

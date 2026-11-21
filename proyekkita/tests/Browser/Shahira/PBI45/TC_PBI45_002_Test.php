@@ -27,8 +27,11 @@ class TC_PBI45_002_Test extends DuskTestCase
 
 
     use AlurE2EProyekKita;
-    use MenjagaDatabaseE2E;
+      use MenjagaDatabaseE2E;
     use UsesDuskTestDatabase;
+ 
+ 
+     
 
     /**
      * TC-PBI45-002 - Halaman terproteksi tidak dapat diakses setelah logout.

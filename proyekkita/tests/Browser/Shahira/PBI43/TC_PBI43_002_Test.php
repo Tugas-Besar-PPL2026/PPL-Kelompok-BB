@@ -3,6 +3,7 @@
 namespace Tests\Browser\PBI43;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Laravel\Dusk\Browser;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\Browser\Concerns\AlurE2EProyekKita;
@@ -11,12 +12,11 @@ use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 /**
- * TC-PBI43-002 (sheet PBI-43, Test_Case_ProyekKita_Revisi_PBI16-18_PBI43-45.xlsx).
+ * TC-PBI43-002 (sheet PBI-43, Test_Case_Kelompok_BB_SI4801_1.xlsx).
  *
  * E2E Laravel Dusk: registrasi, login, dan logout dilakukan lewat UI Chrome. Tanpa loginAs/actingAs,
  * tanpa manipulasi session/cookie untuk melewati login, tanpa factory/seeder/SQL tulis.
- * Akun Kandidat/UMKM dibuat lewat halaman registrasi dengan email unik per run. Akun Admin memakai akun
- * yang sudah disiapkan satu kali di database test (DUSK_ADMIN_EMAIL / DUSK_ADMIN_PASSWORD).
+ * Akun Kandidat/UMKM dibuat lewat halaman registrasi dengan email unik per run.
  * Status login diverifikasi lewat perilaku aplikasi: /login khusus tamu (pengguna login dialihkan ke halaman
  * awalnya), halaman terproteksi mengalihkan tamu ke /login. Database hanya dibaca untuk verifikasi tambahan.
  */
@@ -27,70 +27,90 @@ class TC_PBI43_002_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+    //use UsesDuskTestDatabase;
 
     /**
-     * TC-PBI43-002 - Registrasi gagal karena email sudah terdaftar.
+     * TC-PBI43-002 - Registrasi berhasil sebagai UMKM dan Nama UMKM otomatis terisi di Profil Usaha.
      */
-    public function test_TC_PBI43_002_registrasi_gagal_email_sudah_terdaftar(): void
+    public function test_TC_PBI43_002_registrasi_umkm_berhasil(): void
     {
         $this->browse(function (Browser $browser) {
-            // Precondition: akun Kandidat sudah dibuat lewat halaman registrasi, lalu logout.
             $kode = $this->kodeUnik();
-            $email = "rina.auth.{$kode}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Kandidat', $email, 'Rahasia123');
-            $this->keluar($browser);
-            $this->assertSame(1, $this->jumlahAkun($email));
+            $nama = 'Kopi Budi Nusantara';
+            $email = "kopi.budi.{$kode}@proyekkita.test";
+            $sandi = 'Rahasia123';
 
-            // Input A: email sama persis. Input B: diawali spasi dan huruf besar.
-            $percobaan = ['A' => $email, 'B' => '  '.mb_strtoupper($email)];
+            // Langkah 1-3: buka landing (/), klik 'Daftar', pilih peran 'UMKM'.
+            $browser->visit('/')
+                ->click('@nav-daftar')
+                ->waitForLocation('/daftar/umkm');
 
-            foreach ($percobaan as $label => $emailUji) {
-                // Langkah 1: buka /daftar/kandidat.
-                $browser->visit('/daftar/kandidat')->waitFor('@daftar');
+            // Klik peran 'UMKM' memuat ulang /daftar/umkm (URL tidak berubah), jadi tunggu halaman baru selesai dimuat.
+            $this->tandaiHalamanLama($browser);
+            $browser->click('@peran-umkm');
+            $this->tungguHalamanBaru($browser)
+                ->assertPathIs('/daftar/umkm')
+                ->assertAttribute('@peran-umkm', 'aria-current', 'true');
 
-                // Langkah 2-3: isi Nama, Kata sandi, Konfirmasi, centang syarat, isi Email, klik Daftar.
-                $browser->type('name', 'Rina Duplikat')
-                    ->type('email', $emailUji)
-                    ->type('password', 'Rahasia123')
-                    ->type('password_confirmation', 'Rahasia123')
-                    ->check('terms')
-                    ->press('@daftar')
-                    ->waitFor('@galat-email');
+            // Langkah 4: kolom nama berlabel 'Nama UMKM' (bukan 'Nama penanggung jawab') beserta keterangannya.
+            $browser->assertSeeIn('label[for=name]', 'Nama UMKM')
+                ->assertDontSee('Nama penanggung jawab')
+                ->assertSee('Nama ini otomatis terisi sebagai Nama usaha di Profil Usaha.');
 
-                // Ditolak: tetap di halaman registrasi dengan pesan email sudah terdaftar.
-                $browser->assertPathIs('/daftar/kandidat')
-                    ->assertSeeIn('@galat-email', 'Email sudah terdaftar. Gunakan email lain atau masuk.')
-                    ->assertInputValue('name', 'Rina Duplikat');
+            // Langkah 5-7: isi form, centang syarat, klik 'Daftar sebagai UMKM'.
+            $browser->type('name', $nama)
+                ->type('email', $email)
+                ->type('password', $sandi)
+                ->type('password_confirmation', $sandi)
+                ->check('terms')
+                ->assertSeeIn('@daftar', 'Daftar sebagai UMKM')
+                ->press('@daftar');
 
-                // Email tetap terisi (aplikasi mengembalikan email yang sudah dinormalisasi: tanpa spasi, huruf kecil).
-                $this->assertSame(
-                    mb_strtolower(trim($emailUji)),
-                    mb_strtolower(trim((string) $browser->inputValue('email'))),
-                    "Email percobaan {$label} harus tetap terisi."
-                );
+            // Langkah 8: Profil Usaha dengan pesan berhasil, Nama usaha terisi, status 'Belum diisi'.
+            $browser->waitForLocation('/umkm/profil')
+                ->assertSee('Akun berhasil dibuat. Selamat datang di ProyekKita.')
+                ->assertSeeIn('h1', 'Profil Usaha')
+                ->assertInputValue('@nama-usaha', $nama)
+                ->assertSeeIn('@status-verifikasi', 'Belum diisi');
+            $this->assertSudahLogin($browser, '/umkm/profil');
 
-                // Pengguna tidak login.
-                $this->assertBelumLogin($browser);
-            }
-
-            // Langkah 5: jumlah akun dengan email tersebut tetap 1.
-            $this->assertSame(1, $this->jumlahAkun($email));
+            // Verifikasi database (read-only): data akun sesuai input, password ter-hash, profil belum dibuat.
+            $akun = DB::table('users')->where('email', $email)->get();
+            $this->assertCount(1, $akun, "Harus tepat 1 user untuk {$email}.");
+            $this->assertSame('umkm', $akun[0]->role);
+            $this->assertSame($nama, $akun[0]->name);
+            $this->assertNotSame($sandi, $akun[0]->password, 'Password tidak boleh tersimpan sebagai teks asli.');
+            $this->assertTrue(Hash::check($sandi, $akun[0]->password), 'Password harus tersimpan sebagai hash.');
+            $this->assertSame(0, $this->jumlahProfil('umkm_profiles', $email), 'Profil usaha belum boleh dibuat.');
         });
     }
 
-    /** Jumlah akun dengan email ini (read-only). */
-    private function jumlahAkun(string $email): int
+    /**
+     * Verifikasi pengguna SUDAH login: /login khusus tamu, sehingga pengguna login dialihkan ke halaman awalnya.
+     */
+    private function assertSudahLogin(Browser $browser, string $halamanAwal): void
     {
-        return DB::table('users')->where('email', mb_strtolower(trim($email)))->count();
+        $browser->visit('/login')
+            ->waitForLocation($halamanAwal)
+            ->assertPathIs($halamanAwal)
+            ->assertSee('Keluar');
     }
 
-    /** Verifikasi pengguna TIDAK login: halaman terproteksi mengalihkan tamu ke /login. */
-    private function assertBelumLogin(Browser $browser): void
+    /** Jumlah baris profil ($tabel) milik akun dengan email ini (read-only). */
+    private function jumlahProfil(string $tabel, string $email): int
     {
-        $browser->visit('/kandidat/profil')
-            ->waitForLocation('/login')
-            ->assertPathIs('/login')
-            ->assertPresent('@masuk');
+        return DB::table($tabel)
+            ->join('users', 'users.id', '=', "{$tabel}.user_id")
+            ->where('users.email', $email)
+            ->count();
+    }
+
+    /** Nilai satu kolom profil milik akun dengan email ini (read-only). */
+    private function kolomProfil(string $tabel, string $email, string $kolom): ?string
+    {
+        return DB::table($tabel)
+            ->join('users', 'users.id', '=', "{$tabel}.user_id")
+            ->where('users.email', $email)
+            ->value("{$tabel}.{$kolom}");
     }
 }
