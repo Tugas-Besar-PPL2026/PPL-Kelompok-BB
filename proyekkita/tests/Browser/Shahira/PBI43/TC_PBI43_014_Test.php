@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_014_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-014 - Registrasi ditolak saat Kata sandi dan Konfirmasi kata sandi berbeda.

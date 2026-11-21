@@ -26,9 +26,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_006_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-006 - Login gagal karena email belum terdaftar, dengan pesan yang sama seperti kata sandi salah.

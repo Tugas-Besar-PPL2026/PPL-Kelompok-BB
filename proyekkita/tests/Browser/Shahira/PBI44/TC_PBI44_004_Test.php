@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_004_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-004 - Login berhasil walaupun Email ditulis dengan huruf besar dan diawali spasi.

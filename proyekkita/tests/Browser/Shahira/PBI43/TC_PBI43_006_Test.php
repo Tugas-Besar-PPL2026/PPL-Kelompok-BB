@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_006_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-006 - Registrasi UMKM ditolak saat Nama UMKM kosong dan field lain valid.

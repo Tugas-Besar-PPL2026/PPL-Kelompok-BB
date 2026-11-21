@@ -5,6 +5,7 @@ namespace Tests\Browser\PBI18;
 use Laravel\Dusk\Browser;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\Browser\Concerns\AlurE2EProyekKita;
+use Tests\Browser\Concerns\DataDefaultPbi16E2E;
 use Tests\Browser\Concerns\MenjagaDatabaseE2E;
 use Tests\Browser\Concerns\PersiapanLamaranE2E;
 use Tests\Concerns\UsesDuskTestDatabase;
@@ -13,7 +14,8 @@ use Tests\DuskTestCase;
 /**
  * TC-PBI18-014 (sheet PBI-18, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
- * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/actingAs/factory/seeder/SQL tulis):
+ * Alur persiapan E2E (Admin, UMKM terverifikasi, Kandidat default, dan master data E2E disiapkan sekali
+ * lewat seeder existing AdminSeeder; skenario lewat Chrome, tanpa loginAs/actingAs/factory/SQL tulis):
  *   1-3. Login UMKM, buat proyek lewat UI, pastikan tersimpan.  4. Logout UMKM.
  *   5-7. Login Admin, setujui di Moderasi Proyek, pastikan Dipublikasikan.  8. Logout Admin.
  *   Precondition lamaran (melamar, keputusan UMKM, pembatalan) juga lewat UI.
@@ -27,10 +29,10 @@ use Tests\DuskTestCase;
 class TC_PBI18_014_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
+    use DataDefaultPbi16E2E;
+    use MenjagaDatabaseE2E;
     use PersiapanLamaranE2E;
-     
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI18-014 - Tamu dialihkan ke login saat membatalkan.
@@ -40,9 +42,9 @@ class TC_PBI18_014_Test extends DuskTestCase
         $tc = '014';
 
         $this->browse(function (Browser $browser) use ($tc) {
-            // Prasyarat akun lewat UI (dipakai ulang bila sudah ada): master data, UMKM terverifikasi, akun kandidat.
-            $this->pastikanUmkmTerverifikasi($browser);
-            $kandidat = $this->siapkanKandidat($browser, 'TC18014');
+            // Prasyarat: Admin, UMKM terverifikasi, Kandidat default, dan master data dari AdminSeeder (read-only).
+            $this->pastikanDataDefaultE2E();
+            $kandidat = $this->kandidatDefault();
             $judul = "Dusk PBI18-{$tc} Lamaran {$this->kodeUnik()}";
             $daftarJudul = [$judul];
 

@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_014_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-014 - Kandidat yang sudah login tidak dapat membuka halaman UMKM dan Admin.

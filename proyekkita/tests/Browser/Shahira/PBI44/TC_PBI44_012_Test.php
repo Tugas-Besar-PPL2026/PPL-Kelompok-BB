@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_012_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-012 - Login diblokir sementara setelah 5 kali gagal, walaupun percobaan berikutnya memakai kata sandi benar.

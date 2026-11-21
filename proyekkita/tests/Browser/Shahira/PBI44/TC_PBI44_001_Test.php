@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_001_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-001 - Login berhasil sebagai Kandidat dan diarahkan ke halaman awal Kandidat.

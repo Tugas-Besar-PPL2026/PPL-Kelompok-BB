@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_011_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-011 - Login berhasil setelah 4 kali gagal dan penghitung percobaan gagal direset.

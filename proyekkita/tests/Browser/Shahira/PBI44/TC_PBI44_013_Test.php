@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI44_013_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI44-013 - Tamu yang membuka halaman terproteksi diarahkan ke halaman Masuk, lalu ke halaman awal peran setelah login.

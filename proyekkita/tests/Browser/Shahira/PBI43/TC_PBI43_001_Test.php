@@ -26,9 +26,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_001_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-001 - Registrasi berhasil sebagai Kandidat dan Nama lengkap otomatis terisi di profil Kandidat.
@@ -49,6 +48,7 @@ class TC_PBI43_001_Test extends DuskTestCase
             // Langkah 3-4: pilih peran 'Kandidat', kolom nama berlabel 'Nama lengkap'.
             $browser->click('@peran-kandidat')
                 ->waitForLocation('/daftar/kandidat')
+                ->assertAttribute('@peran-kandidat', 'aria-current', 'true')
                 ->assertSeeIn('label[for=name]', 'Nama lengkap');
 
             // Langkah 5-7: isi form, centang syarat, klik 'Daftar sebagai Kandidat'.

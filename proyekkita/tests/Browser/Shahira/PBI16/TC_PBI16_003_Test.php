@@ -5,6 +5,7 @@ namespace Tests\Browser\PBI16;
 use Laravel\Dusk\Browser;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\Browser\Concerns\AlurE2EProyekKita;
+use Tests\Browser\Concerns\DataDefaultPbi16E2E;
 use Tests\Browser\Concerns\MenjagaDatabaseE2E;
 use Tests\DuskTestCase;
 use Tests\Concerns\UsesDuskTestDatabase;
@@ -12,7 +13,8 @@ use Tests\Concerns\UsesDuskTestDatabase;
 /**
  * TC-PBI16-003 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
- * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/factory/seeder/SQL):
+ * Alur persiapan E2E (Admin, UMKM terverifikasi, Kandidat default, dan master data PBI-16 disiapkan sekali
+ * lewat seeder existing AdminSeeder; skenario lewat Chrome, tanpa loginAs/factory/SQL tulis):
  *   1. Login UMKM, buat proyek lewat UI.  2. Logout UMKM.
  *   3. Login Admin, setujui proyek di Moderasi Proyek.  4. Logout Admin.
  *   5. Login aktor uji lewat /login, lalu jalankan langkah sesuai Excel.
@@ -24,9 +26,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_003_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-     
+    use DataDefaultPbi16E2E;
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI16-003 - Batas bawah pesan: 49 karakter ditolak, 50 karakter diterima.
@@ -34,9 +36,9 @@ class TC_PBI16_003_Test extends DuskTestCase
     public function test_TC_PBI16_003_batas_bawah_49_ditolak_50_diterima(): void
     {
         $this->browse(function (Browser $browser) {
-            // Prasyarat akun lewat UI (dipakai ulang bila sudah ada): master data, UMKM terverifikasi, akun kandidat.
-            $this->pastikanUmkmTerverifikasi($browser);
-            $kandidat = $this->siapkanKandidat($browser, 'TC16003');
+            // Prasyarat: Admin, UMKM terverifikasi, Kandidat default, dan master data dari AdminSeeder (read-only).
+            $this->pastikanDataDefaultPbi16();
+            $kandidat = $this->kandidatDefault();
             $kode = $this->kodeUnik();
             $judulA = "Dusk PBI16-003 A {$kode}";
             $judulB = "Dusk PBI16-003 B {$kode}";

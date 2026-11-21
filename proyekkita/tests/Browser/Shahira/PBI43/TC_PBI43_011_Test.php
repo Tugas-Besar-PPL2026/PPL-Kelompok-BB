@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_011_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-011 - Registrasi ditolak saat Kata sandi kurang dari 8 karakter.

@@ -26,9 +26,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_002_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-002 - Registrasi berhasil sebagai UMKM dan Nama UMKM otomatis terisi di Profil Usaha.
@@ -44,9 +43,14 @@ class TC_PBI43_002_Test extends DuskTestCase
             // Langkah 1-3: buka landing (/), klik 'Daftar', pilih peran 'UMKM'.
             $browser->visit('/')
                 ->click('@nav-daftar')
-                ->waitForLocation('/daftar/umkm')
-                ->click('@peran-umkm')
                 ->waitForLocation('/daftar/umkm');
+
+            // Klik peran 'UMKM' memuat ulang /daftar/umkm (URL tidak berubah), jadi tunggu halaman baru selesai dimuat.
+            $this->tandaiHalamanLama($browser);
+            $browser->click('@peran-umkm');
+            $this->tungguHalamanBaru($browser)
+                ->assertPathIs('/daftar/umkm')
+                ->assertAttribute('@peran-umkm', 'aria-current', 'true');
 
             // Langkah 4: kolom nama berlabel 'Nama UMKM' (bukan 'Nama penanggung jawab') beserta keterangannya.
             $browser->assertSeeIn('label[for=name]', 'Nama UMKM')

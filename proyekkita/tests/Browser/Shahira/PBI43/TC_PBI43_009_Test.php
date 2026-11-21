@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_009_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-009 - Registrasi ditolak saat Email sudah dipakai akun lain.
@@ -35,12 +34,9 @@ class TC_PBI43_009_Test extends DuskTestCase
     public function test_TC_PBI43_009_email_sudah_terdaftar(): void
     {
         $this->browse(function (Browser $browser) {
-            $kode = $this->kodeUnik();
-            // Precondition: akun Kandidat dengan email ini sudah dibuat lewat registrasi, lalu logout.
-            $emailTerdaftar = "rina.terdaftar.{$kode}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Terdaftar', $emailTerdaftar, 'Rahasia123');
-            $this->keluar($browser);
-            $this->assertSame(1, DB::table('users')->where('email', $emailTerdaftar)->count());
+            // Precondition: akun Kandidat dengan email unik per run dibuat lewat registrasi UI, lalu logout.
+            $emailTerdaftar = "rina.terdaftar.{$this->kodeUnik()}@proyekkita.test";
+            $this->daftarAkunTerdaftarLaluKeluar($browser, $emailTerdaftar);
 
             $isian = [
                 'name' => 'Rina Duplikat',
@@ -51,7 +47,7 @@ class TC_PBI43_009_Test extends DuskTestCase
             ];
             $jumlahUserSebelum = DB::table('users')->count();
 
-            // Langkah 1: buka /daftar/kandidat.
+            // Langkah 1: buka kembali /daftar/kandidat (sebagai tamu).
             $browser->visit('/daftar/kandidat')->waitFor('@daftar');
 
             // Langkah 2-3: isi form sesuai input, klik tombol daftar.
@@ -71,6 +67,29 @@ class TC_PBI43_009_Test extends DuskTestCase
             $this->assertSame($jumlahUserSebelum, DB::table('users')->count(), 'Tidak boleh ada akun baru.');
             $this->assertBelumLogin($browser);
         });
+    }
+
+    /**
+     * Precondition lewat UI browser (tanpa factory/seeder/SQL tulis):
+     *  1. buka /daftar/kandidat dan daftar dengan email baru yang unik (helper daftar());
+     *  2. pastikan registrasi berhasil (pesan sukses, masuk ke halaman awal Kandidat) dan akun tersimpan (DB hanya dibaca);
+     *  3. logout lewat tombol Keluar dan pastikan kembali sebagai tamu.
+     */
+    private function daftarAkunTerdaftarLaluKeluar(Browser $browser, string $email): void
+    {
+        $this->assertSame(0, DB::table('users')->where('email', $email)->count(), 'Email precondition harus belum terdaftar.');
+
+        $this->daftar($browser, 'kandidat', 'Rina Terdaftar', $email, 'Rahasia123');
+        $browser->assertPathIs('/kandidat/profil');
+
+        $akun = DB::table('users')->where('email', $email)->first();
+        $this->assertNotNull($akun, 'Akun precondition harus tersimpan di database.');
+        $this->assertSame('Rina Terdaftar', $akun->name);
+        $this->assertSame('kandidat', (string) $akun->role);
+
+        $this->keluar($browser)
+            ->assertPathIs('/')
+            ->assertPresent('@nav-masuk');
     }
 
     /** Mengisi form registrasi: string kosong berarti kolom dikosongkan; terms true berarti dicentang. */

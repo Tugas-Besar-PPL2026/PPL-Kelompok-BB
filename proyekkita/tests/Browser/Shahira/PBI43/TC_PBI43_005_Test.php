@@ -25,9 +25,8 @@ use Tests\DuskTestCase;
 class TC_PBI43_005_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
-      use MenjagaDatabaseE2E;
-//use UsesDuskTestDatabase;
-      
+    use MenjagaDatabaseE2E;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI43-005 - Registrasi Kandidat ditolak saat Nama lengkap kosong dan field lain valid.
