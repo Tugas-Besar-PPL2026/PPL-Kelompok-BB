@@ -6,10 +6,12 @@
 /storage/*.key
 /storage/pail
 /vendor
+
 .env
-.env.backup
-.env.dusk
-.env.production
+.env.*
+!.env.example
+!.env.dusk.example
+
 .phpactor.json
 .phpunit.result.cache
 Homestead.json
@@ -22,5 +24,4 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-.env.dusk.local
 /database/dusk.sqlite
