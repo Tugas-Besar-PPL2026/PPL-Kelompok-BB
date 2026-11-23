@@ -17,6 +17,7 @@ use App\Http\Controllers\CandidateApplicationController;
 use App\Http\Controllers\ApplicationCancellationController;
 use App\Http\Controllers\ProjectMonitoringController;
 use App\Http\Controllers\UmkmVerificationController;
+use App\Http\Controllers\SubmissionController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -88,6 +89,17 @@ Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat
     Route::patch('lamaran/{application}/batal', ApplicationCancellationController::class)
         ->whereNumber('application')
         ->name('lamaran.cancel');
+
+    // PBI-31: kandidat menyerahkan hasil pekerjaan (Versi 1) dan melihat riwayat versi
+    Route::get('kesepakatan/{agreement}/penyerahan', [SubmissionController::class, 'index'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.penyerahan.index');
+    Route::post('kesepakatan/{agreement}/penyerahan', [SubmissionController::class, 'store'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.penyerahan.store');
+    Route::get('kesepakatan/{agreement}/penyerahan/{submission}/berkas', [SubmissionController::class, 'file'])
+        ->whereNumber(['agreement', 'submission'])
+        ->name('kesepakatan.penyerahan.berkas');
 });
 
 // Middleware untuk UMKM
