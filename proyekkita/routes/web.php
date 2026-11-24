@@ -18,6 +18,9 @@ use App\Http\Controllers\ApplicationCancellationController;
 use App\Http\Controllers\ProjectMonitoringController;
 use App\Http\Controllers\UmkmVerificationController;
 use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\AgreementComposeController;
+use App\Http\Controllers\AgreementResponseController;
+use App\Http\Controllers\AgreementController;
 use App\Models\Project;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
@@ -101,6 +104,12 @@ Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat
         ->whereNumber(['agreement', 'submission'])
         ->name('kesepakatan.penyerahan.berkas');
 
+    // PBI-26: kandidat melihat daftar, detail, dan status kesepakatan
+    Route::get('kesepakatan', [AgreementController::class, 'candidateIndex'])->name('kesepakatan.index');
+    Route::get('kesepakatan/{agreement}', [AgreementController::class, 'candidateShow'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.show');
+
     // PBI-25: kandidat menanggapi kesepakatan (setujui / tolak dengan alasan)
     Route::get('kesepakatan/{agreement}/tanggapi', [AgreementResponseController::class, 'show'])
         ->whereNumber('agreement')
@@ -159,6 +168,12 @@ Route::middleware(['auth', 'role:umkm'])->prefix('umkm')->name('umkm.')->group(f
     Route::put('kesepakatan/{agreement}/susun', [AgreementComposeController::class, 'update'])
         ->whereNumber('agreement')
         ->name('kesepakatan.update');
+
+    // PBI-26: UMKM melihat daftar, detail, dan status kesepakatan
+    Route::get('kesepakatan', [AgreementController::class, 'umkmIndex'])->name('kesepakatan.index');
+    Route::get('kesepakatan/{agreement}', [AgreementController::class, 'umkmShow'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.show');
 });
 
 // Middleware untuk admin
