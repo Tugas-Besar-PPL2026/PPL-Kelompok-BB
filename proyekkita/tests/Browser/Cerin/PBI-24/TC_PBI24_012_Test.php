@@ -1,0 +1,33 @@
+<?php
+
+namespace Tests\Browser\Cerin\PBI24;
+
+use Laravel\Dusk\Browser;
+use Tests\Browser\Cerin\KesepakatanDuskTestCase;
+
+/**
+ * TC-PBI24-012 — Akses oleh Kandidat
+ *
+ * Jenis Test     : Negatif
+ * Data disiapkan : Kandidat Diterima; draf kesepakatan sudah ada.
+ *                  Seluruh data dibuat lewat UI browser oleh test ini sendiri (tanpa factory/seeder/SQL).
+ * Expected       : Kandidat membuka URL susun kesepakatan: halaman 403, formulir tidak tampil.
+ *
+ * Jalankan       : php artisan dusk tests/Browser/Cerin/PBI-24/TC_PBI24_012_Test.php
+ */
+class TC_PBI24_012_Test extends KesepakatanDuskTestCase
+{
+    public function test_tc_pbi24_012(): void
+    {
+        $this->browse(function (Browser $browser) {
+            $d = $this->siapkanKesepakatan($browser, 'draf');
+
+            // ===== Skenario utama =====
+            $this->masuk($browser, $d['kandidat']);
+            $browser->visit("/umkm/kesepakatan/{$d['kesepakatan']}/susun")
+                ->assertSee('403')
+                ->assertMissing('@form-kesepakatan');
+            $this->bukti($browser, 'TC_PBI24_012');
+        });
+    }
+}

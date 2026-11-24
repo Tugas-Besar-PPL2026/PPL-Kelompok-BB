@@ -33,6 +33,7 @@ class Agreement extends Model
         'rejection_reason',
         'sent_at',
         'approved_at',
+        'rejected_at', // [PBI-25] waktu kandidat menolak kesepakatan
     ];
 
     protected function casts(): array
@@ -44,6 +45,7 @@ class Agreement extends Model
             'status' => AgreementStatus::class,
             'sent_at' => 'datetime',
             'approved_at' => 'datetime',
+            'rejected_at' => 'datetime',
         ];
     }
 
