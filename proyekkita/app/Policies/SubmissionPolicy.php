@@ -14,6 +14,7 @@ use App\Models\User;
  *   Gate::allows('viewAny', [Submission::class, $agreement])  -> kandidat pemilik melihat Riwayat Versi
  *   Gate::allows('create', [Submission::class, $agreement])   -> kandidat pemilik mengirim penyerahan
  *   Gate::allows('download', $submission)                     -> kandidat pemilik atau UMKM pemilik proyek
+ *   Gate::allows('review', [Submission::class, $agreement])   -> UMKM pemilik proyek meninjau hasil (PBI-32)
  * Status kesepakatan/penyerahan TIDAK diperiksa di sini (lihat SubmissionService) agar pesan penolakannya spesifik.
  */
 class SubmissionPolicy
@@ -26,6 +27,12 @@ class SubmissionPolicy
     public function create(User $user, Agreement $agreement): bool
     {
         return $this->candidateOwns($user, $agreement);
+    }
+
+    /** [PBI-32] UMKM pemilik proyek pada kesepakatan meninjau hasil pekerjaan. */
+    public function review(User $user, Agreement $agreement): bool
+    {
+        return $user->isUmkm() && $this->umkmOwns($user, $agreement);
     }
 
     public function download(User $user, Submission $submission): bool
