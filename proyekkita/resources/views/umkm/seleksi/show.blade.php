@@ -34,6 +34,7 @@
             <h1>Detail Pelamar</h1>
         </div>
         <div class="act">
+            @include('umkm.seleksi._tinjau-hasil', ['application' => $application])
             <a href="{{ $backUrl }}" class="btn o"><i data-lucide="arrow-left" class="ic" width="16" height="16"></i>Kembali ke Daftar</a>
         </div>
     </div>
@@ -189,9 +190,6 @@
         {{-- ================= Kolom kanan ================= --}}
         <div class="stack">
             @include('umkm.seleksi._keputusan')
-
-            {{-- [PBI-24] Tombol Susun Kesepakatan untuk pelamar yang sudah Diterima --}}
-            @includeIf('umkm.seleksi._susun-kesepakatan', ['application' => $application])
 
             <section class="card">
                 <div class="ch"><i data-lucide="history" class="ic" width="20" height="20"></i><h3>Riwayat Status Lamaran</h3></div>
