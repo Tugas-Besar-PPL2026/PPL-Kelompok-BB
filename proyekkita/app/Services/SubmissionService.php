@@ -27,8 +27,8 @@ use Throwable;
  *  3. Nomor versi = MAX(version_number) + 1, status awal Menunggu Tinjauan.         BR-31-09, BR-31-10
  *  4. Berkas disimpan di disk privat; dibersihkan bila penyimpanan gagal.            BR-31-12, BR-31-13
  *
- * Dipakai ulang oleh PBI-32 (history(), locateFile(), fileResponse(), stages(), present(), revisionsUsed()) dan PBI-33.
- * Versi perbaikan (PBI-33) cukup mengubah syarat pada submissionBlockReason() tanpa menulis ulang versioning.
+ * Dipakai ulang oleh PBI-32 (history(), locateFile(), fileResponse(), stages(), present()) dan PBI-33 (submit() untuk versi
+ * perbaikan: submissionBlockReason() mengizinkan versi baru bila versi terakhir berstatus Perlu Revisi).
  */
 class SubmissionService
 {
@@ -124,8 +124,10 @@ class SubmissionService
     }
 
     /**
-     * BR-31-04: PBI-31 hanya menerima penyerahan pertama. Mengembalikan alasan penolakan atau null bila belum ada versi.
-     * Versi perbaikan setelah revisi diminta dikirim lewat PBI-33.
+     * Mengembalikan alasan penolakan atau null bila versi baru boleh dikirim.
+     *  - BR-31-04 (PBI-31): belum ada versi -> penyerahan pertama (Versi 1).
+     *  - BR-33-xx (PBI-33): versi terakhir berstatus Perlu Revisi -> versi perbaikan (Versi n+1).
+     *  - Versi terakhir Menunggu Tinjauan atau Disetujui -> ditolak.
      */
     public function submissionBlockReason(?Submission $latest): ?string
     {
@@ -136,7 +138,7 @@ class SubmissionService
         return match ($latest->status) {
             SubmissionStatus::Submitted => "Hasil pekerjaan Versi {$latest->version_number} sedang ditinjau UMKM. Versi baru belum dapat dikirim.",
             SubmissionStatus::Approved => self::MSG_APPROVED,
-            SubmissionStatus::RevisionRequested => "Hasil pekerjaan Versi {$latest->version_number} perlu revisi. Versi perbaikan dikirim melalui form Kirim Versi Perbaikan.",
+            SubmissionStatus::RevisionRequested => null,
         };
     }
 
@@ -249,26 +251,49 @@ class SubmissionService
     }
 
     /**
-     * Keadaan form penyerahan. blocker: null (boleh mengirim), 'agreement', 'submitted', 'approved', 'revision'.
+     * Keadaan form penyerahan. blocker: null (boleh mengirim), 'agreement', 'submitted', 'approved'.
+     * mode: 'first' (Versi 1, PBI-31) atau 'revision' (versi perbaikan setelah revisi diminta, PBI-33).
      *
-     * @return array{canSubmit: bool, blocker: ?string, message: ?string, nextVersion: int, latest: ?Submission}
+     * @return array{canSubmit: bool, blocker: ?string, message: ?string, nextVersion: int, latest: ?Submission, mode: string}
      */
     public function formState(Agreement $agreement, ?Submission $latest): array
     {
         $nextVersion = ($latest?->version_number ?? 0) + 1;
+        $mode = $latest?->status === SubmissionStatus::RevisionRequested ? 'revision' : 'first';
 
         if ($reason = $this->agreementBlockReason($agreement)) {
-            return ['canSubmit' => false, 'blocker' => 'agreement', 'message' => $reason, 'nextVersion' => $nextVersion, 'latest' => $latest];
+            return ['canSubmit' => false, 'blocker' => 'agreement', 'message' => $reason, 'nextVersion' => $nextVersion, 'latest' => $latest, 'mode' => $mode];
         }
 
         [$blocker, $message] = match ($latest?->status) {
-            null => [null, null],
+            null, SubmissionStatus::RevisionRequested => [null, null],
             SubmissionStatus::Submitted => ['submitted', "Versi {$latest->version_number} sedang ditinjau UMKM."],
             SubmissionStatus::Approved => ['approved', 'Hasil pekerjaan sudah disetujui UMKM.'],
-            SubmissionStatus::RevisionRequested => ['revision', "Versi {$latest->version_number} perlu revisi."],
         };
 
-        return ['canSubmit' => $blocker === null, 'blocker' => $blocker, 'message' => $message, 'nextVersion' => $nextVersion, 'latest' => $latest];
+        return ['canSubmit' => $blocker === null, 'blocker' => $blocker, 'message' => $message, 'nextVersion' => $nextVersion, 'latest' => $latest, 'mode' => $mode];
+    }
+
+    /**
+     * [PBI-33] Permintaan revisi yang sedang berlaku (versi terakhir Perlu Revisi), untuk banner di halaman kandidat.
+     *
+     * @return array{version: int, note: string, requestedAt: ?string, used: int, limit: int}|null
+     */
+    public function activeRevision(Agreement $agreement, ?Submission $latest): ?array
+    {
+        if ($latest === null || $latest->status !== SubmissionStatus::RevisionRequested) {
+            return null;
+        }
+
+        $request = $latest->revisionRequests->first();
+
+        return [
+            'version' => $latest->version_number,
+            'note' => (string) $request?->note,
+            'requestedAt' => $request?->created_at ? $this->dateTime($request->created_at) : null,
+            'used' => $this->revisionsUsed($agreement),
+            'limit' => (int) $agreement->revision_limit,
+        ];
     }
 
     /** Jumlah permintaan revisi yang sudah dipakai pada kesepakatan (FR-15). */
@@ -297,6 +322,7 @@ class SubmissionService
             'deadlinePassed' => $deadline !== null && $deadline->copy()->startOfDay()->lt(today()),
             'stages' => $this->stages($agreement, $latest),
             'form' => $this->formState($agreement, $latest),
+            'revision' => $this->activeRevision($agreement, $latest),
             'history' => $history->map(fn (Submission $submission) => $this->present($agreement, $submission))->all(),
         ];
     }
