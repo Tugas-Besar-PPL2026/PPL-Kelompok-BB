@@ -10,7 +10,7 @@ use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 /**
- * TC-PBI44-003 (sheet PBI-44, Test_Case_ProyekKita_Revisi_PBI16-18_PBI43-45.xlsx).
+ * TC-PBI44-003 (sheet PBI-44, Test_Case_Kelompok_BB_SI4801_1.xlsx).
  *
  * E2E Laravel Dusk: registrasi, login, dan logout dilakukan lewat UI Chrome. Tanpa loginAs/actingAs,
  * tanpa manipulasi session/cookie untuk melewati login, tanpa factory/seeder/SQL tulis.
@@ -26,47 +26,30 @@ class TC_PBI44_003_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
     use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+    //use UsesDuskTestDatabase;
 
     /**
-     * TC-PBI44-003 - Login gagal karena input wajib kosong.
+     * TC-PBI44-003 - Login berhasil sebagai Admin dan diarahkan ke halaman awal Admin.
      */
-    public function test_TC_PBI44_003_login_gagal_input_kosong(): void
+    public function test_TC_PBI44_003_login_admin_berhasil(): void
     {
         $this->browse(function (Browser $browser) {
-            // Precondition: akun Kandidat terdaftar lewat halaman registrasi, lalu logout.
-            $email = "rina.auth.{$this->kodeUnik()}@proyekkita.test";
-            $this->daftar($browser, 'kandidat', 'Rina Kandidat', $email, 'Rahasia123');
-            $this->keluar($browser);
+            // Precondition: akun Admin sudah disiapkan di database test (Admin tidak dapat mendaftar lewat aplikasi).
+            // Langkah 1-3: buka /login, isi Email dan Kata sandi Admin, klik 'Masuk'.
+            $this->isiFormLogin($browser, $this->emailAdmin(), $this->sandiAdmin());
 
-            $variasi = [
-                'a' => ['', '', ['@galat-email' => 'Email wajib diisi.', '@galat-password' => 'Kata sandi wajib diisi.']],
-                'b' => ['', 'Rahasia123', ['@galat-email' => 'Email wajib diisi.']],
-                'c' => [$email, '', ['@galat-password' => 'Kata sandi wajib diisi.']],
-            ];
+            // Langkah 4: halaman tujuan dan menu samping sesuai peran.
+            $browser->waitForLocation('/admin/data-master')
+                ->assertPathIs('/admin/data-master')
+                ->assertSeeIn('h1', 'Data Master')
+                ->assertSeeIn('aside.side', 'Keluar')
+                ->assertSeeIn('aside.side', 'Verifikasi UMKM')
+                ->assertSeeIn('aside.side', 'Moderasi Proyek')
+                ->assertDontSeeIn('aside.side', 'Lamaran Saya')
+                ->assertDontSeeIn('aside.side', 'Seleksi Kandidat');
 
-            foreach ($variasi as $kodeVariasi => [$isiEmail, $isiSandi, $pesan]) {
-                // Langkah 1-2: buka /login, isi form sesuai variasi, klik 'Masuk'.
-                $this->isiFormLogin($browser, $isiEmail, $isiSandi)->waitFor(array_key_first($pesan));
-
-                // Ditolak: tetap di /login dengan pesan validasi sesuai, tanpa pesan kredensial salah.
-                $browser->assertPathIs('/login')->assertMissing('@galat-login');
-                foreach ($pesan as $selector => $teks) {
-                    $browser->assertSeeIn($selector, $teks);
-                }
-                if (! array_key_exists('@galat-email', $pesan)) {
-                    $browser->assertMissing('@galat-email');
-                }
-                if (! array_key_exists('@galat-password', $pesan)) {
-                    $browser->assertMissing('@galat-password');
-                }
-            }
-
-            // Langkah 4: buka /kandidat/profil -> dialihkan ke /login (tidak login).
-            $browser->visit('/kandidat/profil')
-                ->waitForLocation('/login')
-                ->assertPathIs('/login')
-                ->assertPresent('@masuk');
+            // Langkah 5: /login khusus tamu, pengguna yang sudah login dialihkan ke halaman awalnya.
+            $browser->visit('/login')->waitForLocation('/admin/data-master')->assertPathIs('/admin/data-master');
         });
     }
 

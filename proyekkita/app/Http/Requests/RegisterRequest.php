@@ -36,7 +36,7 @@ class RegisterRequest extends FormRequest
 
     public function messages(): array
     {
-        $nama = $this->route('role') === 'umkm' ? 'Nama penanggung jawab' : 'Nama lengkap';
+        $nama = $this->route('role') === 'umkm' ? 'Nama UMKM' : 'Nama lengkap';
 
         return [
             'name.required' => "{$nama} wajib diisi.",

@@ -31,6 +31,7 @@
         <div class="la-actions">
             @if ($application->status === ApplicationStatus::Accepted)
                 @includeIf('kandidat.lamaran._tanggapi-kesepakatan', ['application' => $application])
+                @include('kandidat.lamaran._penyerahan-hasil', ['application' => $application])
             @endif
 
             @if ($application->isCancellable())

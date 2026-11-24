@@ -16,17 +16,24 @@ use App\Http\Controllers\ProjectDiscoveryController;
 use App\Http\Controllers\ProjectModerationController;
 use App\Http\Controllers\ProjectMonitoringController;
 use App\Http\Controllers\UmkmVerificationController;
+use App\Http\Controllers\SubmissionController;
+use App\Http\Controllers\AgreementComposeController;
+use App\Http\Controllers\AgreementResponseController;
+use App\Http\Controllers\AgreementController;
+use App\Models\Project;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 
 // [FR-01] Halaman publik khusus tamu: landing, masuk, dan registrasi.
 // Pengguna yang sudah login diarahkan ke halaman awal sesuai peran (lihat redirectUsersTo di bootstrap/app.php).
 Route::middleware('guest')->group(function () {
     Route::get('/', fn () => view('landing'))->name('landing');
-
+    //PBI-44: Login
     Route::get('login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('login', [AuthController::class, 'login'])->name('login.attempt');
 
     // {role}: umkm | kandidat. Peran lain (termasuk admin) tidak cocok dengan route ini dan menghasilkan 404.
+    // PBI-43: Registrasi
     Route::get('daftar/{role}', [AuthController::class, 'showRegister'])
         ->whereIn('role', ['umkm', 'kandidat'])
         ->name('register');
@@ -35,6 +42,7 @@ Route::middleware('guest')->group(function () {
         ->name('register.store');
 });
 
+//PBI-45: logout (POST) hanya untuk pengguna yang sudah login. Logout menghapus session dan cookie, lalu redirect ke landing.
 Route::post('logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
 // Middleware untuk kandidat
@@ -70,12 +78,39 @@ Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat
     // PBI-16: kandidat mengajukan lamaran ke proyek terbuka
     Route::post('proyek/{project}/lamaran', [ApplicationController::class, 'store'])->name('proyek.lamaran.store');
 
+
+    //PBI-17: kandidat memantau status lamaran yang diajukan
     Route::get('lamaran', [CandidateApplicationController::class, 'index'])->name('lamaran.index');
 
     // PBI-18: kandidat membatalkan lamaran
     Route::patch('lamaran/{application}/batal', ApplicationCancellationController::class)
         ->whereNumber('application')
         ->name('lamaran.cancel');
+
+    // PBI-31: kandidat menyerahkan hasil pekerjaan (Versi 1) dan melihat riwayat versi
+    Route::get('kesepakatan/{agreement}/penyerahan', [SubmissionController::class, 'index'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.penyerahan.index');
+    Route::post('kesepakatan/{agreement}/penyerahan', [SubmissionController::class, 'store'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.penyerahan.store');
+    Route::get('kesepakatan/{agreement}/penyerahan/{submission}/berkas', [SubmissionController::class, 'file'])
+        ->whereNumber(['agreement', 'submission'])
+        ->name('kesepakatan.penyerahan.berkas');
+
+    // PBI-26: kandidat melihat daftar, detail, dan status kesepakatan
+    Route::get('kesepakatan', [AgreementController::class, 'candidateIndex'])->name('kesepakatan.index');
+    Route::get('kesepakatan/{agreement}', [AgreementController::class, 'candidateShow'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.show');
+
+    // PBI-25: kandidat menanggapi kesepakatan (setujui / tolak dengan alasan)
+    Route::get('kesepakatan/{agreement}/tanggapi', [AgreementResponseController::class, 'show'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.tanggapi');
+    Route::post('kesepakatan/{agreement}/tanggapi', [AgreementResponseController::class, 'store'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.tanggapi.store');
 });
 
 // Middleware untuk UMKM
@@ -105,6 +140,23 @@ Route::middleware(['auth', 'role:umkm'])->prefix('umkm')->name('umkm.')->group(f
     Route::get('seleksi/pelamar/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolioFile'])
         ->whereNumber(['application', 'portfolio'])
         ->name('seleksi.portofolio');
+
+    // PBI-24: UMKM menyusun dan mengirim kesepakatan pekerjaan untuk pelamar yang sudah diterima
+    Route::post('seleksi/pelamar/{application}/kesepakatan', [AgreementComposeController::class, 'store'])
+        ->whereNumber('application')
+        ->name('kesepakatan.store');
+    Route::get('kesepakatan/{agreement}/susun', [AgreementComposeController::class, 'edit'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.edit');
+    Route::put('kesepakatan/{agreement}/susun', [AgreementComposeController::class, 'update'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.update');
+
+    // PBI-26: UMKM melihat daftar, detail, dan status kesepakatan
+    Route::get('kesepakatan', [AgreementController::class, 'umkmIndex'])->name('kesepakatan.index');
+    Route::get('kesepakatan/{agreement}', [AgreementController::class, 'umkmShow'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.show');
 });
 
 // Middleware untuk admin

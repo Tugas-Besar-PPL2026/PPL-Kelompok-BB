@@ -93,8 +93,16 @@ abstract class DuskTestCase extends BaseTestCase
             .DIRECTORY_SEPARATOR.'framework'.DIRECTORY_SEPARATOR.'src'.DIRECTORY_SEPARATOR.'Illuminate'
             .DIRECTORY_SEPARATOR.'Foundation'.DIRECTORY_SEPARATOR.'resources'.DIRECTORY_SEPARATOR.'server.php';
 
+        // PBI-31: batas unggah dinaikkan agar uji berkas hasil pekerjaan 25 MB dapat berjalan.
+        // upload_max_filesize 30M (> 25 MB batas aplikasi) dan post_max_size 32M (berkas + isian form).
         static::$serveProcess = new Process(
-            [PHP_BINARY, '-d', 'variables_order=EGPCS', '-S', '127.0.0.1:8000', $serverScript],
+            [
+                PHP_BINARY,
+                '-d', 'variables_order=EGPCS',
+                '-d', 'upload_max_filesize=30M',
+                '-d', 'post_max_size=32M',
+                '-S', '127.0.0.1:8000', $serverScript,
+            ],
             $publicPath
         );
         static::$serveProcess->start();

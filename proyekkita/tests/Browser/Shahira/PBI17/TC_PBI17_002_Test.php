@@ -5,6 +5,7 @@ namespace Tests\Browser\PBI17;
 use Laravel\Dusk\Browser;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\Browser\Concerns\AlurE2EProyekKita;
+use Tests\Browser\Concerns\DataDefaultPbi16E2E;
 use Tests\Browser\Concerns\MenjagaDatabaseE2E;
 use Tests\Browser\Concerns\PersiapanLamaranE2E;
 use Tests\DuskTestCase;
@@ -13,7 +14,8 @@ use Tests\Concerns\UsesDuskTestDatabase;
 /**
  * TC-PBI17-002 (sheet PBI-17, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
- * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/actingAs/factory/seeder/SQL tulis):
+ * Alur persiapan E2E (Admin, UMKM terverifikasi, Kandidat default, dan master data E2E disiapkan sekali
+ * lewat seeder existing AdminSeeder; skenario lewat Chrome, tanpa loginAs/actingAs/factory/SQL tulis):
  *   1-3. Login UMKM, buat proyek lewat UI, pastikan tersimpan.  4. Logout UMKM.
  *   5-7. Login Admin, setujui di Moderasi Proyek, pastikan Dipublikasikan.  8. Logout Admin.
  *   Precondition lamaran (melamar, keputusan UMKM, pembatalan) juga lewat UI.
@@ -26,6 +28,7 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI17_002_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
+    use DataDefaultPbi16E2E;
     use MenjagaDatabaseE2E;
     use PersiapanLamaranE2E;
     use UsesDuskTestDatabase;
@@ -38,9 +41,9 @@ class TC_PBI17_002_Test extends DuskTestCase
         $tc = '002';
 
         $this->browse(function (Browser $browser) use ($tc) {
-            // Prasyarat akun lewat UI (dipakai ulang bila sudah ada): master data, UMKM terverifikasi, akun kandidat.
-            $this->pastikanUmkmTerverifikasi($browser);
-            $kandidat = $this->siapkanKandidat($browser, 'TC17002');
+            // Prasyarat: Admin, UMKM terverifikasi, dan master data dari AdminSeeder (read-only); kandidat dibuat baru lewat UI agar Lamaran Saya hanya berisi data test ini.
+            $this->pastikanDataDefaultE2E();
+            $kandidat = $this->siapkanKandidatTambahan($browser, 'TC17002');
             $kode = $this->kodeUnik();
             $menunggu = "Dusk PBI17-{$tc} Menunggu {$kode}";
             $terpilih = "Dusk PBI17-{$tc} Terpilih {$kode}";
@@ -84,6 +87,44 @@ class TC_PBI17_002_Test extends DuskTestCase
 
             // Langkah uji sesuai Excel: klik menu Lamaran Saya di menu samping.
             $this->bukaLamaranSaya($browser);
+            // Pastikan jumlah kartu lamaran yang tampil tepat lima.
+            $browser->assertScript(
+                "document.querySelectorAll('.la-card').length",
+                5
+            );
+
+            // Pastikan jumlah badge status tepat lima.
+            $browser->assertScript(
+                "document.querySelectorAll('.la-meta .bd').length",
+                5
+            );
+
+            // Pastikan setiap label status muncul tepat satu kali.
+            $browser->assertScript(
+                "Array.from(document.querySelectorAll('.la-meta .bd')).filter(el => el.textContent.trim() === 'Menunggu Keputusan').length",
+                1
+            );
+
+            $browser->assertScript(
+                "Array.from(document.querySelectorAll('.la-meta .bd')).filter(el => el.textContent.trim() === 'Terpilih Sementara').length",
+                1
+            );
+
+            $browser->assertScript(
+                "Array.from(document.querySelectorAll('.la-meta .bd')).filter(el => el.textContent.trim() === 'Diterima').length",
+                1
+            );
+
+            $browser->assertScript(
+                "Array.from(document.querySelectorAll('.la-meta .bd')).filter(el => el.textContent.trim() === 'Ditolak').length",
+                1
+            );
+
+            $browser->assertScript(
+                "Array.from(document.querySelectorAll('.la-meta .bd')).filter(el => el.textContent.trim() === 'Dibatalkan').length",
+                1
+            );
+
             // Periksa label badge setiap lamaran.
             $harapan = [
                 $menunggu => 'Menunggu Keputusan',

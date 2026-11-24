@@ -5,6 +5,7 @@ namespace Tests\Browser\PBI16;
 use Laravel\Dusk\Browser;
 use PHPUnit\Framework\Attributes\Group;
 use Tests\Browser\Concerns\AlurE2EProyekKita;
+use Tests\Browser\Concerns\DataDefaultPbi16E2E;
 use Tests\Browser\Concerns\MenjagaDatabaseE2E;
 use Tests\DuskTestCase;
 use Tests\Concerns\UsesDuskTestDatabase;
@@ -12,7 +13,8 @@ use Tests\Concerns\UsesDuskTestDatabase;
 /**
  * TC-PBI16-008 (sheet PBI-16, Test_Case_ProyekKita_PBI16_PBI17_PBI18_Revisi.xlsx).
  *
- * Alur persiapan E2E (semua lewat Chrome, tanpa loginAs/factory/seeder/SQL):
+ * Alur persiapan E2E (Admin, UMKM terverifikasi, Kandidat default, dan master data PBI-16 disiapkan sekali
+ * lewat seeder existing AdminSeeder; skenario lewat Chrome, tanpa loginAs/factory/SQL tulis):
  *   1. Login UMKM, buat proyek lewat UI.  2. Logout UMKM.
  *   3. Login Admin, setujui proyek di Moderasi Proyek.  4. Logout Admin.
  *   5. Login aktor uji lewat /login, lalu jalankan langkah sesuai Excel.
@@ -24,8 +26,9 @@ use Tests\Concerns\UsesDuskTestDatabase;
 class TC_PBI16_008_Test extends DuskTestCase
 {
     use AlurE2EProyekKita;
+    use DataDefaultPbi16E2E;
     use MenjagaDatabaseE2E;
-    use UsesDuskTestDatabase;
+    //use UsesDuskTestDatabase;
 
     /**
      * TC-PBI16-008 - Kolom status/kandidat/proyek tambahan pada request diabaikan (mass assignment).
@@ -36,10 +39,10 @@ class TC_PBI16_008_Test extends DuskTestCase
     public function test_TC_PBI16_008_kolom_tambahan_pada_request_diabaikan(): void
     {
         $this->browse(function (Browser $browser) {
-            // Prasyarat akun lewat UI: master data, UMKM terverifikasi, kandidat lain, dan kandidat penguji.
-            $this->pastikanUmkmTerverifikasi($browser);
-            $kandidatLain = $this->siapkanKandidat($browser, 'TC16008Lain');
-            $kandidat = $this->siapkanKandidat($browser, 'TC16008');
+            // Prasyarat: data default dari AdminSeeder (read-only); kandidat penguji = Kandidat default, kandidat lain dibuat lewat UI.
+            $this->pastikanDataDefaultPbi16();
+            $kandidatLain = $this->siapkanKandidatTambahan($browser, 'TC16008Lain');
+            $kandidat = $this->kandidatDefault();
             $kode = $this->kodeUnik();
             $judulA = "Dusk PBI16-008 A {$kode}";
             $judulB = "Dusk PBI16-008 B {$kode}";

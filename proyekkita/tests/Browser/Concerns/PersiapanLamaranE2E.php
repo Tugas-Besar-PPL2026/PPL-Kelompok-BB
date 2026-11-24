@@ -57,6 +57,28 @@ trait PersiapanLamaranE2E
     }
 
     /** Kandidat login lewat /login, membatalkan lamaran lewat dialog di Lamaran Saya, lalu Keluar. */
+    /**
+     * Precondition "kandidat melamar lalu membatalkan" dalam SATU sesi kandidat: langkah dan assertion sama dengan
+     * kandidatMelamarLewatUi() diikuti kandidatMembatalkanLewatUi(), tanpa logout/login di antara keduanya
+     * (aktornya sama, sehingga logout/login tersebut tidak menambah isolasi sesi).
+     */
+    protected function kandidatMelamarLaluMembatalkanLewatUi(Browser $browser, array $kandidat, array $daftarJudul): void
+    {
+        $this->masukSebagaiKandidat($browser, $kandidat);
+
+        foreach ($daftarJudul as $judul) {
+            $this->ajukanLamaran($browser, $judul)
+                ->assertSeeIn('@status-lamaran', 'Lamaran Anda sudah terkirim');
+        }
+
+        foreach ($daftarJudul as $judul) {
+            $this->bukaLamaranSaya($browser);
+            $this->batalkanLewatDialog($browser, $this->idLamaranDariKartu($browser, $judul));
+        }
+
+        $this->keluar($browser);
+    }
+
     protected function kandidatMembatalkanLewatUi(Browser $browser, array $kandidat, array $daftarJudul): void
     {
         $this->masukSebagaiKandidat($browser, $kandidat);

@@ -3,10 +3,13 @@
 namespace Tests\Browser\Adnan\PBI06;
 
 use Laravel\Dusk\Browser;
+use Tests\Concerns\UsesDuskTestDatabase;
 use Tests\DuskTestCase;
 
 class PBI06TestCase13Test extends DuskTestCase
 {
+    use UsesDuskTestDatabase;
+
 
     public function test_tc_pbi6_013_akses_ditolak_oleh_non_admin(): void
     {
@@ -17,17 +20,11 @@ class PBI06TestCase13Test extends DuskTestCase
 
             $browser->visit(route('register', ['role' => 'umkm']))
                 ->type('name', 'UMKM Uji Akses')
-                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('email', $emailUmkm)
-                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password', 'password123')
-                ->pause((int) env('DUSK_JEDA', 1000))
                 ->type('password_confirmation', 'password123')
-                ->pause((int) env('DUSK_JEDA', 1000))
                 ->check('terms')
                 ->click('@daftar')
-                ->pause((int) env('DUSK_JEDA', 1000))
-                ->pause((int) env('DUSK_JEDA', 1000))
                 ->visit('/admin/data-master')
                 ->assertSee('403');
         });
