@@ -157,6 +157,17 @@ Route::middleware(['auth', 'role:umkm'])->prefix('umkm')->name('umkm.')->group(f
     Route::get('kesepakatan/{agreement}', [AgreementController::class, 'umkmShow'])
         ->whereNumber('agreement')
         ->name('kesepakatan.show');
+
+    // PBI-32: UMKM meninjau hasil pekerjaan (setujui / minta revisi) dan mengunduh berkas penyerahan
+    Route::get('kesepakatan/{agreement}/tinjau', [SubmissionReviewController::class, 'index'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.tinjau.index');
+    Route::post('kesepakatan/{agreement}/tinjau', [SubmissionReviewController::class, 'store'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.tinjau.store');
+    Route::get('kesepakatan/{agreement}/penyerahan/{submission}/berkas', [SubmissionReviewController::class, 'file'])
+        ->whereNumber(['agreement', 'submission'])
+        ->name('kesepakatan.penyerahan.berkas');
 });
 
 // Middleware untuk admin
