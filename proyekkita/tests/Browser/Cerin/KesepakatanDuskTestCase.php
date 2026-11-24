@@ -80,7 +80,8 @@ abstract class KesepakatanDuskTestCase extends CerinDuskTestCase
 
     protected function klikTab(Browser $browser, string $kunci): Browser
     {
-        return $browser->click("@tab-{$kunci}")->waitFor("@tab-{$kunci}.on", 20);
+        // Selector ditulis lengkap: "@tab-draft.on" akan dibaca Dusk sebagai dusk="tab-draft.on".
+        return $browser->click("@tab-{$kunci}")->waitFor("[dusk=\"tab-{$kunci}\"].on", 20);
     }
 
     /** UMKM: menu Kesepakatan & Progres -> tab Draf -> Buka. */
