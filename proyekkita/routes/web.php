@@ -100,6 +100,14 @@ Route::middleware(['auth', 'role:kandidat'])->prefix('kandidat')->name('kandidat
     Route::get('kesepakatan/{agreement}/penyerahan/{submission}/berkas', [SubmissionController::class, 'file'])
         ->whereNumber(['agreement', 'submission'])
         ->name('kesepakatan.penyerahan.berkas');
+
+    // PBI-25: kandidat menanggapi kesepakatan (setujui / tolak dengan alasan)
+    Route::get('kesepakatan/{agreement}/tanggapi', [AgreementResponseController::class, 'show'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.tanggapi');
+    Route::post('kesepakatan/{agreement}/tanggapi', [AgreementResponseController::class, 'store'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.tanggapi.store');
 });
 
 // Middleware untuk UMKM
