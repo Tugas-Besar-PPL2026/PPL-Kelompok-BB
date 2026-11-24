@@ -28,6 +28,9 @@ class Submission extends Model
         'description',
         'status',
         'submitted_at',
+        // PBI-32: hasil peninjauan UMKM
+        'review_note',
+        'reviewed_at',
     ];
 
     protected function casts(): array
@@ -36,6 +39,7 @@ class Submission extends Model
             'version_number' => 'integer',
             'status' => SubmissionStatus::class,
             'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
