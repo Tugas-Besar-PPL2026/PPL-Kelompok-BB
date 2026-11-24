@@ -1,15 +1,16 @@
 {{--
-    [PBI-31] Form Kirim Hasil Pekerjaan (Versi 1), atau kartu info bila penyerahan belum/tidak dapat dikirim.
+    [PBI-31] Form Kirim Hasil Pekerjaan (Versi 1) dan [PBI-33] Kirim Versi Perbaikan (Versi n+1, setelah revisi diminta),
+    atau kartu info bila penyerahan belum/tidak dapat dikirim.
     Variabel: $agreement, $form (SubmissionService::formState).
     Validasi utama tetap di server (SubmissionRequest); pemeriksaan di browser hanya umpan balik cepat.
 --}}
 @php
     $rules = \App\Http\Requests\SubmissionRequest::class;
     $maxDesc = $rules::MAX_DESCRIPTION;
+    $isRevision = ($form['mode'] ?? 'first') === 'revision';
     $infoClass = match ($form['blocker']) {
         'agreement' => 'warn',
         'approved' => 'ok',
-        'revision' => 'warn',
         default => 'info',
     };
 @endphp
@@ -18,7 +19,7 @@
     @if ($form['canSubmit'])
         <div class="ch">
             <i data-lucide="upload" class="ic" width="18" height="18"></i>
-            <h3 dusk="judul-form-penyerahan">Kirim Hasil Pekerjaan · Versi {{ $form['nextVersion'] }}</h3>
+            <h3 dusk="judul-form-penyerahan">{{ $isRevision ? 'Kirim Versi Perbaikan' : 'Kirim Hasil Pekerjaan' }} · Versi {{ $form['nextVersion'] }}</h3>
         </div>
 
         @if ($errors->any())
@@ -91,14 +92,14 @@
             </div>
 
             <div class="fl">
-                <label for="description">Deskripsi hasil pekerjaan <span style="color:var(--bad)">*</span></label>
+                <label for="description">{{ $isRevision ? 'Deskripsi perubahan' : 'Deskripsi hasil pekerjaan' }} <span style="color:var(--bad)">*</span></label>
                 <div class="in @error('description') err @enderror">
                     <textarea
                         id="description"
                         name="description"
                         rows="4"
                         dusk="deskripsi-hasil"
-                        placeholder="Jelaskan isi hasil pekerjaan yang diserahkan."
+                        placeholder="{{ $isRevision ? 'Jelaskan perubahan yang dilakukan sesuai catatan revisi.' : 'Jelaskan isi hasil pekerjaan yang diserahkan.' }}"
                     >{{ old('description') }}</textarea>
                 </div>
                 <div class="ps-counter">
@@ -124,30 +125,22 @@
             <h3>Penyerahan Hasil Pekerjaan</h3>
         </div>
 
-        @if ($form['blocker'] === 'revision' && view()->exists('kandidat.kesepakatan._form-perbaikan'))
-            {{-- PBI-33: banner catatan revisi + form versi perbaikan --}}
-            @include('kandidat.kesepakatan._form-perbaikan')
-        @else
-            <div class="al {{ $infoClass }}" dusk="info-penyerahan">
-                <i data-lucide="info" class="ic" width="19" height="19"></i>
-                <div>
-                    <b>{{ $form['message'] }}</b>
-                    @switch($form['blocker'])
-                        @case('submitted')
-                            Anda akan dapat mengirim versi perbaikan bila UMKM meminta revisi.
-                            @break
-                        @case('approved')
-                            Penyerahan baru tidak diperlukan.
-                            @break
-                        @case('revision')
-                            Pengiriman versi perbaikan belum tersedia di halaman ini.
-                            @break
-                        @default
-                            Riwayat versi tetap dapat dilihat.
-                    @endswitch
-                </div>
+        <div class="al {{ $infoClass }}" dusk="info-penyerahan">
+            <i data-lucide="info" class="ic" width="19" height="19"></i>
+            <div>
+                <b>{{ $form['message'] }}</b>
+                @switch($form['blocker'])
+                    @case('submitted')
+                        Anda akan dapat mengirim versi perbaikan bila UMKM meminta revisi.
+                        @break
+                    @case('approved')
+                        Penyerahan baru tidak diperlukan.
+                        @break
+                    @default
+                        Riwayat versi tetap dapat dilihat.
+                @endswitch
             </div>
-        @endif
+        </div>
     @endif
 </section>
 

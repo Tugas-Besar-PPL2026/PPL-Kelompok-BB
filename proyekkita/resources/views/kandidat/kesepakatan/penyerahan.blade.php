@@ -1,14 +1,14 @@
 {{--
     [PBI-31 / FR-14] Halaman Penyerahan Hasil Pekerjaan (Kandidat).
     Variabel (SubmissionService::page): $agreement, $project, $code, $umkmName, $candidateName,
-    $deadline, $deadlinePassed, $stages, $form, $history.
+    $deadline, $deadlinePassed, $stages, $form, $revision, $history.
 
     Bagian halaman:
       - _ringkasan-kesepakatan : kode, status, judul proyek, UMKM, tenggat, linimasa 5 tahap
-      - _form-penyerahan       : form Kirim Hasil Pekerjaan (Versi 1) atau kartu info bila tidak dapat mengirim
+      - _catatan-revisi        : banner permintaan revisi UMKM (PBI-33)
+      - _form-penyerahan       : form Kirim Hasil Pekerjaan (Versi 1, PBI-31) / Kirim Versi Perbaikan (Versi n+1, PBI-33),
+                                 atau kartu info bila tidak dapat mengirim
       - _riwayat-versi         : Riwayat Versi (baca saja)
-    Gaya halaman dipindah ke partial bersama kesepakatan._gaya (dipakai juga halaman Tinjau Hasil UMKM, PBI-32).
-    Versi perbaikan (PBI-33) dipasang lewat partial kandidat.kesepakatan._form-perbaikan bila sudah dibuat.
 --}}
 @extends('layouts.app')
 @section('title', 'Penyerahan Hasil Pekerjaan')
@@ -34,6 +34,10 @@
         </div>
 
         @include('kandidat.kesepakatan._ringkasan-kesepakatan')
+
+        @if ($revision)
+            @include('kandidat.kesepakatan._catatan-revisi')
+        @endif
 
         <div class="grid g21 ps-grid">
             <div>@include('kandidat.kesepakatan._form-penyerahan')</div>
