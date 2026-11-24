@@ -140,6 +140,17 @@ Route::middleware(['auth', 'role:umkm'])->prefix('umkm')->name('umkm.')->group(f
     Route::get('seleksi/pelamar/{application}/portofolio/{portfolio}', [CandidateSelectionController::class, 'portfolioFile'])
         ->whereNumber(['application', 'portfolio'])
         ->name('seleksi.portofolio');
+
+    // PBI-24: UMKM menyusun dan mengirim kesepakatan pekerjaan untuk pelamar yang sudah diterima
+    Route::post('seleksi/pelamar/{application}/kesepakatan', [AgreementComposeController::class, 'store'])
+        ->whereNumber('application')
+        ->name('kesepakatan.store');
+    Route::get('kesepakatan/{agreement}/susun', [AgreementComposeController::class, 'edit'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.edit');
+    Route::put('kesepakatan/{agreement}/susun', [AgreementComposeController::class, 'update'])
+        ->whereNumber('agreement')
+        ->name('kesepakatan.update');
 });
 
 // Middleware untuk admin

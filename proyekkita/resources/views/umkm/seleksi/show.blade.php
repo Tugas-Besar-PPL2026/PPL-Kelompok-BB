@@ -190,6 +190,9 @@
         <div class="stack">
             @include('umkm.seleksi._keputusan')
 
+            {{-- [PBI-24] Tombol Susun Kesepakatan untuk pelamar yang sudah Diterima --}}
+            @includeIf('umkm.seleksi._susun-kesepakatan', ['application' => $application])
+
             <section class="card">
                 <div class="ch"><i data-lucide="history" class="ic" width="20" height="20"></i><h3>Riwayat Status Lamaran</h3></div>
 
