@@ -26,6 +26,10 @@ use Throwable;
  */
 abstract class CerinDuskTestCase extends DuskTestCase
 {
+    /** Kondisi termin proyek untuk test kesepakatan (PBI-24/25/26). */
+    protected const TERMIN_1 = 'Uang muka setelah kesepakatan berstatus aktif';
+    protected const TERMIN_2 = 'Pelunasan setelah hasil akhir disetujui UMKM';
+
     /** Halaman tujuan setelah login berhasil (User::homeRoute()). */
     private const HALAMAN_AWAL = [
         'umkm' => '/umkm/profil',
@@ -279,9 +283,9 @@ abstract class CerinDuskTestCase extends DuskTestCase
      *
      * @return array{id: int, judul: string, kuota: int, keterampilan: string}
      */
-    protected function buatProyek(Browser $browser, array $umkm, string $label, int $kuota): array
+    protected function buatProyek(Browser $browser, array $umkm, string $label, int $kuota, bool $duaTermin = false): array
     {
-        return $this->persiapan("buat proyek {$label}", function () use ($browser, $umkm, $label, $kuota) {
+        return $this->persiapan("buat proyek {$label}", function () use ($browser, $umkm, $label, $kuota, $duaTermin) {
             $judul = "{$this->kodeTc} {$label} {$this->stempel}";
 
             $this->masuk($browser, $umkm);
@@ -309,10 +313,22 @@ abstract class CerinDuskTestCase extends DuskTestCase
                 "document.getElementById('target_completion_date').value = '{$target}';",
             ]);
 
-            $browser->clear('quota')->type('quota', (string) $kuota)
-                ->type('total_compensation', '1000000')
-                ->click('@cara-sekali')
-                ->type('#tabel-termin tbody tr:nth-child(1) [name$="[condition]"]', 'Dibayar setelah pekerjaan selesai');
+            $browser->clear('quota')->type('quota', (string) $kuota);
+
+            if ($duaTermin) {
+                // [PBI-24/25/26] Rp2.500.000 dibagi 2 termin sama besar, sesuai data test case kesepakatan.
+                $browser->type('total_compensation', '2500000')
+                    ->click('@cara-bertahap')
+                    ->waitFor('#tabel-termin tbody tr:nth-child(2)', 10)
+                    ->type('#tabel-termin tbody tr:nth-child(1) [name$="[condition]"]', self::TERMIN_1)
+                    ->type('#tabel-termin tbody tr:nth-child(1) .term-amount', '1250000')
+                    ->type('#tabel-termin tbody tr:nth-child(2) [name$="[condition]"]', self::TERMIN_2)
+                    ->type('#tabel-termin tbody tr:nth-child(2) .term-amount', '1250000');
+            } else {
+                $browser->type('total_compensation', '1000000')
+                    ->click('@cara-sekali')
+                    ->type('#tabel-termin tbody tr:nth-child(1) [name$="[condition]"]', 'Dibayar setelah pekerjaan selesai');
+            }
 
             $browser->script('window.scrollTo(0, 0);');
             $browser->click('@tinjau-ajukan')
@@ -352,9 +368,9 @@ abstract class CerinDuskTestCase extends DuskTestCase
     }
 
     /** Buat proyek lalu Admin menyetujuinya sehingga berstatus dipublikasikan. */
-    protected function siapkanProyekTerbit(Browser $browser, array $umkm, string $label, int $kuota): array
+    protected function siapkanProyekTerbit(Browser $browser, array $umkm, string $label, int $kuota, bool $duaTermin = false): array
     {
-        $proyek = $this->buatProyek($browser, $umkm, $label, $kuota);
+        $proyek = $this->buatProyek($browser, $umkm, $label, $kuota, $duaTermin);
         $this->setujuiProyek($browser, $proyek);
 
         return $proyek;
