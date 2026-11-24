@@ -27,7 +27,7 @@ use Throwable;
  *  3. Nomor versi = MAX(version_number) + 1, status awal Menunggu Tinjauan.         BR-31-09, BR-31-10
  *  4. Berkas disimpan di disk privat; dibersihkan bila penyimpanan gagal.            BR-31-12, BR-31-13
  *
- * Dipakai ulang oleh PBI-32/PBI-33: history(), locateFile(), nextVersion(), storeFile() dan mekanisme transaksi submit().
+ * Dipakai ulang oleh PBI-32 (history(), locateFile(), fileResponse(), stages(), present(), revisionsUsed()) dan PBI-33.
  * Versi perbaikan (PBI-33) cukup mengubah syarat pada submissionBlockReason() tanpa menulis ulang versioning.
  */
 class SubmissionService
@@ -205,6 +205,22 @@ class SubmissionService
         ];
     }
 
+    /**
+     * Respons unduhan berkas sebuah versi (dipakai route kandidat PBI-31 dan route UMKM PBI-32).
+     * PDF/JPG/PNG dibuka di browser, jenis lain (ZIP) diunduh; selalu dengan X-Content-Type-Options: nosniff.
+     *
+     * @param  array{disk: string, path: string, name: string, size: int, mime: string}  $file  hasil locateFile()
+     */
+    public function fileResponse(array $file): \Symfony\Component\HttpFoundation\StreamedResponse
+    {
+        $disk = Storage::disk($file['disk']);
+        $headers = ['X-Content-Type-Options' => 'nosniff'];
+
+        return in_array($file['mime'], self::INLINE_MIMES, true)
+            ? $disk->response($file['path'], $file['name'], $headers)
+            : $disk->download($file['path'], $file['name'], $headers);
+    }
+
     private function discardFile(?string $path): void
     {
         if ($path === null) {
@@ -255,6 +271,12 @@ class SubmissionService
         return ['canSubmit' => $blocker === null, 'blocker' => $blocker, 'message' => $message, 'nextVersion' => $nextVersion, 'latest' => $latest];
     }
 
+    /** Jumlah permintaan revisi yang sudah dipakai pada kesepakatan (FR-15). */
+    public function revisionsUsed(Agreement $agreement): int
+    {
+        return $agreement->revisionRequests()->count();
+    }
+
     /** Data lengkap halaman Penyerahan Hasil untuk kandidat pemilik kesepakatan. */
     public function page(Agreement $agreement): array
     {
@@ -279,11 +301,15 @@ class SubmissionService
         ];
     }
 
-    /** Satu baris Riwayat Versi, siap ditampilkan (teks di-escape oleh Blade). */
-    public function present(Agreement $agreement, Submission $submission): array
+    /**
+     * Satu baris Riwayat Versi, siap ditampilkan (teks di-escape oleh Blade).
+     * $fileRoute: route unduh berkas sesuai peran (kandidat: PBI-31, UMKM: PBI-32).
+     * Catatan UMKM: catatan revisi (revision_requests) atau catatan persetujuan (review_note, PBI-32).
+     */
+    public function present(Agreement $agreement, Submission $submission, string $fileRoute = 'kandidat.kesepakatan.penyerahan.berkas'): array
     {
         $file = $this->locateFile($submission);
-        $note = $submission->revisionRequests->first();
+        $note = $submission->revisionRequests->first()?->note ?? $submission->review_note;
 
         return [
             'model' => $submission,
@@ -294,10 +320,12 @@ class SubmissionService
             'hasFile' => filled($submission->file_path),
             'fileName' => filled($submission->file_path) ? basename((string) $submission->file_path) : null,
             'fileSize' => $file ? SelectionPresenter::fileSize($file['size']) : null,
-            'fileUrl' => $file ? route('kandidat.kesepakatan.penyerahan.berkas', [$agreement, $submission]) : null,
+            'fileUrl' => $file ? route($fileRoute, [$agreement, $submission]) : null,
             'link' => SelectionPresenter::safeUrl($submission->result_link),
             'description' => $submission->description,
-            'note' => $note?->note,
+            'note' => filled($note) ? $note : null,
+            'submittedDate' => $submission->submitted_at ? $this->date($submission->submitted_at->copy()->timezone(self::TIMEZONE)) : null,
+            'reviewedAt' => $submission->reviewed_at ? $this->dateTime($submission->reviewed_at) : null,
         ];
     }
 

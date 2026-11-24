@@ -10,7 +10,6 @@ use App\Models\Submission;
 use App\Services\SubmissionService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -62,16 +61,12 @@ class SubmissionController extends Controller
         $file = $this->submissions->locateFile($submission);
 
         if ($file === null) {
-            return response()->view('kandidat.kesepakatan.berkas-tidak-ditemukan', ['agreement' => $agreement], 404);
+            return response()->view('kandidat.kesepakatan.berkas-tidak-ditemukan', [
+                'backUrl' => route('kandidat.kesepakatan.penyerahan.index', $agreement),
+                'backLabel' => 'Kembali ke Penyerahan Hasil',
+            ], 404);
         }
 
-        $disk = Storage::disk($file['disk']);
-        $headers = ['X-Content-Type-Options' => 'nosniff'];
-
-        if (in_array($file['mime'], SubmissionService::INLINE_MIMES, true)) {
-            return $disk->response($file['path'], $file['name'], $headers);
-        }
-
-        return $disk->download($file['path'], $file['name'], $headers);
+        return $this->submissions->fileResponse($file);
     }
 }
