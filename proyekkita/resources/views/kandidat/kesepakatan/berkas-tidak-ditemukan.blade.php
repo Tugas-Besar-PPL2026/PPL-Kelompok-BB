@@ -1,6 +1,6 @@
 {{--
     [PBI-31] Ditampilkan dengan status 404 saat berkas sebuah versi tidak ada lagi di penyimpanan.
-    Variabel: $agreement.
+    Dipakai halaman kandidat (PBI-31) dan UMKM (PBI-32). Variabel: $backUrl, $backLabel.
 --}}
 @extends('layouts.app')
 @section('title', '404 · Berkas tidak ditemukan')
@@ -13,8 +13,8 @@
                 <p>Berkas hasil pekerjaan tidak ditemukan.</p>
             </div>
         </div>
-        <a href="{{ route('kandidat.kesepakatan.penyerahan.index', $agreement) }}" class="btn o">
-            <i data-lucide="arrow-left" class="ic" width="16" height="16"></i>Kembali ke Penyerahan Hasil
+        <a href="{{ $backUrl }}" class="btn o">
+            <i data-lucide="arrow-left" class="ic" width="16" height="16"></i>{{ $backLabel }}
         </a>
     </div>
 @endsection
