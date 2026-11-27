@@ -89,6 +89,11 @@ class TC_PBI31_021_Test extends DuskTestCase
                 $this->bukaPenyerahanHasil($browser, $k['C']['judul']);
                 $this->kirimFormManipulasi($browser, $metode, $url, [['description', 'Diubah.']]);
                 $this->assertHalamanGalat404Atau405($browser);
+
+                // Request PUT/DELETE yang ditolak meninggalkan browser di halaman 404/405.
+                // Pulihkan halaman aplikasi sebelum iterasi berikutnya membuka navigasi.
+                $browser->visit($this->urlPenyerahan($k['C']['kesepakatan']))
+                    ->waitFor('@halaman-penyerahan');
             }
 
             $this->assertSame($sebelum, (array) $this->penyerahanDb($k['C']['kesepakatan'])[0], 'Data Versi 1 tidak boleh berubah.');
