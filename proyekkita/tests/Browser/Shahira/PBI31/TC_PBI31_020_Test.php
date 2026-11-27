@@ -56,7 +56,12 @@ class TC_PBI31_020_Test extends DuskTestCase
             $this->assertSame($path, $this->penyerahanDb($idA)[0]->file_path);
             $this->assertTrue(Storage::disk('local')->exists($path), 'Berkas harus ada di storage/app/private.');
             $browser->visit("/storage/{$path}");
-            $this->assertHalamanGalat($browser, 404, 'Not Found');
+            $this->assertHalamanGalat($browser, 403, 'Forbidden');
+            $browser->screenshot('tc020-setelah-403');
+
+            // Kembali ke halaman aplikasi karena browser masih berada di halaman 403.
+            $browser->visit('/kandidat/lamaran')
+                ->waitForText('Pantau status setiap lamaran');
 
             // B: kandidat pemilik membuka PDF (inline) dan ZIP (unduhan)
             $this->serahkanVersi1LewatUi($browser, $k['B']['judul'], $this->berkasUji('label_kemasan_3sku_v1.zip', 'zip'), null, 'Hasil akhir.');

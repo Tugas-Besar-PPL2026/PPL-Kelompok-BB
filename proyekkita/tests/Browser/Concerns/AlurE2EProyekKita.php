@@ -198,7 +198,17 @@ trait AlurE2EProyekKita
         $halamanAwal = $peran === 'umkm' ? '/umkm/profil' : '/kandidat/profil';
 
         $browser->visit("/daftar/{$peran}")
-            ->waitFor('@daftar')
+            ->pause(2000);
+
+        dump('URL AKTUAL: '.$browser->driver->getCurrentURL());
+        dump('JUDUL: '.$browser->driver->getTitle());
+        dump('ADA TOMBOL DAFTAR: '.(
+            $browser->driver->findElements(
+                WebDriverBy::cssSelector('[dusk="daftar"]')
+            ) !== [] ? 'YA' : 'TIDAK'
+        ));
+
+        $browser->waitFor('@daftar')
             ->type('name', $nama)
             ->type('email', $email)
             ->type('password', $sandi)
